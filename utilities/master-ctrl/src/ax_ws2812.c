@@ -584,7 +584,7 @@ void rgb_SetColor(u16 LedId, COLOR Color)
 
     if (LedId > (LED_SUM))
     {
-        printf("Error:Out of Range!\r\n");
+        //        printf( "Error:Out of Range!\r\n" );
         return; // to avoid overflow
     }
 

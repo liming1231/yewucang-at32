@@ -8,7 +8,7 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x31303031)
+#define VERSION (0x31303032)
 
 // #define DEBUG
 
@@ -37,6 +37,11 @@
 #define CAN_BUS_RS_PIN GPIO_PINS_12
 
 /* uart 发送 */
+#define UART1_GPIO_CLOCK CRM_GPIOA_PERIPH_CLOCK
+#define UART1_TX_PORT GPIOA
+#define UART1_TX_PIN GPIO_PINS_9
+#define UART1_RX_PORT GPIOA
+#define UART1_RX_PIN GPIO_PINS_10
 #define UART2_GPIO_CLOCK CRM_GPIOA_PERIPH_CLOCK
 #define UART2_TX_PORT GPIOA
 #define UART2_TX_PIN GPIO_PINS_2
@@ -98,7 +103,7 @@ struct can_alive_counter
 
 extern EventBits_t taskAliveBits;
 extern volatile uint16_t distance[4][6];
-extern struct uart_send_flag uart2SendTypeFlag;
+extern struct uart_send_flag uart1SendTypeFlag;
 extern struct can_alive_counter canAliveCounter;
 extern uint8_t versionSub[4][6];
 

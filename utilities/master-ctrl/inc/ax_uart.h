@@ -11,8 +11,8 @@
 #define UART_BAUDRATE_115200 (115200)
 
 #define COUNTOF(a) (sizeof(a) / sizeof(*(a)))
-#define USART2_TX_BUFFER_SIZE (128u)
-#define USART2_RX_BUFFER_SIZE (64u)
+#define USART1_TX_BUFFER_SIZE (128u)
+#define USART1_RX_BUFFER_SIZE (64u)
 
 #define REBOOT_CMD_ID (0x101)
 #define GET_VERSION_CMD_ID (0x102)
@@ -57,15 +57,15 @@
 
 struct uart_data
 {
-    uint8_t usart2_tx_buffer[USART2_TX_BUFFER_SIZE];
-    uint8_t usart2_rx_buffer[USART2_RX_BUFFER_SIZE];
-    uint8_t usart2_tx_counter;
-    uint8_t usart2_rx_counter;
-    uint8_t usart2_tx_buffer_size;
-    uint8_t usart2_rx_buffer_size;
+    uint8_t usart1_tx_buffer[USART1_TX_BUFFER_SIZE];
+    uint8_t usart1_rx_buffer[USART1_RX_BUFFER_SIZE];
+    uint8_t usart1_tx_counter;
+    uint8_t usart1_rx_counter;
+    uint8_t usart1_tx_buffer_size;
+    uint8_t usart1_rx_buffer_size;
 };
 
-extern struct uart_data uart2_data;
+extern struct uart_data uart1_data;
 
 extern uint8_t ctrl_buff[32];
 
@@ -123,14 +123,14 @@ void toggle_led_stat(void);
  * @param[null]
  * @return      null
  */
-void usart2_tx_task_function(void *pvParameters);
+void usart1_tx_task_function(void *pvParameters);
 
 /**
  * @brief       uart接收任务
  * @param[null]
  * @return      null
  */
-void usart2_rx_task_function(void *pvParameters);
+void usart1_rx_task_function(void *pvParameters);
 
 /**
  * @brief       uart发送任务
@@ -151,6 +151,6 @@ void usart_int_configuration(void);
  * @param[null]
  * @return      null
  */
-void init_uart2_data(void);
+void init_uart1_data(void);
 
 #endif

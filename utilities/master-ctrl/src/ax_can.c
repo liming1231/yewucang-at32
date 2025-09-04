@@ -314,7 +314,7 @@ void parse_reboot_fb_msg()
     {
         if (rx_message_struct_g.data[6] == 0x01)
         {
-            uart2SendTypeFlag.need_reboot = 1;
+            uart1SendTypeFlag.need_reboot = 1;
         }
         break;
     }
@@ -322,7 +322,7 @@ void parse_reboot_fb_msg()
     {
         if (rx_message_struct_g.data[6] == 0x01)
         {
-            uart2SendTypeFlag.need_reboot = 2;
+            uart1SendTypeFlag.need_reboot = 2;
         }
         break;
     }
@@ -330,7 +330,7 @@ void parse_reboot_fb_msg()
     {
         if (rx_message_struct_g.data[6] == 0x01)
         {
-            uart2SendTypeFlag.need_reboot = 3;
+            uart1SendTypeFlag.need_reboot = 3;
         }
         break;
     }
@@ -338,7 +338,7 @@ void parse_reboot_fb_msg()
     {
         if (rx_message_struct_g.data[6] == 0x01)
         {
-            uart2SendTypeFlag.need_reboot = 4;
+            uart1SendTypeFlag.need_reboot = 4;
         }
 
         break;
@@ -407,7 +407,7 @@ void parse_version_fb_msg()
         if (rx_message_struct_g.data[6] == 0x01)
         {
             memcpy(versionSub[0], rx_message_struct_g.data, 6);
-            uart2SendTypeFlag.version_f1 = 1;
+            uart1SendTypeFlag.version_f1 = 1;
         }
 
         break;
@@ -418,7 +418,7 @@ void parse_version_fb_msg()
         if (rx_message_struct_g.data[6] == 0x01)
         {
             memcpy(versionSub[1], rx_message_struct_g.data, 6);
-            uart2SendTypeFlag.version_f2 = 1;
+            uart1SendTypeFlag.version_f2 = 1;
         }
 
         break;
@@ -429,7 +429,7 @@ void parse_version_fb_msg()
         if (rx_message_struct_g.data[6] == 0x01)
         {
             memcpy(versionSub[2], rx_message_struct_g.data, 6);
-            uart2SendTypeFlag.version_f3 = 1;
+            uart1SendTypeFlag.version_f3 = 1;
         }
 
         break;
@@ -440,7 +440,7 @@ void parse_version_fb_msg()
         if (rx_message_struct_g.data[6] == 0x01)
         {
             memcpy(versionSub[3], rx_message_struct_g.data, 6);
-            uart2SendTypeFlag.version_f4 = 1;
+            uart1SendTypeFlag.version_f4 = 1;
         }
 
         break;
@@ -457,25 +457,25 @@ void parse_set_ws2812_fb_msg()
     {
     case FB_SET_F1_WS2812B_ID:
     {
-        uart2SendTypeFlag.ctrl_leds = 1;
+        uart1SendTypeFlag.ctrl_leds = 1;
         break;
     }
 
     case FB_SET_F2_WS2812B_ID:
     {
-        uart2SendTypeFlag.ctrl_leds = 2;
+        uart1SendTypeFlag.ctrl_leds = 2;
         break;
     }
 
     case FB_SET_F3_WS2812B_ID:
     {
-        uart2SendTypeFlag.ctrl_leds = 3;
+        uart1SendTypeFlag.ctrl_leds = 3;
         break;
     }
 
     case FB_SET_F4_WS2812B_ID:
     {
-        uart2SendTypeFlag.ctrl_leds = 4;
+        uart1SendTypeFlag.ctrl_leds = 4;
         break;
     }
 
@@ -490,25 +490,25 @@ void parse_reset_sensor_fb_msg()
     {
     case FB_RESET_F1_SENSOR_ID:
     {
-        uart2SendTypeFlag.reset_sensor = 1;
+        uart1SendTypeFlag.reset_sensor = 1;
         break;
     }
 
     case FB_RESET_F2_SENSOR_ID:
     {
-        uart2SendTypeFlag.reset_sensor = 2;
+        uart1SendTypeFlag.reset_sensor = 2;
         break;
     }
 
     case FB_RESET_F3_SENSOR_ID:
     {
-        uart2SendTypeFlag.reset_sensor = 3;
+        uart1SendTypeFlag.reset_sensor = 3;
         break;
     }
 
     case FB_RESET_F4_SENSOR_ID:
     {
-        uart2SendTypeFlag.reset_sensor = 4;
+        uart1SendTypeFlag.reset_sensor = 4;
         break;
     }
 
