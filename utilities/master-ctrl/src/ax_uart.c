@@ -199,6 +199,63 @@ void ihawk_ctrl(uint8_t index, uint8_t sts)
     }
 }
 
+void ihawk_ctrl_tm(uint8_t index, uint8_t sts, uint8_t delayTm)
+{
+    if (sts <= 2) // enum CTRL_ACTION Type
+    {
+        switch (index)
+        {
+        case LOWER_USB: // 下USB口
+        {
+            if (sts == RESET_IHAWK)
+            {
+                ihawk_lower_ctrl(TURN_OFF);
+                vTaskDelay(delayTm * 100);
+                ihawk_lower_ctrl(TURN_ON);
+            }
+            else
+            {
+                ihawk_lower_ctrl(sts);
+            }
+            break;
+        }
+        case UPPER_USB: // 上USB口
+        {
+            if (sts == RESET_IHAWK)
+            {
+                ihawk_upper_ctrl(TURN_OFF);
+                vTaskDelay(delayTm * 100);
+                ihawk_upper_ctrl(TURN_ON);
+            }
+            else
+            {
+                ihawk_upper_ctrl(sts);
+            }
+            break;
+        }
+        case DUAL_USB: // 同时控制双USB
+        {
+            if (sts == RESET_IHAWK)
+            {
+                ihawk_lower_ctrl(TURN_OFF);
+                ihawk_upper_ctrl(TURN_OFF);
+                vTaskDelay(delayTm * 100);
+                ihawk_lower_ctrl(TURN_ON);
+                ihawk_upper_ctrl(TURN_ON);
+            }
+            else
+            {
+                ihawk_lower_ctrl(sts);
+                ihawk_upper_ctrl(sts);
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+}
+
 void open_device_pwr(void)
 {
     usbhub_ctrl(TURN_ON);
@@ -626,20 +683,22 @@ void send_own_version()
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x09;
+    uart1_data.usart_tx_buffer[2] = 0x0B;
     uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
     uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
     uart1_data.usart_tx_buffer[5] = 0x00;
     uart2_data.usart_tx_buffer[6] = VALID;
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 16) & 0xFF);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 24) & 0xFF);
     uart1_data.usart_tx_buffer[8] = 0x2E;
-    uart1_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 16) & 0xFF);
     uart1_data.usart_tx_buffer[10] = 0x2E;
-    uart1_data.usart_tx_buffer[11] = (uint8_t)((VERSION >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((VERSION >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[12] = 0x2E;
+    uart1_data.usart_tx_buffer[13] = (uint8_t)((VERSION >> 0) & 0xFF);
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[12] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[13] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 14;
+    uart1_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[15] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 16;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -660,18 +719,20 @@ void send_own2_version(bool sts)
 
     uart2_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart2_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart2_data.usart_tx_buffer[2] = 0x09;
+    uart2_data.usart_tx_buffer[2] = 0x0B;
     uart2_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
     uart2_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
     uart2_data.usart_tx_buffer[5] = 0x00;
     uart2_data.usart_tx_buffer[6] = sts;
     if (sts == true)
     {
-        uart2_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 16) & 0xFF);
+        uart2_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 24) & 0xFF);
         uart2_data.usart_tx_buffer[8] = 0x2E;
-        uart2_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 8) & 0xFF);
+        uart2_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 16) & 0xFF);
         uart2_data.usart_tx_buffer[10] = 0x2E;
-        uart2_data.usart_tx_buffer[11] = (uint8_t)((VERSION >> 0) & 0xFF);
+        uart2_data.usart_tx_buffer[11] = (uint8_t)((VERSION >> 8) & 0xFF);
+        uart2_data.usart_tx_buffer[12] = 0x2E;
+        uart2_data.usart_tx_buffer[13] = (uint8_t)((VERSION >> 0) & 0xFF);
     }
     else
     {
@@ -680,12 +741,14 @@ void send_own2_version(bool sts)
         uart2_data.usart_tx_buffer[9] = 0x00;
         uart2_data.usart_tx_buffer[10] = 0x00;
         uart2_data.usart_tx_buffer[11] = 0x00;
+        uart2_data.usart_tx_buffer[12] = 0x00;
+        uart2_data.usart_tx_buffer[13] = 0x00;
     }
 
     getCrc = crc16_modbus(&uart2_data.usart_tx_buffer[3], uart2_data.usart_tx_buffer[2]);
-    uart2_data.usart_tx_buffer[12] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart2_data.usart_tx_buffer[13] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart2_data.usart_tx_buffer_size = 14;
+    uart2_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart2_data.usart_tx_buffer[15] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart2_data.usart_tx_buffer_size = 16;
 
     while (uart2_data.usart_tx_counter < uart2_data.usart_tx_buffer_size)
     {
@@ -2187,10 +2250,23 @@ void usart2_rx_task_function(void *pvParameters)
                 {
                     if (ctrl_buff2[5] == TRAY_MASTER)
                     {
-                        if ((ctrl_buff2[6] > 0) && (ctrl_buff2[6] <= 3) && (ctrl_buff2[7] <= 2))
+                        if ((ctrl_buff2[6] > 0) && (ctrl_buff2[6] <= 3))
                         {
-                            ihawk_ctrl(ctrl_buff2[6], ctrl_buff2[7]);
-                            send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 1);
+                            //   ihawk_ctrl(ctrl_buff2[6], ctrl_buff2[7]);
+                            if (ctrl_buff2[7] < 2)
+                            {
+                                send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 1);
+                                ihawk_ctrl(ctrl_buff2[6], ctrl_buff2[7]);
+                            }
+                            else if ((ctrl_buff2[7] >= 0x81) && (ctrl_buff2[7] <= 0x94))
+                            {
+                                send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 1);
+                                ihawk_ctrl_tm(ctrl_buff2[6], RESET_IHAWK, ctrl_buff2[7] & 0x7F);
+                            }
+                            else
+                            {
+                                send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 0);
+                            }
                         }
                         else
                         {

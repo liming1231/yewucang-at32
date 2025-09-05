@@ -8,10 +8,15 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x313135)
+// #define VERSION (0x313136)
 
 // #define DEBUG
 // #define CAN_DAUL
+#ifdef CAN_DAUL
+#define VERSION (0x31313630)
+#else
+#define VERSION (0x31313631)
+#endif
 #define IHAWK_CTRL
 
 #define RUN_LED_CLK CRM_GPIOC_PERIPH_CLOCK
