@@ -8,9 +8,10 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x313131) // 1.1.1
+#define VERSION (0x313132) // 1.1.2
 
 // #define DEBUG
+// #define CAN_DAUL
 
 #define RUN_LED_CLK CRM_GPIOC_PERIPH_CLOCK
 #define RUN_LED_PORT GPIOC

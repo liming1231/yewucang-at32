@@ -145,55 +145,30 @@ uint8_t getSumCrc(uint8_t *data, uint8_t len)
     return (uint8_t)(sum & 0xFF);
 }
 
-void can_get_alive(void)
-{
-    static uint8_t count1 = 0;
-    uint8_t transmit_mailbox;
-    can_tx_message_type tx_message_struct;
-
-    tx_message_struct.standard_id = GET_HEARDBEAT_ID;
-    tx_message_struct.extended_id = 0;
-    tx_message_struct.id_type = CAN_ID_STANDARD;
-    tx_message_struct.frame_type = CAN_TFT_DATA;
-    tx_message_struct.dlc = 8;
-    tx_message_struct.data[0] = 0x00;
-    tx_message_struct.data[1] = 0x00;
-    tx_message_struct.data[2] = 0x00;
-    tx_message_struct.data[3] = 0x00;
-    tx_message_struct.data[4] = 0x00;
-    tx_message_struct.data[5] = 0x00;
-    tx_message_struct.data[6] = 0x00;
-    tx_message_struct.data[7] = getSumCrc(tx_message_struct.data, 7);
-    transmit_mailbox = can_message_transmit(CAN1, &tx_message_struct);
-
-    while (can_transmit_status_get(CAN1, (can_tx_mailbox_num_type)transmit_mailbox) != CAN_TX_STATUS_SUCCESSFUL)
-        ;
-
-    if (count1 == 0xFF)
-    {
-        count1 = 0;
-    }
-}
-
 void can_transmit_ctrl_data(can_tx_message_type *tx_message_struct)
 {
-#if 0
-    static uint8_t count1 = 0;
+#ifdef CAN_DAUL
+    static uint16_t count1 = 0;
     uint8_t transmit_mailbox;
 
-    while( can_transmit_status_get( CAN1, ( can_tx_mailbox_num_type )transmit_mailbox ) == CAN_TX_STATUS_NO_EMPTY );
+    while (can_transmit_status_get(CAN1, (can_tx_mailbox_num_type)transmit_mailbox) == CAN_TX_STATUS_NO_EMPTY)
+        ;
 
-    tx_message_struct->data[7] = getSumCrc( tx_message_struct->data, 7 );
-    transmit_mailbox = can_message_transmit( CAN1, tx_message_struct );
+    tx_message_struct->data[7] = getSumCrc(tx_message_struct->data, 7);
+    transmit_mailbox = can_message_transmit(CAN1, tx_message_struct);
 
-    while( can_transmit_status_get( CAN1, ( can_tx_mailbox_num_type )transmit_mailbox ) != CAN_TX_STATUS_SUCCESSFUL );
-
-    if( count1 == 0xFF )
+    while (can_transmit_status_get(CAN1, (can_tx_mailbox_num_type)transmit_mailbox) != CAN_TX_STATUS_SUCCESSFUL)
     {
-        count1 = 0;
+        count1++;
+        if (count1 == 0xFFFF)
+        {
+            break;
+        }
     }
-#endif
+    count1 = 0;
+#else
     ;
+#endif
 }
 
 void parse_reboot_fb_msg()
