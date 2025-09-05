@@ -13,6 +13,7 @@
 #define WS2812_BIT_0 (0xC0)
 #define WS2812_BIT_1 (0xFC)
 
+#define LED_COLOR_TYPE_MAX 0x07
 enum LED_COLOR
 {
     OFF_COLOR = 0,
@@ -25,7 +26,7 @@ enum LED_COLOR
     WHITE_COLOR = 0x07
 };
 
-#define LED_MODE_MAX 0x08
+#define LED_MODE_MAX 0x09
 enum LED_MODE
 {
     OFF_MODE = 0,
@@ -34,9 +35,10 @@ enum LED_MODE
     BREATH_2S = 0x03,
     BREATH_4S = 0x04,
     DIY_SHOW = 0x05,
-    RAINBOW = 0x06,
-    FLASH_1HZ_MODE = 0x07,
-    FLASH_2HZ_MODE = 0x08
+    DIY2_SHOW = 0x06,
+    RAINBOW = 0x07,
+    FLASH_1HZ_MODE = 0x08,
+    FLASH_2HZ_MODE = 0x09
 };
 
 typedef struct

@@ -9,6 +9,8 @@ volatile uint8_t sendingUart2 = 0;
 
 struct uart_data uart1_data, uart2_data;
 
+static uint8_t diyShowDataSts = 1;
+
 uint8_t ctrl_buff[32] = {0};
 uint8_t ctrl_buff2[256] = {0};
 uint8_t update_buff[16][128] = {0};
@@ -114,29 +116,29 @@ void car_acc_ctrl(uint8_t sts)
 
 void ihawk_lower_ctrl(uint8_t sts)
 {
-    if (sts == TURN_ON)
+    if (sts == TURN_OFF)
     {
         gpio_bits_reset(IHAWK_POWER_1_PORT, IHAWK_POWER_1_PIN);
-        ihawk_power_sts.ihawk_sts_1 = 1;
+        ihawk_power_sts.ihawk_sts_1 = 0;
     }
     else
     {
         gpio_bits_set(IHAWK_POWER_1_PORT, IHAWK_POWER_1_PIN);
-        ihawk_power_sts.ihawk_sts_1 = 0;
+        ihawk_power_sts.ihawk_sts_1 = 1;
     }
 }
 
 void ihawk_upper_ctrl(uint8_t sts)
 {
-    if (sts == TURN_ON)
+    if (sts == TURN_OFF)
     {
         gpio_bits_reset(IHAWK_POWER_2_PORT, IHAWK_POWER_2_PIN);
-        ihawk_power_sts.ihawk_sts_2 = 1;
+        ihawk_power_sts.ihawk_sts_2 = 0;
     }
     else
     {
         gpio_bits_set(IHAWK_POWER_2_PORT, IHAWK_POWER_2_PIN);
-        ihawk_power_sts.ihawk_sts_2 = 0;
+        ihawk_power_sts.ihawk_sts_2 = 1;
     }
 }
 
@@ -726,6 +728,64 @@ void send_ctrl_leds_fb(uint8_t index)
     vTaskDelay(5);
 }
 
+void send_ctrl_diy_leds_fb(uint8_t index)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_DIY_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_DIY_CMD_ID >> 0) & 0xFF); // 0x03;
+    uart1_data.usart_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_diy_leds_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
+void send_ctrl_diy2_leds_fb(uint8_t index)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_DIY2_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_DIY2_CMD_ID >> 0) & 0xFF); // 0x03;
+    uart1_data.usart_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_diy2_leds_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
 void send_ctrl_tray_leds_fb(uint8_t index)
 {
     uint16_t getCrc;
@@ -1042,6 +1102,18 @@ void usart1_tx_task_function(void *pvParameters)
             uart1SendTypeFlag.need_reboot = 0;
         }
 
+        if (uart1SendTypeFlag.ctrl_diy_leds != 0x00)
+        {
+            send_ctrl_diy_leds_fb(uart1SendTypeFlag.ctrl_diy_leds);
+            uart1SendTypeFlag.ctrl_diy_leds = 0;
+        }
+
+        if (uart1SendTypeFlag.ctrl_diy2_leds != 0x00)
+        {
+            send_ctrl_diy2_leds_fb(uart1SendTypeFlag.ctrl_diy2_leds);
+            uart1SendTypeFlag.ctrl_diy2_leds = 0;
+        }
+
         if (uart1SendTypeFlag.ctrl_leds != 0)
         {
             send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_leds);
@@ -1286,6 +1358,68 @@ void usart1_rx_task_function(void *pvParameters)
                     break;
                 }
 
+                case SET_DIY_CMD_ID:
+                {
+                    diyShowDataSts = 1;
+                    if ((ctrl_buff[5] != 0x00) || (ctrl_buff[14] > LED_COLOR_TYPE_MAX))
+                    {
+                        diyShowDataSts = 0;
+                        uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
+                        uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
+                    }
+                    else
+                    {
+                        diyShowDataSts = 1;
+                        uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
+                        uart1SendTypeFlag.ctrl_diy_leds = 0x0f;
+                    }
+                    if (diyShowDataSts == 1)
+                    {
+                        diyArr[0][0] = ctrl_buff[6];
+                        diyArr[0][1] = ctrl_buff[7];
+                        diyArr[1][0] = ctrl_buff[8];
+                        diyArr[1][1] = ctrl_buff[9];
+                        diyArr[2][0] = ctrl_buff[10];
+                        diyArr[2][1] = ctrl_buff[11];
+                        diyArr[3][0] = ctrl_buff[12];
+                        diyArr[3][1] = ctrl_buff[13];
+                        diyColor = ctrl_buff[14];
+                        ledMode = DIY_SHOW;
+                    }
+                    break;
+                }
+
+                case SET_DIY2_CMD_ID:
+                {
+                    diyShowDataSts = 1;
+                    if ((ctrl_buff[5] != 0x00) || (ctrl_buff[14] > LED_COLOR_TYPE_MAX))
+                    {
+                        diyShowDataSts = 0;
+                        uart1SendTypeFlag.ctrl_diy2_leds_valid = 0;
+                        uart1SendTypeFlag.ctrl_diy2_leds = 0x0f; // ctrl_buff[5];
+                    }
+                    else
+                    {
+                        diyShowDataSts = 1;
+                        uart1SendTypeFlag.ctrl_diy2_leds_valid = 1;
+                        uart1SendTypeFlag.ctrl_diy2_leds = 0x0f;
+                    }
+                    if (diyShowDataSts == 1)
+                    {
+                        diyArr[0][0] = ctrl_buff[6];
+                        diyArr[0][1] = ctrl_buff[7];
+                        diyArr[1][0] = ctrl_buff[8];
+                        diyArr[1][1] = ctrl_buff[9];
+                        diyArr[2][0] = ctrl_buff[10];
+                        diyArr[2][1] = ctrl_buff[11];
+                        diyArr[3][0] = ctrl_buff[12];
+                        diyArr[3][1] = ctrl_buff[13];
+                        diyColor = ctrl_buff[14];
+                        ledMode = DIY2_SHOW;
+                    }
+                    break;
+                }
+
                 case SET_LEDS_CMD_ID:
                 {
                     if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > MAX_BRIGHTNESS) || (ctrl_buff[8] > MAX_BRIGHTNESS) || (ctrl_buff[9] > MAX_BRIGHTNESS))
@@ -1305,13 +1439,16 @@ void usart1_rx_task_function(void *pvParameters)
                     {
                         if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] <= 0x64))
                         {
-                            ledMode = ctrl_buff[6];
                             rainbow_percent = ctrl_buff[7];
                         }
+                        else
+                        {
+                            color_grb.r = ctrl_buff[7];
+                            color_grb.g = ctrl_buff[8];
+                            color_grb.b = ctrl_buff[9];
+                        }
                         ledMode = ctrl_buff[6];
-                        color_grb.r = ctrl_buff[7];
-                        color_grb.g = ctrl_buff[8];
-                        color_grb.b = ctrl_buff[9];
+
                         uart1SendTypeFlag.ctrl_leds_valid = 1;
                         uart1SendTypeFlag.ctrl_leds = 0x0f;
                         break;
@@ -2045,39 +2182,39 @@ void usart2_rx_task_function(void *pvParameters)
                     }
                     break;
                 }
-#if 0 // 停用USB电源控制
-                    case SET_IHAWK_CMD_ID:
+#ifdef IHAWK_CTRL // USB电源控制开关量
+                case SET_IHAWK_CMD_ID:
+                {
+                    if (ctrl_buff2[5] == TRAY_MASTER)
                     {
-                        if( ctrl_buff2[5] == TRAY_MASTER )
+                        if ((ctrl_buff2[6] > 0) && (ctrl_buff2[6] <= 3) && (ctrl_buff2[7] <= 2))
                         {
-                            if((ctrl_buff2[6] > 0) && (ctrl_buff2[6] <= 3) && (ctrl_buff2[7] <= 2))
-                            {
-                                ihawk_ctrl(ctrl_buff2[6], ctrl_buff2[7]);
-                                send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 1);
-                            }
-                            else
-                            {
-                                send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 0);
-                            }
+                            ihawk_ctrl(ctrl_buff2[6], ctrl_buff2[7]);
+                            send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 1);
                         }
                         else
                         {
                             send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 0);
                         }
-                        break;
                     }
-                    case GET_IHAWK_STS_ID:
+                    else
                     {
-                        if( ctrl_buff2[5] == TRAY_MASTER )
-                        {
-                            send_ihawk_sts_fb(1);
-                        }
-                        else
-                        {
-                            send_ihawk_sts_fb(0);
-                        }
-                        break;
+                        send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 0);
                     }
+                    break;
+                }
+                case GET_IHAWK_STS_ID:
+                {
+                    if (ctrl_buff2[5] == TRAY_MASTER)
+                    {
+                        send_ihawk_sts_fb(1);
+                    }
+                    else
+                    {
+                        send_ihawk_sts_fb(0);
+                    }
+                    break;
+                }
 #endif
                 case GET_UPDATE_APP_FLAG_ID:
                 {

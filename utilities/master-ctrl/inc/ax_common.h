@@ -8,10 +8,11 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x313134) // 1.1.4
+#define VERSION (0x313135)
 
 // #define DEBUG
-#define CAN_DAUL
+// #define CAN_DAUL
+#define IHAWK_CTRL
 
 #define RUN_LED_CLK CRM_GPIOC_PERIPH_CLOCK
 #define RUN_LED_PORT GPIOC
@@ -130,6 +131,10 @@ struct uart_send_flag
     uint8_t version_f2;
     uint8_t version_f3;
     uint8_t version_f4;
+    uint8_t ctrl_diy_leds;
+    uint8_t ctrl_diy_leds_valid;
+    uint8_t ctrl_diy2_leds;
+    uint8_t ctrl_diy2_leds_valid;
     uint8_t ctrl_leds;
     uint8_t ctrl_leds_valid;
     uint8_t ctrl_tray_leds;

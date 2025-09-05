@@ -53,44 +53,241 @@ const uint8_t OFF_UNIT[24] =
         WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
         WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
         WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0};
-
+#if 0
 const uint8_t RED_UNIT[24] =
-    {
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
-        WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0};
+{
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+    WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0
+};
 
 const uint8_t GREEN_UNIT[24] =
-    {
-        WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0};
+{
+    WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0
+};
 const uint8_t BLUE_UNIT[24] =
-    {
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
-        WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1};
+{
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+    WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1
+};
 const uint8_t YELLOW_UNIT[24] =
-    {
-        WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
-        WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0};
+{
+    WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
+    WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0
+};
 const uint8_t CYAN_UNIT[24] =
-    {
-        WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
-        WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1};
+{
+    WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+    WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1
+};
 const uint8_t MAGENTA_UNIT[24] =
-    {
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
-        WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
-        WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1};
+{
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+    WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
+    WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1
+};
 const uint8_t WHITE_UNIT[24] =
+{
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_1,
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_1,
+    WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_1
+};
+#endif
+#if 1
+const uint8_t DIY_UINT[8][24] =
     {
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_1,
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_1,
-        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_1};
+        {
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+        },
+        {
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_1,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+        },
+        {
+            WS2812_BIT_1,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+        },
 
+        {
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_1,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+        },
+        {
+            WS2812_BIT_1,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_1,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+        },
+        {
+            WS2812_BIT_1,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_1,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+        },
+        {
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_1,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_1,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+            WS2812_BIT_0,
+        },
+        {WS2812_BIT_1, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+         WS2812_BIT_1, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+         WS2812_BIT_1, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0}};
+#else
 const uint8_t DIY_UINT[8][24] =
     {
         {
@@ -279,6 +476,12 @@ const uint8_t DIY_UINT[8][24] =
         {WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
          WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
          WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1}};
+#endif
+uint8_t DIY_UINT_[24] =
+    {
+        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0,
+        WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0, WS2812_BIT_0};
 
 void initColor(void)
 {
@@ -377,7 +580,156 @@ void setBreath_4s(COLOR color)
     led_sin_2s = 0;
 }
 
+void getDiyLED(COLOR color)
+{
+    int i;
+    for (i = 7; i >= 0; i--)
+    {
+        DIY_UINT_[i] = ((color.g >> (7 - i)) & 0x01) ? WS2812_BIT_1 : WS2812_BIT_0;
+        DIY_UINT_[i + 8] = ((color.r >> (7 - i)) & 0x01) ? WS2812_BIT_1 : WS2812_BIT_0;
+        DIY_UINT_[i + 16] = ((color.b >> (7 - i)) & 0x01) ? WS2812_BIT_1 : WS2812_BIT_0;
+    }
+}
+
 void setDiyShow(COLOR color)
+{
+    int i, ii;
+    COLOR color_grb_t;
+    color_grb_t.g = (uint8_t)(color.g * sinLed[led_sin_2s]);
+    color_grb_t.r = (uint8_t)(color.r * sinLed[led_sin_2s]);
+    color_grb_t.b = (uint8_t)(color.b * sinLed[led_sin_2s]);
+    sendLED(color_grb_t, 0);
+    led_sin_2s++;
+
+    for (i = 1; i < LED_SUM; i++)
+        memcpy(&u8TxData[ONE_LED_TYPES * i], &u8TxData[0], ONE_LED_TYPES);
+
+    for (ii = 0; ii < 4; ii++)
+    {
+        if (diyArr[ii][1] != 0)
+        {
+            for (i = (diyArr[ii][0]); i < (diyArr[ii][0] + diyArr[ii][1]); i++)
+            {
+                memcpy(&u8TxData[ONE_LED_TYPES * i], &DIY_UINT[diyColor], ONE_LED_TYPES);
+            }
+        }
+    }
+
+    spi2_send_bytes((uint8_t *)&u8TxData[0u], LED_ARR);
+
+    if (led_sin_2s >= 50)
+        led_sin_2s = 0;
+
+    led_sin_4s = 0;
+}
+
+void setDiy2Show(COLOR color)
+{
+    int i, ii;
+    COLOR color_grb_t, color_grb_d;
+    color_grb_t.g = (uint8_t)(color.g * sinLed[led_sin_2s]);
+    color_grb_t.r = (uint8_t)(color.r * sinLed[led_sin_2s]);
+    color_grb_t.b = (uint8_t)(color.b * sinLed[led_sin_2s]);
+    sendLED(color_grb_t, 0);
+    led_sin_2s++;
+
+    for (i = 1; i < LED_SUM; i++)
+        memcpy(&u8TxData[ONE_LED_TYPES * i], &u8TxData[0], ONE_LED_TYPES);
+
+    switch (diyColor)
+    {
+    case 0: // off
+    {
+        color_grb_d.r = color_grb_t.g;
+        color_grb_d.g = color_grb_t.r;
+        color_grb_d.b = color_grb_t.b;
+
+        break;
+    }
+
+    case 1: // red
+    {
+        color_grb_d.r = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        color_grb_d.g = 0x00;
+        color_grb_d.b = 0x00;
+
+        break;
+    }
+
+    case 2: // green
+    {
+        color_grb_d.r = 0x00;
+        color_grb_d.g = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        color_grb_d.b = 0x00;
+        break;
+    }
+
+    case 3: // blue
+    {
+        color_grb_d.r = 0x00;
+        color_grb_d.g = 0x00;
+        color_grb_d.b = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        break;
+    }
+
+    case 4: // yellow
+    {
+        color_grb_d.r = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        color_grb_d.g = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        color_grb_d.b = 0x00;
+        break;
+    }
+
+    case 5: // cyan
+    {
+        color_grb_d.r = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        color_grb_d.g = 0x00;
+        color_grb_d.b = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        break;
+    }
+
+    case 6: // magenta
+    {
+        color_grb_d.r = 0x00;
+        color_grb_d.g = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        color_grb_d.b = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        break;
+    }
+
+    case 7: // white
+    {
+        color_grb_d.r = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        color_grb_d.g = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        color_grb_d.b = (uint8_t)(0x80 * sinLed[led_sin_2s]);
+        break;
+    }
+
+    default:
+        break;
+    }
+
+    getDiyLED(color_grb_d);
+
+    for (ii = 0; ii < 4; ii++)
+    {
+        if (diyArr[ii][1] != 0)
+        {
+            for (i = (diyArr[ii][0]); i < (diyArr[ii][0] + diyArr[ii][1]); i++)
+            {
+                memcpy(&u8TxData[ONE_LED_TYPES * i], &DIY_UINT_[0], ONE_LED_TYPES);
+            }
+        }
+    }
+
+    spi2_send_bytes((uint8_t *)&u8TxData[0u], LED_ARR);
+
+    if (led_sin_2s >= 50)
+        led_sin_2s = 0;
+
+    led_sin_4s = 0;
+}
+
+void setHalfShow(COLOR color)
 {
     int i, ii;
     COLOR color_grb_t;
@@ -559,6 +911,12 @@ void ledUpdate(void)
         break;
     }
 
+    case DIY2_SHOW:
+    {
+        setDiy2Show(color_grb);
+        break;
+    }
+
     case FLASH_1HZ_MODE:
     {
         setDoubleFlash_1Hz_Mode(color_grb);
@@ -570,6 +928,12 @@ void ledUpdate(void)
         setDoubleFlash_2Hz_Mode(color_grb);
         break;
     }
+
+        //        case HALF_SHOW:
+        //        {
+        //            setDiyShow( color_grb );
+        //            break;
+        //        }
 
     default:
         break;
