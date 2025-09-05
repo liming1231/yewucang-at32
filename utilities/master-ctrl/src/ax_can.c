@@ -195,117 +195,6 @@ void can_transmit_ctrl_data(can_tx_message_type *tx_message_struct)
     }
 }
 
-void can_transmit_fbdata(void)
-{
-    uint8_t needFb = INVALID;
-    uint8_t transmit_mailbox;
-    can_tx_message_type tx_message_struct;
-
-    while (can_transmit_status_get(CAN1, (can_tx_mailbox_num_type)transmit_mailbox) == CAN_TX_STATUS_NO_EMPTY)
-        ;
-
-    switch (rx_message_struct_g.standard_id)
-    {
-    case SET_F1_REBOOT_ID:
-    {
-        tx_message_struct.standard_id = FB_F1_SET_REBOOT_ID;
-
-        if (rx_message_struct_g.data[0] == VALID)
-        {
-            tx_message_struct.data[6] = VALID;
-        }
-
-        else
-        {
-            tx_message_struct.data[6] = INVALID;
-        }
-
-        tx_message_struct.data[0] = rx_message_struct_g.data[0];
-        tx_message_struct.data[1] = rx_message_struct_g.data[1];
-        tx_message_struct.data[2] = rx_message_struct_g.data[2];
-        tx_message_struct.data[3] = rx_message_struct_g.data[3];
-        tx_message_struct.data[4] = 0x00;
-        tx_message_struct.data[5] = 0x00;
-        needFb = VALID;
-        break;
-    }
-
-    case GET_F1_VERSION_ID:
-    {
-        tx_message_struct.standard_id = FB_GET_F1_VERSION_ID;
-
-        if (rx_message_struct_g.data[0] == VALID)
-        {
-            tx_message_struct.data[0] = (uint8_t)((VERSION >> 24) & 0xFF);
-            tx_message_struct.data[1] = (uint8_t)((VERSION >> 16) & 0xFF);
-            tx_message_struct.data[2] = (uint8_t)((VERSION >> 8) & 0xFF);
-            tx_message_struct.data[3] = (uint8_t)((VERSION >> 0) & 0xFF);
-            tx_message_struct.data[6] = VALID;
-        }
-
-        else
-        {
-            tx_message_struct.data[0] = 0x00;
-            tx_message_struct.data[1] = 0x00;
-            tx_message_struct.data[2] = 0x00;
-            tx_message_struct.data[3] = 0x00;
-            tx_message_struct.data[6] = INVALID;
-        }
-
-        tx_message_struct.data[4] = 0x00;
-        tx_message_struct.data[5] = 0x00;
-        needFb = VALID;
-        break;
-    }
-
-    case SET_F1_WS2812B_ID:
-    {
-        tx_message_struct.standard_id = FB_SET_F1_WS2812B_ID;
-
-        if (rx_message_struct_g.data[0] <= LED_MODE_MAX)
-        {
-            tx_message_struct.data[6] = VALID;
-        }
-
-        else
-        {
-            tx_message_struct.data[6] = INVALID;
-        }
-
-        tx_message_struct.data[0] = rx_message_struct_g.data[0];
-        tx_message_struct.data[1] = rx_message_struct_g.data[1];
-        tx_message_struct.data[2] = rx_message_struct_g.data[2];
-        tx_message_struct.data[3] = rx_message_struct_g.data[3];
-        tx_message_struct.data[4] = rx_message_struct_g.data[4];
-        tx_message_struct.data[5] = rx_message_struct_g.data[5];
-        needFb = VALID;
-        break;
-    }
-
-    default:
-    {
-        break;
-    }
-    }
-
-    // tx_message_struct.standard_id = rx_message_struct_g.standard_id+0x300;
-    if (needFb == VALID)
-    {
-        needFb = INVALID;
-        tx_message_struct.extended_id = 0;
-        tx_message_struct.id_type = CAN_ID_STANDARD;
-        tx_message_struct.frame_type = CAN_TFT_DATA;
-        tx_message_struct.dlc = 8;
-
-        tx_message_struct.data[7] = getSumCrc(tx_message_struct.data, 7);
-
-        transmit_mailbox = can_message_transmit(CAN1, &tx_message_struct);
-
-        while (can_transmit_status_get(CAN1, (can_tx_mailbox_num_type)transmit_mailbox) != CAN_TX_STATUS_SUCCESSFUL)
-            ;
-    }
-}
-
 void parse_reboot_fb_msg()
 {
     switch (rx_message_struct_g.standard_id)
@@ -592,6 +481,58 @@ void parse_set_ws2812_fb_msg()
     }
 }
 
+void parse_set_tray_ws2812_fb_msg(void)
+{
+    static uint8_t fb_tray_ws2812b_sts = 0;
+    static uint8_t tray_ws2812b_cmd_valid = 0;
+    switch (rx_message_struct_g.standard_id)
+    {
+    case FB_SET_TRAY_F1_WS2812B_ID:
+    {
+        fb_tray_ws2812b_sts |= (1 << 0);
+        tray_ws2812b_cmd_valid |= (uint8_t)((rx_message_struct_g.data[6] << 0) & 0xFF);
+        break;
+    }
+    case FB_SET_TRAY_F2_WS2812B_ID:
+    {
+        fb_tray_ws2812b_sts |= (1 << 1);
+        tray_ws2812b_cmd_valid |= (uint8_t)((rx_message_struct_g.data[6] << 1) & 0xFF);
+        break;
+    }
+    case FB_SET_TRAY_F3_WS2812B_ID:
+    {
+        fb_tray_ws2812b_sts |= (1 << 2);
+        tray_ws2812b_cmd_valid |= (uint8_t)((rx_message_struct_g.data[6] << 2) & 0xFF);
+        break;
+    }
+    case FB_SET_TRAY_F4_WS2812B_ID:
+    {
+        fb_tray_ws2812b_sts |= (1 << 3);
+        tray_ws2812b_cmd_valid |= (uint8_t)((rx_message_struct_g.data[6] << 3) & 0xFF);
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+
+    if (fb_tray_ws2812b_sts == rx_message_struct_g.data[4])
+    {
+        if (tray_ws2812b_cmd_valid == rx_message_struct_g.data[4])
+        {
+            uart1SendTypeFlag.ctrl_tray_leds_valid = 1;
+        }
+        else
+        {
+            uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
+        }
+        uart1SendTypeFlag.ctrl_tray_leds = fb_tray_ws2812b_sts;
+        fb_tray_ws2812b_sts = 0;
+        tray_ws2812b_cmd_valid = 0;
+    }
+}
+
 void parse_reset_sensor_fb_msg()
 {
     switch (rx_message_struct_g.standard_id)
@@ -678,32 +619,42 @@ void parse_distance_msg()
 
 void send_ws2812b_msg(void)
 {
-    if (sendCanStr.setWs2812b[0] == 1)
+    if (sendCanStr.setTrayWs2812b == 1)
     {
-        can_transmit_ctrl_data(&canSetLeds[0]);
-        sendCanStr.setWs2812b[0] = 0;
+        can_transmit_ctrl_data(&canSetTrayLeds);
+        sendCanStr.setTrayWs2812b = 0;
         vTaskDelay(SEND_CAN_MSG_TMVAL);
     }
-
-    if (sendCanStr.setWs2812b[1] == 1)
+    else
     {
-        can_transmit_ctrl_data(&canSetLeds[1]);
-        sendCanStr.setWs2812b[1] = 0;
-        vTaskDelay(SEND_CAN_MSG_TMVAL);
-    }
 
-    if (sendCanStr.setWs2812b[2] == 1)
-    {
-        can_transmit_ctrl_data(&canSetLeds[2]);
-        sendCanStr.setWs2812b[2] = 0;
-        vTaskDelay(SEND_CAN_MSG_TMVAL);
-    }
+        if (sendCanStr.setWs2812b[0] == 1)
+        {
+            can_transmit_ctrl_data(&canSetLeds[0]);
+            sendCanStr.setWs2812b[0] = 0;
+            vTaskDelay(SEND_CAN_MSG_TMVAL);
+        }
 
-    if (sendCanStr.setWs2812b[3] == 1)
-    {
-        can_transmit_ctrl_data(&canSetLeds[3]);
-        sendCanStr.setWs2812b[3] = 0;
-        vTaskDelay(SEND_CAN_MSG_TMVAL);
+        if (sendCanStr.setWs2812b[1] == 1)
+        {
+            can_transmit_ctrl_data(&canSetLeds[1]);
+            sendCanStr.setWs2812b[1] = 0;
+            vTaskDelay(SEND_CAN_MSG_TMVAL);
+        }
+
+        if (sendCanStr.setWs2812b[2] == 1)
+        {
+            can_transmit_ctrl_data(&canSetLeds[2]);
+            sendCanStr.setWs2812b[2] = 0;
+            vTaskDelay(SEND_CAN_MSG_TMVAL);
+        }
+
+        if (sendCanStr.setWs2812b[3] == 1)
+        {
+            can_transmit_ctrl_data(&canSetLeds[3]);
+            sendCanStr.setWs2812b[3] = 0;
+            vTaskDelay(SEND_CAN_MSG_TMVAL);
+        }
     }
 }
 
@@ -789,13 +740,6 @@ void can_rx_task_function(void *pvParameters)
     {
         if (newMsgFlag == VALID)
         {
-
-            // crc
-            //        if(getSumCrc( rx_message_struct_g.data, 7 ) != rx_message_struct_g.data[7])
-            //        {
-            //            vTaskDelay( 5 );
-            //            continue;
-            //        }
             switch (rx_message_struct_g.standard_id)
             {
             case FB_F1_SET_REBOOT_ID:
@@ -831,6 +775,15 @@ void can_rx_task_function(void *pvParameters)
             case FB_SET_F4_WS2812B_ID:
             {
                 parse_set_ws2812_fb_msg();
+                break;
+            }
+
+            case FB_SET_TRAY_F1_WS2812B_ID:
+            case FB_SET_TRAY_F2_WS2812B_ID:
+            case FB_SET_TRAY_F3_WS2812B_ID:
+            case FB_SET_TRAY_F4_WS2812B_ID:
+            {
+                parse_set_tray_ws2812_fb_msg();
                 break;
             }
 

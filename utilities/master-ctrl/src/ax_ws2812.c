@@ -20,6 +20,8 @@ uint8_t diyColor = 0;
 uint8_t ledMode = 0;
 uint8_t ledHeaderCount = LED_SUM;
 
+volatile uint8_t rainbow_percent = 0;
+
 uint8_t u8TxData[LED_ARR] =
     {
         WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1, WS2812_BIT_1,
@@ -442,7 +444,7 @@ void setDoubleFlashMode(void)
     setOffMode();
     vTaskDelay(650);
 }
-void setDoubleFlash_1Hz_Mode(void)
+void setDoubleFlashRed_1Hz_Mode(void)
 {
     setNormalRedMode();
     vTaskDelay(500);
@@ -450,7 +452,7 @@ void setDoubleFlash_1Hz_Mode(void)
     setOffMode();
     vTaskDelay(460);
 }
-void setDoubleFlash_2Hz_Mode(void)
+void setDoubleFlashRed_2Hz_Mode(void)
 {
     setNormalRedMode();
     vTaskDelay(250);
@@ -463,6 +465,36 @@ void setDoubleFlash_2Hz_Mode(void)
 
     setOffMode();
     vTaskDelay(210);
+}
+
+void setDoubleFlash_1Hz_Mode(COLOR color)
+{
+    setNormalMode(color);
+    vTaskDelay(500);
+
+    setOffMode();
+    vTaskDelay(460);
+
+    led_sin_2s = 0;
+    led_sin_4s = 0;
+}
+
+void setDoubleFlash_2Hz_Mode(COLOR color)
+{
+    setNormalMode(color);
+    vTaskDelay(250);
+
+    setOffMode();
+    vTaskDelay(250);
+
+    setNormalMode(color);
+    vTaskDelay(250);
+
+    setOffMode();
+    vTaskDelay(210);
+
+    led_sin_2s = 0;
+    led_sin_4s = 0;
 }
 
 void setSegmentedMode(COLOR color, COLOR color2, uint8_t sum_header)
@@ -505,7 +537,7 @@ void ledUpdate(void)
     case FLASH_MODE:
     {
         //  setDoubleFlashMode();
-        setDoubleFlash_2Hz_Mode();
+        setDoubleFlashMode();
         break;
     }
 
@@ -529,13 +561,13 @@ void ledUpdate(void)
 
     case FLASH_1HZ_MODE:
     {
-        setDoubleFlash_1Hz_Mode();
+        setDoubleFlash_1Hz_Mode(color_grb);
         break;
     }
 
     case FLASH_2HZ_MODE:
     {
-        setDoubleFlash_2Hz_Mode();
+        setDoubleFlash_2Hz_Mode(color_grb);
         break;
     }
 
@@ -554,9 +586,9 @@ COLOR Colourful_Wheel(u8 WheelPos)
 
     if (WheelPos < 85)
     {
-        color.r = 255 - WheelPos * 3;
+        color.r = (uint8_t)((255 - WheelPos * 3) * (rainbow_percent / 100.0));
         color.g = 0;
-        color.b = WheelPos * 3;
+        color.b = (uint8_t)(WheelPos * 3 * (rainbow_percent / 100.0));
         return color;
     }
 
@@ -564,14 +596,14 @@ COLOR Colourful_Wheel(u8 WheelPos)
     {
         WheelPos -= 85;
         color.r = 0;
-        color.g = WheelPos * 3;
-        color.b = 255 - WheelPos * 3;
+        color.g = (uint8_t)(WheelPos * 3 * (rainbow_percent / 100.0));
+        color.b = (uint8_t)((255 - WheelPos * 3) * (rainbow_percent / 100.0));
         return color;
     }
 
     WheelPos -= 170;
-    color.r = WheelPos * 3;
-    color.g = 255 - WheelPos * 3;
+    color.r = (uint8_t)(WheelPos * 3 * (rainbow_percent / 100.0));
+    color.g = (uint8_t)((255 - WheelPos * 3) * (rainbow_percent / 100.0));
     color.b = 0;
 
     return color;

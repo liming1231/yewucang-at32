@@ -54,6 +54,8 @@ extern uint8_t u8TxData[LED_ARR];
 extern uint8_t diyArr[4][2];
 extern uint8_t diyColor;
 
+extern volatile uint8_t rainbow_percent;
+
 /**
  * @brief      RGB LED显示初始化
  * @param[null]
@@ -122,14 +124,18 @@ void setDoubleFlashMode(void);
  * @param[COLOR]
  * @return      null
  */
-void setDoubleFlash_1Hz_Mode(void);
+void setDoubleFlashRed_1Hz_Mode(void);
+
+void setDoubleFlash_1Hz_Mode(COLOR color);
 
 /**
  * @brief       设置指定颜色2Hz闪烁显示模式
  * @param[COLOR]
  * @return      null
  */
-void setDoubleFlash_2Hz_Mode(void);
+void setDoubleFlashRed_2Hz_Mode(void);
+
+void setDoubleFlash_2Hz_Mode(COLOR color);
 
 /**
  * @brief       设置分段显示模式

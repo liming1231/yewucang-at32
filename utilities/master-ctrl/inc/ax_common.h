@@ -8,7 +8,7 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x31303035)
+#define VERSION (0x31303038)
 
 // #define DEBUG
 
@@ -85,6 +85,8 @@ struct uart_send_flag
     uint8_t version_f4;
     uint8_t ctrl_leds;
     uint8_t ctrl_leds_valid;
+    uint8_t ctrl_tray_leds;
+    uint8_t ctrl_tray_leds_valid;
     uint8_t reset_sensor;
     uint8_t reset_sensor_valid;
     uint8_t need_reboot;
@@ -118,6 +120,7 @@ struct _send_can_str
     uint8_t setWs2812b[4];
     uint8_t resetSensor[4];
     uint8_t resetBoard[4];
+    uint8_t setTrayWs2812b;
 };
 
 extern EventBits_t taskAliveBits;
@@ -128,6 +131,7 @@ extern struct _send_can_str sendCanStr;
 
 extern can_tx_message_type canResetSensor[4];
 extern can_tx_message_type canSetLeds[4];
+extern can_tx_message_type canSetTrayLeds;
 extern can_tx_message_type canResetBoard[4];
 
 extern uint8_t versionSub[4][6];

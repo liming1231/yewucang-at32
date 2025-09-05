@@ -23,6 +23,7 @@
 #define RESET_ANDRIOD_CMD_ID (0x107)
 #define RESET_ACC_CMD_ID (0x108)
 #define GET_UID_CMD_ID (0x109)
+#define SET_TRAY_LEDS_CMD_ID (0x10A)
 
 #define FB_REBOOT_CMD_ID (0x201)
 #define FB_GET_VERSION_CMD_ID (0x202)
@@ -33,13 +34,14 @@
 #define FB_RESET_ANDRIOD_CMD_ID (0x207)
 #define FB_RESET_ACC_CMD_ID (0x208)
 #define FB_GET_UID_CMD_ID (0x209)
+#define FB_SET_TRAY_LEDS_CMD_ID (0x20A)
 
 #define TRAY_MASTER (0x00)
 #define TRAY_F1 (0x01)
 #define TRAY_F2 (0x02)
 #define TRAY_F3 (0x03)
 #define TRAY_F4 (0x04)
-#define TRAY_SUM (0x04)
+#define TRAY_SUM (0x05)
 
 #define VERSION_INDEX_F1 (0x00)
 #define VERSION_INDEX_F2 (0x01)

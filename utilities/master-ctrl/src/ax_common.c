@@ -10,6 +10,7 @@ struct _send_can_str sendCanStr = {0};
 
 can_tx_message_type canResetSensor[4] = {0};
 can_tx_message_type canSetLeds[4] = {0};
+can_tx_message_type canSetTrayLeds;
 can_tx_message_type canResetBoard[4] = {0};
 
 uint16_t crc16_modbus(uint8_t *pszBuf, uint8_t unLength)

@@ -478,6 +478,35 @@ void send_ctrl_leds_fb(uint8_t index)
     vTaskDelay(5);
 }
 
+void send_ctrl_tray_leds_fb(uint8_t index)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
+
+    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart1_tx_buffer[2] = 0x04;
+    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_SET_TRAY_LEDS_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_SET_TRAY_LEDS_CMD_ID >> 0) & 0xFF); // 0x03;
+    uart1_data.usart1_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
+    uart1_data.usart1_tx_buffer[6] = uart1SendTypeFlag.ctrl_tray_leds;
+    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
+    uart1_data.usart1_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart1_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart1_tx_buffer_size = 9;
+
+    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+    }
+
+    uart1_data.usart1_tx_counter = 0;
+    vTaskDelay(5);
+}
+
 void send_reset_sensor_fb(uint8_t index)
 {
     uint16_t getCrc;
@@ -783,6 +812,12 @@ void usart1_tx_task_function(void *pvParameters)
             uart1SendTypeFlag.ctrl_leds = 0;
         }
 
+        if (uart1SendTypeFlag.ctrl_tray_leds != 0)
+        {
+            send_ctrl_tray_leds_fb(uart1SendTypeFlag.ctrl_tray_leds);
+            uart1SendTypeFlag.ctrl_tray_leds = 0;
+        }
+
         if (uart1SendTypeFlag.reset_sensor != 0)
         {
             send_reset_sensor_fb(uart1SendTypeFlag.reset_sensor);
@@ -822,6 +857,11 @@ void init_can_msg(void)
     canSetLeds[3].id_type = CAN_ID_STANDARD;
     canSetLeds[3].frame_type = CAN_TFT_DATA;
     canSetLeds[3].dlc = 8;
+
+    canSetTrayLeds.extended_id = 0;
+    canSetTrayLeds.id_type = CAN_ID_STANDARD;
+    canSetTrayLeds.frame_type = CAN_TFT_DATA;
+    canSetTrayLeds.dlc = 8;
 
     canResetSensor[0].extended_id = 0;
     canResetSensor[0].id_type = CAN_ID_STANDARD;
@@ -1012,6 +1052,11 @@ void usart1_rx_task_function(void *pvParameters)
 
                     else if (ctrl_buff[5] == TRAY_MASTER)
                     {
+                        if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] <= 0x64))
+                        {
+                            ledMode = ctrl_buff[6];
+                            rainbow_percent = ctrl_buff[7];
+                        }
                         ledMode = ctrl_buff[6];
                         color_grb.r = ctrl_buff[7];
                         color_grb.g = ctrl_buff[8];
@@ -1076,7 +1121,51 @@ void usart1_rx_task_function(void *pvParameters)
 
                     break;
                 }
+#if 1
+                case SET_TRAY_LEDS_CMD_ID:
+                {
+                    if ((ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > 0x80) || (ctrl_buff[8] > 0x80) || (ctrl_buff[9] > 0x80))
+                    {
+                        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
+                        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5] == 0x00 ? 0x0f : ctrl_buff[5];
+                        break;
+                    }
+                    else if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] > 0x64))
+                    {
+                        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
+                        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
+                        break;
+                    }
 
+                    else if (ctrl_buff[5] == TRAY_MASTER)
+                    {
+                        //                        ledMode = ctrl_buff[6];
+                        //                        color_grb.r = ctrl_buff[7];
+                        //                        color_grb.g = ctrl_buff[8];
+                        //                        color_grb.b = ctrl_buff[9];
+                        //                        uart1SendTypeFlag.ctrl_tray_leds_valid = 1;
+                        //                        uart1SendTypeFlag.ctrl_tray_leds = 0x0f;
+                        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
+                        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
+                        break;
+                    }
+                    else
+                    {
+                        canSetTrayLeds.standard_id = SET_TRAY_WS2812B_ID;
+
+                        canSetTrayLeds.data[0] = ctrl_buff[6];
+                        canSetTrayLeds.data[1] = ctrl_buff[7];
+                        canSetTrayLeds.data[2] = ctrl_buff[8];
+                        canSetTrayLeds.data[3] = ctrl_buff[9];
+                        canSetTrayLeds.data[4] = ctrl_buff[5];
+                        canSetTrayLeds.data[5] = 0x00;
+                        canSetTrayLeds.data[6] = 0x00;
+                        sendCanStr.setTrayWs2812b = 1;
+                    }
+
+                    break;
+                }
+#endif
                 case RESET_SENSOR_CMD_ID:
                 {
                     if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[5] == TRAY_MASTER))

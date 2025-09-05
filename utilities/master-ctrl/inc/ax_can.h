@@ -43,6 +43,12 @@
 #define FB_GET_F3_UID_ID (0x6A2)
 #define FB_GET_F4_UID_ID (0x6B2)
 
+#define SET_TRAY_WS2812B_ID (0x703)
+#define FB_SET_TRAY_F1_WS2812B_ID (0x783)
+#define FB_SET_TRAY_F2_WS2812B_ID (0x793)
+#define FB_SET_TRAY_F3_WS2812B_ID (0x7A3)
+#define FB_SET_TRAY_F4_WS2812B_ID (0x7B3)
+
 #define SET_F1_WS2812B_ID (0x701)
 #define SET_F2_WS2812B_ID (0x711)
 #define SET_F3_WS2812B_ID (0x721)
@@ -123,13 +129,6 @@ void can_transmit_sts_data(void);
  * @return      null
  */
 void can_transmit_ctrl_data(can_tx_message_type *tx_message_struct);
-
-/**
- * @brief       δʹ��
- * @param[null]
- * @return      null
- */
-void can_transmit_fbdata(void);
 
 /**
  * @brief       CANBUS状态数据发送
