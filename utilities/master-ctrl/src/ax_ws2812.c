@@ -284,9 +284,9 @@ void initColor(void)
 {
     color_grb.g = 0x00;
     color_grb.r = 0x00;
-    color_grb.b = 0xFF;
+    color_grb.b = MAX_BRIGHTNESS;
 
-    ledMode = NORMAL_MODE;
+    ledMode = BREATH_2S;
 }
 
 void ws2812Init(void)
@@ -327,7 +327,7 @@ void setNormalRedMode(void)
     int i;
     COLOR color_grb_t;
     color_grb_t.g = 0;
-    color_grb_t.r = 0x80;
+    color_grb_t.r = MAX_BRIGHTNESS;
     color_grb_t.b = 0;
     sendLED(color_grb_t, 0);
 
@@ -660,7 +660,7 @@ void rainbowCycle(void)
 
 void ws2812_task_function(void *pvParameters)
 {
-    ledMode = NORMAL_MODE;
+    //    ledMode = NORMAL_MODE;
 
     while (1)
     {

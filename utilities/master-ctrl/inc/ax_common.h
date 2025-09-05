@@ -8,8 +8,7 @@
 #include "task.h"
 #include "event_groups.h"
 
-// #define VERSION (0x31303039)//1.0.0.a
-#define VERSION (0x313130) // 1.1.0
+#define VERSION (0x313131) // 1.1.1
 
 // #define DEBUG
 
@@ -82,6 +81,9 @@
 
 #define APP1_FLAG (0x01)
 #define APP2_FLAG (0x02)
+
+#define MAX_BRIGHTNESS (0x80)
+
 enum UPDATE_FW_STEP
 {
     UPDATE_NONE = 0,

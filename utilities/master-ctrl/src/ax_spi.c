@@ -79,7 +79,7 @@ void spi_tx_task_function( void *pvParameters )
     {
         for( i = 0; i<20; i++ )
         {
-            memcpy( ( void * )&spi2_tx_buffer2[i*8*3*3],spi2_tx_buffer,8*3*3 );
+            memcpy( ( void * )&spi2_tx_buffer2[i*8*3*3], spi2_tx_buffer, 8*3*3 );
         }
 
         spi2_send_bytes( spi2_tx_buffer2, 8*3*60 );

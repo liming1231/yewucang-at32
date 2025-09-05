@@ -1276,7 +1276,7 @@ void usart1_rx_task_function(void *pvParameters)
 
                 case SET_LEDS_CMD_ID:
                 {
-                    if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > 0x80) || (ctrl_buff[8] > 0x80) || (ctrl_buff[9] > 0x80))
+                    if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > MAX_BRIGHTNESS) || (ctrl_buff[8] > MAX_BRIGHTNESS) || (ctrl_buff[9] > MAX_BRIGHTNESS))
                     {
                         uart1SendTypeFlag.ctrl_leds_valid = 0;
                         uart1SendTypeFlag.ctrl_leds = ctrl_buff[5] == 0x00 ? 0x0f : ctrl_buff[5];
@@ -1338,7 +1338,7 @@ void usart1_rx_task_function(void *pvParameters)
 #if 1
                 case SET_TRAY_LEDS_CMD_ID:
                 {
-                    if ((ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > 0x80) || (ctrl_buff[8] > 0x80) || (ctrl_buff[9] > 0x80))
+                    if ((ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > MAX_BRIGHTNESS) || (ctrl_buff[8] > MAX_BRIGHTNESS) || (ctrl_buff[9] > MAX_BRIGHTNESS))
                     {
                         uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
                         uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5] == 0x00 ? 0x0f : ctrl_buff[5];
@@ -2099,7 +2099,7 @@ void usart2_rx_task_function(void *pvParameters)
 
                     case SET_LEDS_CMD_ID:
                     {
-                        if(( ctrl_buff2[5] != 0 ) || (ctrl_buff2[6] >LED_MODE_MAX) || (ctrl_buff2[7] >0x80) || (ctrl_buff2[8]>0x80) || (ctrl_buff2[9]>0x80))
+                        if(( ctrl_buff2[5] != 0 ) || (ctrl_buff2[6] > LED_MODE_MAX) || (ctrl_buff2[7] > MAX_BRIGHTNESS) || (ctrl_buff2[8] > MAX_BRIGHTNESS) || (ctrl_buff2[9] > MAX_BRIGHTNESS))
                         {
                             uart2SendTypeFlag.ctrl_leds_valid = 0;
                             uart2SendTypeFlag.ctrl_leds = ctrl_buff2[5]==0x00?0x0f:ctrl_buff[5];
