@@ -22,6 +22,7 @@
 #define RESET_SWITCH_CMD_ID (0x106)
 #define RESET_ANDRIOD_CMD_ID (0x107)
 #define RESET_ACC_CMD_ID (0x108)
+#define GET_UID_CMD_ID (0x109)
 
 #define FB_REBOOT_CMD_ID (0x201)
 #define FB_GET_VERSION_CMD_ID (0x202)
@@ -31,6 +32,7 @@
 #define FB_RESET_SWITCH_CMD_ID (0x206)
 #define FB_RESET_ANDRIOD_CMD_ID (0x207)
 #define FB_RESET_ACC_CMD_ID (0x208)
+#define FB_GET_UID_CMD_ID (0x209)
 
 #define TRAY_MASTER (0x00)
 #define TRAY_F1 (0x01)

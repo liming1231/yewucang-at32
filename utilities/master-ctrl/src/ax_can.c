@@ -451,6 +451,91 @@ void parse_version_fb_msg()
     }
 }
 
+void parse_uid_fb_msg()
+{
+    switch (rx_message_struct_g.standard_id)
+    {
+    case FB_GET_F1_UID_ID:
+    {
+        if (rx_message_struct_g.data[7] == 0x01)
+        {
+            if (rx_message_struct_g.data[6] == 0x01)
+            {
+                memcpy(&uidBuf[1][0], rx_message_struct_g.data, 6);
+                uart1SendTypeFlag.uid_f1 |= 0x01;
+            }
+            else if (rx_message_struct_g.data[6] == 0x02)
+            {
+                memcpy(&uidBuf[1][6], rx_message_struct_g.data, 6);
+                uart1SendTypeFlag.uid_f1 |= 0x02;
+            }
+        }
+
+        break;
+    }
+
+    case FB_GET_F2_UID_ID:
+    {
+        if (rx_message_struct_g.data[7] == 0x01)
+        {
+            if (rx_message_struct_g.data[6] == 0x01)
+            {
+                memcpy(&uidBuf[2][0], rx_message_struct_g.data, 6);
+                uart1SendTypeFlag.uid_f2 |= 1;
+            }
+            else if (rx_message_struct_g.data[6] == 0x02)
+            {
+                memcpy(&uidBuf[2][6], rx_message_struct_g.data, 6);
+                uart1SendTypeFlag.uid_f2 |= 2;
+            }
+        }
+
+        break;
+    }
+
+    case FB_GET_F3_UID_ID:
+    {
+        if (rx_message_struct_g.data[7] == 0x01)
+        {
+            if (rx_message_struct_g.data[6] == 0x01)
+            {
+                memcpy(&uidBuf[3][0], rx_message_struct_g.data, 6);
+                uart1SendTypeFlag.uid_f3 |= 1;
+            }
+            else if (rx_message_struct_g.data[6] == 0x02)
+            {
+                memcpy(&uidBuf[3][6], rx_message_struct_g.data, 6);
+                uart1SendTypeFlag.uid_f3 |= 2;
+            }
+        }
+
+        break;
+    }
+
+    case FB_GET_F4_UID_ID:
+    {
+        if (rx_message_struct_g.data[7] == 0x01)
+        {
+            if (rx_message_struct_g.data[6] == 0x01)
+            {
+                memcpy(&uidBuf[4][0], rx_message_struct_g.data, 6);
+                uart1SendTypeFlag.uid_f4 |= 1;
+            }
+            else if (rx_message_struct_g.data[6] == 0x02)
+            {
+                memcpy(&uidBuf[4][6], rx_message_struct_g.data, 6);
+                uart1SendTypeFlag.uid_f4 |= 2;
+            }
+        }
+
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
 void parse_set_ws2812_fb_msg()
 {
     switch (rx_message_struct_g.standard_id)
@@ -640,6 +725,15 @@ void can_rx_task_function(void *pvParameters)
             case FB_RESET_F4_SENSOR_ID:
             {
                 parse_reset_sensor_fb_msg();
+                break;
+            }
+
+            case FB_GET_F1_UID_ID:
+            case FB_GET_F2_UID_ID:
+            case FB_GET_F3_UID_ID:
+            case FB_GET_F4_UID_ID:
+            {
+                parse_uid_fb_msg();
                 break;
             }
 

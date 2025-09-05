@@ -16,11 +16,6 @@
 #define FB_F3_SET_REBOOT_ID (0x2A1)
 #define FB_F4_SET_REBOOT_ID (0x2B1)
 
-#define GET_F1_VERSION_ID (0x601)
-#define GET_F2_VERSION_ID (0x611)
-#define GET_F3_VERSION_ID (0x621)
-#define GET_F4_VERSION_ID (0x631)
-
 #define GET_HEARDBEAT_ID (0x600)
 
 #define FB_F1_HEARDBEAT_ID (0x680)
@@ -28,10 +23,25 @@
 #define FB_F3_HEARDBEAT_ID (0x6A0)
 #define FB_F4_HEARDBEAT_ID (0x6B0)
 
+#define GET_F1_VERSION_ID (0x601)
+#define GET_F2_VERSION_ID (0x611)
+#define GET_F3_VERSION_ID (0x621)
+#define GET_F4_VERSION_ID (0x631)
+
 #define FB_GET_F1_VERSION_ID (0x681)
 #define FB_GET_F2_VERSION_ID (0x691)
 #define FB_GET_F3_VERSION_ID (0x6A1)
 #define FB_GET_F4_VERSION_ID (0x6B1)
+
+#define GET_F1_UID_ID (0x602)
+#define GET_F2_UID_ID (0x612)
+#define GET_F3_UID_ID (0x622)
+#define GET_F4_UID_ID (0x632)
+
+#define FB_GET_F1_UID_ID (0x682)
+#define FB_GET_F2_UID_ID (0x692)
+#define FB_GET_F3_UID_ID (0x6A2)
+#define FB_GET_F4_UID_ID (0x6B2)
 
 #define SET_F1_WS2812B_ID (0x701)
 #define SET_F2_WS2812B_ID (0x711)

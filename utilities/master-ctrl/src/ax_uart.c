@@ -2,6 +2,7 @@
 #include <string.h>
 #include "ax_iic.h"
 #include "ax_can.h"
+#include "ax_flash.h"
 
 const char *usart1_tx_buf = "1234567890abcdefghijklmnopqrstuvwxwz";
 
@@ -637,6 +638,47 @@ void send_ctrl_acc_fb(uint8_t index)
     vTaskDelay(5);
 }
 
+void send_uid(uint8_t index)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
+
+    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart1_tx_buffer[2] = 0x10;
+    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_GET_UID_CMD_ID >> 8) & 0xFF);
+    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_GET_UID_CMD_ID >> 0) & 0xFF);
+    uart1_data.usart1_tx_buffer[5] = index;
+    uart1_data.usart1_tx_buffer[6] = uidBuf[index][11];
+    uart1_data.usart1_tx_buffer[7] = uidBuf[index][10];
+    uart1_data.usart1_tx_buffer[8] = uidBuf[index][9];
+    uart1_data.usart1_tx_buffer[9] = uidBuf[index][8];
+    uart1_data.usart1_tx_buffer[10] = uidBuf[index][7];
+    uart1_data.usart1_tx_buffer[11] = uidBuf[index][6];
+    uart1_data.usart1_tx_buffer[12] = uidBuf[index][5];
+    uart1_data.usart1_tx_buffer[13] = uidBuf[index][4];
+    uart1_data.usart1_tx_buffer[14] = uidBuf[index][3];
+    uart1_data.usart1_tx_buffer[15] = uidBuf[index][2];
+    uart1_data.usart1_tx_buffer[16] = uidBuf[index][1];
+    uart1_data.usart1_tx_buffer[17] = uidBuf[index][0];
+    uart1_data.usart1_tx_buffer[18] = VALID;
+    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
+    uart1_data.usart1_tx_buffer[19] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart1_tx_buffer[20] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart1_tx_buffer_size = 21;
+
+    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+    }
+
+    uart1_data.usart1_tx_counter = 0;
+    vTaskDelay(5);
+}
+
 void check_version(void)
 {
     if (uart1SendTypeFlag.version_own == 1)
@@ -667,6 +709,35 @@ void check_version(void)
     {
         send_version(VERSION_INDEX_F4);
         uart1SendTypeFlag.version_f4 = 0;
+    }
+}
+
+void check_uid(void)
+{
+    if (uart1SendTypeFlag.uid_own == 1)
+    {
+        send_uid(0);
+        uart1SendTypeFlag.uid_own = 0;
+    }
+    if (uart1SendTypeFlag.uid_f1 == 0x03)
+    {
+        send_uid(1);
+        uart1SendTypeFlag.uid_f1 = 0;
+    }
+    if (uart1SendTypeFlag.uid_f2 == 0x03)
+    {
+        send_uid(2);
+        uart1SendTypeFlag.uid_f2 = 0;
+    }
+    if (uart1SendTypeFlag.uid_f3 == 0x03)
+    {
+        send_uid(3);
+        uart1SendTypeFlag.uid_f3 = 0;
+    }
+    if (uart1SendTypeFlag.uid_f4 == 0x03)
+    {
+        send_uid(4);
+        uart1SendTypeFlag.uid_f4 = 0;
     }
 }
 
@@ -719,6 +790,8 @@ void usart1_tx_task_function(void *pvParameters)
         }
 
         check_version();
+
+        check_uid();
 
         check_ctrl_sw_cmd();
 
@@ -1005,6 +1078,48 @@ void usart1_rx_task_function(void *pvParameters)
                             uart1SendTypeFlag.reset_acc = 0x01;
                         }
                     }
+                    break;
+                }
+                case GET_UID_CMD_ID:
+                {
+                    if (ctrl_buff[5] > TRAY_SUM)
+                    {
+                        break;
+                    }
+
+                    else if (ctrl_buff[5] == TRAY_MASTER)
+                    {
+                        uart1SendTypeFlag.uid_own = 1;
+                        break;
+                    }
+
+                    else if (ctrl_buff[5] == TRAY_F1)
+                    {
+                        ctrlData2Can.standard_id = GET_F1_UID_ID;
+                    }
+
+                    else if (ctrl_buff[5] == TRAY_F2)
+                    {
+                        ctrlData2Can.standard_id = GET_F2_UID_ID;
+                    }
+
+                    else if (ctrl_buff[5] == TRAY_F3)
+                    {
+                        ctrlData2Can.standard_id = GET_F3_UID_ID;
+                    }
+                    else if (ctrl_buff[5] == TRAY_F4)
+                    {
+                        ctrlData2Can.standard_id = GET_F4_UID_ID;
+                    }
+
+                    ctrlData2Can.data[0] = 0x01;
+                    ctrlData2Can.data[1] = 0x00;
+                    ctrlData2Can.data[2] = 0x00;
+                    ctrlData2Can.data[3] = 0x00;
+                    ctrlData2Can.data[4] = 0x00;
+                    ctrlData2Can.data[5] = 0x00;
+                    ctrlData2Can.data[6] = 0x00;
+                    can_transmit_ctrl_data(&ctrlData2Can);
                     break;
                 }
 

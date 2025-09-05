@@ -4,6 +4,7 @@ EventBits_t taskAliveBits = 0;
 
 volatile uint16_t distance[4][6] = {0};
 uint8_t versionSub[4][6] = {0};
+uint8_t uidBuf[5][12] = {0};
 struct uart_send_flag uart1SendTypeFlag = {0};
 
 uint16_t crc16_modbus(uint8_t *pszBuf, uint8_t unLength)

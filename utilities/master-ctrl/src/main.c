@@ -7,6 +7,7 @@
 #include "ax_can.h"
 #include "ax_spi.h"
 #include "ax_ws2812.h"
+#include "ax_flash.h"
 
 /** @addtogroup UTILITIES_examples
  * @{
@@ -57,6 +58,8 @@ int main(void)
 
     system_clock_config();
     // delay_init();
+
+    flash_read_u8(0x1FFFF7E8, uidBuf[0], 12);
 
     device_ctrl_pins_init();
     open_device_pwr();

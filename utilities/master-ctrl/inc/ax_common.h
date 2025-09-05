@@ -8,7 +8,7 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x31303033)
+#define VERSION (0x31303034)
 
 // #define DEBUG
 
@@ -90,6 +90,11 @@ struct uart_send_flag
     uint8_t reset_switch;
     uint8_t reset_andriod;
     uint8_t reset_acc;
+    uint8_t uid_own;
+    uint8_t uid_f1;
+    uint8_t uid_f2;
+    uint8_t uid_f3;
+    uint8_t uid_f4;
 };
 
 struct can_alive_counter
@@ -106,6 +111,7 @@ extern volatile uint16_t distance[4][6];
 extern struct uart_send_flag uart1SendTypeFlag;
 extern struct can_alive_counter canAliveCounter;
 extern uint8_t versionSub[4][6];
+extern uint8_t uidBuf[5][12];
 
 /**
  * @brief       计算CRC16校验
