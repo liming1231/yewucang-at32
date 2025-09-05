@@ -8,7 +8,7 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x31303032)
+#define VERSION (0x31303033)
 
 // #define DEBUG
 

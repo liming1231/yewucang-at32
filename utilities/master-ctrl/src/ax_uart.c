@@ -45,6 +45,8 @@ void device_ctrl_pins_init(void)
 
     gpio_init_struct.gpio_pins = CAR_CMPUTER_ACC_PIN;
     gpio_init(CAR_CMPUTER_ACC_PORT, &gpio_init_struct);
+
+    open_device_pwr();
 }
 
 void usbhub_ctrl(uint8_t sts)
@@ -75,11 +77,11 @@ void andriod_pwr_ctrl(uint8_t sts)
 {
     if (sts == TURN_ON)
     {
-        gpio_bits_reset(ANDRIOD_PWR_PORT, ANDRIOD_PWR_PIN);
+        gpio_bits_set(ANDRIOD_PWR_PORT, ANDRIOD_PWR_PIN);
     }
     else
     {
-        gpio_bits_set(ANDRIOD_PWR_PORT, ANDRIOD_PWR_PIN);
+        gpio_bits_reset(ANDRIOD_PWR_PORT, ANDRIOD_PWR_PIN);
     }
 }
 
