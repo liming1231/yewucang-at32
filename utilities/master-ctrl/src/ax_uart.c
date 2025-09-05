@@ -1658,9 +1658,15 @@ void USART1_IRQHandler(void)
         }
     }
 
+    if (usart_flag_get(USART1, USART_TDC_FLAG) != RESET)
+    {
+        // USART_TDC_FLAG;
+        usart_flag_clear(USART1, USART_TDC_FLAG);
+    }
     if (usart_flag_get(USART1, USART_TDBE_FLAG) != RESET)
     {
         // USART_TDC_FLAG;
+        usart_flag_clear(USART1, USART_TDBE_FLAG);
     }
 }
 

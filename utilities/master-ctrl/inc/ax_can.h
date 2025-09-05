@@ -99,7 +99,7 @@
 #define SEND_CAN_MSG_TMVAL (10)
 
 extern can_rx_message_type rx_message_struct_g;
-extern volatile uint8_t newMsgFlag;
+extern volatile uint8_t newOtherMsgFlag;
 
 /**
  * @brief       CANBUS开关管脚配置

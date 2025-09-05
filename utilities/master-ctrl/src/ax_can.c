@@ -3,9 +3,10 @@
 #include "ax_iic.h"
 #include "ax_ws2812.h"
 
-volatile uint8_t newMsgFlag = 0;
+volatile uint8_t newOtherMsgFlag = 0;
+volatile uint8_t newStsMsgFlag = 0;
 
-can_rx_message_type rx_message_struct_g;
+can_rx_message_type rx_message_struct_g, rx_message_struct_s;
 
 struct can_alive_counter canAliveCounter = {0};
 
@@ -45,7 +46,7 @@ void can_alive_struct_init(void)
     {
         canAliveCounter.canLastCounter[i] = 0;
         canAliveCounter.canNowCounter[i] = 0;
-        canAliveCounter.canTimeoutCounter[i] = 5;
+        canAliveCounter.canTimeoutCounter[i] = 10;
         canAliveCounter.onLine[i] = 0;
     }
     canAliveCounter.loopCounter = 0;
@@ -100,14 +101,14 @@ void can_configuration(void)
     can_base_struct.aed_enable = TRUE;
     can_base_struct.prsf_enable = FALSE;
     can_base_struct.mdrsel_selection = CAN_DISCARDING_FIRST_RECEIVED;
-    can_base_struct.mmssr_selection = CAN_SENDING_BY_ID;
+    can_base_struct.mmssr_selection = CAN_SENDING_BY_REQUEST; // CAN_SENDING_BY_ID;
     can_base_init(CAN1, &can_base_struct);
 
     /* can baudrate, set baudrate = pclk/(baudrate_div *(1 + bts1_size + bts2_size)) */
-    can_baudrate_struct.baudrate_div = 6;
-    can_baudrate_struct.rsaw_size = CAN_RSAW_3TQ;
-    can_baudrate_struct.bts1_size = CAN_BTS1_8TQ;
-    can_baudrate_struct.bts2_size = CAN_BTS2_3TQ;
+    can_baudrate_struct.baudrate_div = 18;
+    can_baudrate_struct.rsaw_size = CAN_RSAW_1TQ;
+    can_baudrate_struct.bts1_size = CAN_BTS1_6TQ;
+    can_baudrate_struct.bts2_size = CAN_BTS2_1TQ;
     can_baudrate_set(CAN1, &can_baudrate_struct);
 
     /* can filter init */
@@ -151,8 +152,18 @@ void can_transmit_ctrl_data(can_tx_message_type *tx_message_struct)
     static uint16_t count1 = 0;
     uint8_t transmit_mailbox;
 
+    //    can_interrupt_enable( CAN1, CAN_RF0MIEN_INT, FALSE );
+
+    // while( can_transmit_status_get( CAN1, ( can_tx_mailbox_num_type )transmit_mailbox ) == CAN_TX_STATUS_NO_EMPTY );
     while (can_transmit_status_get(CAN1, (can_tx_mailbox_num_type)transmit_mailbox) == CAN_TX_STATUS_NO_EMPTY)
-        ;
+    {
+        count1++;
+        if (count1 == 0xFFFF)
+        {
+            break;
+        }
+    }
+    count1 = 0;
 
     tx_message_struct->data[7] = getSumCrc(tx_message_struct->data, 7);
     transmit_mailbox = can_message_transmit(CAN1, tx_message_struct);
@@ -652,6 +663,53 @@ void parse_distance_msg()
     }
 }
 
+void parse_distance_msg1()
+{
+    switch (rx_message_struct_s.standard_id)
+    {
+    case RECV_F1_DISTANCE_ID:
+    {
+        distance[0][0] = rx_message_struct_s.data[0];
+        distance[0][1] = rx_message_struct_s.data[1];
+        distance[0][2] = rx_message_struct_s.data[2];
+        canAliveCounter.canNowCounter[0] = rx_message_struct_s.data[6];
+        break;
+    }
+
+    case RECV_F2_DISTANCE_ID:
+    {
+        distance[1][0] = rx_message_struct_s.data[0];
+        distance[1][1] = rx_message_struct_s.data[1];
+        distance[1][2] = rx_message_struct_s.data[2];
+        canAliveCounter.canNowCounter[1] = rx_message_struct_s.data[6];
+        break;
+    }
+
+    case RECV_F3_DISTANCE_ID:
+    {
+        distance[2][0] = rx_message_struct_s.data[0];
+        distance[2][1] = rx_message_struct_s.data[1];
+        distance[2][2] = rx_message_struct_s.data[2];
+        canAliveCounter.canNowCounter[2] = rx_message_struct_s.data[6];
+        break;
+    }
+
+    case RECV_F4_DISTANCE_ID:
+    {
+        distance[3][0] = rx_message_struct_s.data[0];
+        distance[3][1] = rx_message_struct_s.data[1];
+        distance[3][2] = rx_message_struct_s.data[2];
+        canAliveCounter.canNowCounter[3] = rx_message_struct_s.data[6];
+        break;
+    }
+
+    default:
+    {
+        break;
+    }
+    }
+}
+
 void send_ws2812b_msg(void)
 {
     if (sendCanStr.setTrayWs2812b == 1)
@@ -773,7 +831,22 @@ void can_rx_task_function(void *pvParameters)
     uint8_t j;
     while (1)
     {
-        if (newMsgFlag == VALID)
+        if (newStsMsgFlag == VALID)
+        {
+            switch (rx_message_struct_s.standard_id)
+            {
+            case RECV_F1_DISTANCE_ID:
+            case RECV_F2_DISTANCE_ID:
+            case RECV_F3_DISTANCE_ID:
+            case RECV_F4_DISTANCE_ID:
+            {
+                parse_distance_msg1();
+                break;
+            }
+            }
+            newStsMsgFlag = INVALID;
+        }
+        if (newOtherMsgFlag == VALID)
         {
             switch (rx_message_struct_g.standard_id)
             {
@@ -840,14 +913,14 @@ void can_rx_task_function(void *pvParameters)
                 break;
             }
 
-            case RECV_F1_DISTANCE_ID:
-            case RECV_F2_DISTANCE_ID:
-            case RECV_F3_DISTANCE_ID:
-            case RECV_F4_DISTANCE_ID:
-            {
-                parse_distance_msg();
-                break;
-            }
+                // case RECV_F1_DISTANCE_ID:
+                // case RECV_F2_DISTANCE_ID:
+                // case RECV_F3_DISTANCE_ID:
+                // case RECV_F4_DISTANCE_ID:
+                // {
+                //     parse_distance_msg();
+                //     break;
+                // }
 
             case FB_SYNC_F1_FW_ID:
             case FB_SYNC_F2_FW_ID:
@@ -861,7 +934,7 @@ void can_rx_task_function(void *pvParameters)
             default:
                 break;
             }
-            newMsgFlag = INVALID;
+            newOtherMsgFlag = INVALID;
         }
 
         if (canAliveCounter.loopCounter >= 40)
@@ -878,13 +951,13 @@ void can_rx_task_function(void *pvParameters)
                 {
                     canAliveCounter.canTimeoutCounter[j]++;
                 }
-                if (canAliveCounter.canTimeoutCounter[j] >= 5)
+                if (canAliveCounter.canTimeoutCounter[j] >= 10)
                 {
-                    distance[j][0] = 0;
-                    distance[j][1] = 0;
-                    distance[j][2] = 0;
+                    distance[j][0] = 0xff;
+                    distance[j][1] = 0xff;
+                    distance[j][2] = 0xff;
                     canAliveCounter.onLine[j] = 0;
-                    canAliveCounter.canTimeoutCounter[j] = 5;
+                    canAliveCounter.canTimeoutCounter[j] = 10;
                 }
                 else
                 {
@@ -912,13 +985,21 @@ void CAN1_RX0_IRQHandler(void)
 
     if (can_flag_get(CAN1, CAN_RF0MN_FLAG) != RESET)
     {
+        //        can_flag_clear( CAN1, CAN_RF0MN_FLAG );// ??
         can_message_receive(CAN1, CAN_RX_FIFO0, &rx_message_struct);
 
         if ((rx_message_struct.standard_id >= 0x100) && (rx_message_struct.standard_id <= 0x7FF))
         {
-            newMsgFlag = VALID;
-            memcpy((void *)&rx_message_struct_g, (void *)&rx_message_struct, sizeof(rx_message_struct));
-            //  at32_led_toggle( LED3 );
+            if ((rx_message_struct.standard_id >= RECV_F1_DISTANCE_ID) && (rx_message_struct.standard_id <= RECV_F4_DISTANCE_ID))
+            {
+                memcpy((void *)&rx_message_struct_s, (void *)&rx_message_struct, sizeof(rx_message_struct));
+                newStsMsgFlag = VALID;
+            }
+            else
+            {
+                memcpy((void *)&rx_message_struct_g, (void *)&rx_message_struct, sizeof(rx_message_struct));
+                newOtherMsgFlag = VALID;
+            }
         }
     }
 }

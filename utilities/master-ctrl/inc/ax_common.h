@@ -8,7 +8,7 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x313133)
+#define VERSION (0x313134) // 1.1.4
 
 // #define DEBUG
 #define CAN_DAUL
