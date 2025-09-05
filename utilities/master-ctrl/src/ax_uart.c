@@ -1166,6 +1166,18 @@ void target_reset_sensor_can_data(uint8_t index)
     canResetSensor[index].data[6] = 0x00;
 }
 
+void target_sync_fw_can_data(uint8_t index, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4, uint8_t data5, uint8_t data6, uint8_t data7, uint8_t data8)
+{
+    canSyncFw[index].data[0] = data1;
+    canSyncFw[index].data[1] = data2;
+    canSyncFw[index].data[2] = data3;
+    canSyncFw[index].data[3] = data4;
+    canSyncFw[index].data[4] = data5;
+    canSyncFw[index].data[5] = data6;
+    canSyncFw[index].data[6] = data7;
+    canSyncFw[index].data[7] = data8;
+}
+
 void usart1_rx_task_function(void *pvParameters)
 {
     uint16_t getCrc;
@@ -1957,6 +1969,36 @@ void parse_update_abort_msg(void)
     }
 }
 
+void parse_sync_sub_fw_msg(void)
+{
+    if ((ctrl_buff[5] > 0) && (ctrl_buff[5] < 5))
+    {
+        if (ctrl_buff[5] == TRAY_F1)
+        {
+            canSyncFw[0].standard_id = SYNC_F1_FW_ID;
+        }
+        else if (ctrl_buff[5] == TRAY_F2)
+        {
+            canSyncFw[1].standard_id = SYNC_F2_FW_ID;
+        }
+        else if (ctrl_buff[5] == TRAY_F3)
+        {
+            canSyncFw[2].standard_id = SYNC_F3_FW_ID;
+        }
+        else if (ctrl_buff[5] == TRAY_F4)
+        {
+            canSyncFw[3].standard_id = SYNC_F4_FW_ID;
+        }
+        target_sync_fw_can_data(ctrl_buff[5] - 1, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9], ctrl_buff[10], ctrl_buff[11], ctrl_buff[12], ctrl_buff[13]);
+        sendCanStr.sync_fw[ctrl_buff[5] - 1] = 1;
+    }
+    else
+    {
+        uart2SendTypeFlag.fw_info.sync_sub_fw_valid = 0;
+        uart2SendTypeFlag.fw_info.sync_sub_fw = ctrl_buff[5];
+    }
+}
+
 #if 1
 void usart2_rx_task_function(void *pvParameters)
 {
@@ -2062,6 +2104,16 @@ void usart2_rx_task_function(void *pvParameters)
                 case SET_UPDATE_ABORT_ID: // abort update
                 {
                     parse_update_abort_msg();
+                    break;
+                }
+                case SYNC_SUB_FW_INFO_ID: // get appaddr/sync fw info/update end/update abort
+                {
+                    parse_sync_sub_fw_msg();
+                    break;
+                }
+                case SUB_UPDATING_APP_ID: // updating
+                {
+
                     break;
                 }
 

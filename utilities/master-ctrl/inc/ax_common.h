@@ -8,10 +8,10 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x313132) // 1.1.2
+#define VERSION (0x313133)
 
 // #define DEBUG
-// #define CAN_DAUL
+#define CAN_DAUL
 
 #define RUN_LED_CLK CRM_GPIOC_PERIPH_CLOCK
 #define RUN_LED_PORT GPIOC
@@ -112,6 +112,17 @@ enum CTRL_USB_CS
     DUAL_USB = 0x03
 };
 
+typedef struct _can_fw_info
+{
+    uint8_t sync_sub_fw;
+    uint8_t sync_sub_fw_valid;
+    uint8_t update_addr;
+    uint16_t fw_length;
+    uint16_t fw_msg_counter;
+    uint16_t fw_index;
+
+} can_fw_info;
+
 struct uart_send_flag
 {
     uint8_t version_own;
@@ -135,6 +146,7 @@ struct uart_send_flag
     uint8_t reset_andriod_valid;
     uint8_t reset_acc;
     uint8_t reset_acc_valid;
+    can_fw_info fw_info;
     uint8_t uid_own;
     uint8_t uid_f1;
     uint8_t uid_f2;
@@ -156,6 +168,7 @@ struct _send_can_str
     uint8_t setWs2812b[4];
     uint8_t resetSensor[4];
     uint8_t resetBoard[4];
+    uint8_t sync_fw[4];
     uint8_t setTrayWs2812b;
 };
 
@@ -168,6 +181,7 @@ struct _ihawk_power_sts
 extern EventBits_t taskAliveBits;
 extern volatile uint16_t distance[4][6];
 extern struct uart_send_flag uart1SendTypeFlag;
+extern struct uart_send_flag uart2SendTypeFlag;
 extern struct can_alive_counter canAliveCounter;
 extern struct _send_can_str sendCanStr;
 
@@ -177,6 +191,7 @@ extern can_tx_message_type canResetSensor[4];
 extern can_tx_message_type canSetLeds[4];
 extern can_tx_message_type canSetTrayLeds;
 extern can_tx_message_type canResetBoard[4];
+extern can_tx_message_type canSyncFw[4];
 
 extern uint8_t versionSub[4][6];
 extern uint8_t uidBuf[5][12];

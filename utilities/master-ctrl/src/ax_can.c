@@ -546,6 +546,65 @@ void parse_reset_sensor_fb_msg()
     }
 }
 
+void parse_sync_fw_fb_msg()
+{
+    switch (rx_message_struct_g.standard_id)
+    {
+    case FB_SYNC_F1_FW_ID:
+    {
+        if (rx_message_struct_g.data[0] == 1)
+        {
+            uart2SendTypeFlag.fw_info.sync_sub_fw = 1;
+            if ((rx_message_struct_g.data[1] == 1) && ((rx_message_struct_g.data[2] == 1) || (rx_message_struct_g.data[2] == 2)))
+            {
+                uart2SendTypeFlag.fw_info.update_addr = rx_message_struct_g.data[1];
+                uart2SendTypeFlag.fw_info.sync_sub_fw_valid = 1;
+            }
+            else
+            {
+                uart2SendTypeFlag.fw_info.sync_sub_fw_valid = 0;
+            }
+        }
+        else if (rx_message_struct_g.data[0] == 2)
+        {
+            uart2SendTypeFlag.fw_info.sync_sub_fw = 1;
+            if ((rx_message_struct_g.data[1] == 1) && (uart2SendTypeFlag.fw_info.update_addr == rx_message_struct_g.data[2]))
+            {
+                uart2SendTypeFlag.fw_info.sync_sub_fw_valid = 1;
+                uart2SendTypeFlag.fw_info.fw_length = ((rx_message_struct_g.data[3] << 8) | (rx_message_struct_g.data[4])) & 0xFFFF;
+                uart2SendTypeFlag.fw_info.fw_msg_counter = ((rx_message_struct_g.data[5] << 8) | (rx_message_struct_g.data[6])) & 0xFFFF;
+                uart2SendTypeFlag.fw_info.fw_index = 0;
+            }
+            else
+            {
+                uart2SendTypeFlag.fw_info.sync_sub_fw_valid = 0;
+            }
+            uart2SendTypeFlag.fw_info.update_addr = 0;
+        }
+
+        break;
+    }
+
+    case FB_SYNC_F2_FW_ID:
+    {
+        break;
+    }
+
+    case FB_SYNC_F3_FW_ID:
+    {
+        break;
+    }
+
+    case FB_SYNC_F4_FW_ID:
+    {
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
 void parse_distance_msg()
 {
     switch (rx_message_struct_g.standard_id)
@@ -787,6 +846,15 @@ void can_rx_task_function(void *pvParameters)
             case RECV_F4_DISTANCE_ID:
             {
                 parse_distance_msg();
+                break;
+            }
+
+            case FB_SYNC_F1_FW_ID:
+            case FB_SYNC_F2_FW_ID:
+            case FB_SYNC_F3_FW_ID:
+            case FB_SYNC_F4_FW_ID:
+            {
+                parse_sync_fw_fb_msg();
                 break;
             }
 

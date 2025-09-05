@@ -6,6 +6,7 @@ volatile uint16_t distance[4][6] = {0};
 uint8_t versionSub[4][6] = {0};
 uint8_t uidBuf[5][12] = {0};
 struct uart_send_flag uart1SendTypeFlag = {0};
+struct uart_send_flag uart2SendTypeFlag = {0};
 struct _send_can_str sendCanStr = {0};
 
 struct _ihawk_power_sts ihawk_power_sts = {0};
@@ -14,6 +15,8 @@ can_tx_message_type canResetSensor[4] = {0};
 can_tx_message_type canSetLeds[4] = {0};
 can_tx_message_type canSetTrayLeds;
 can_tx_message_type canResetBoard[4] = {0};
+
+can_tx_message_type canSyncFw[4] = {0};
 
 uint8_t updateFwData[16] = {0};
 volatile uint8_t msglen2 = 0;

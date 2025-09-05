@@ -43,6 +43,26 @@
 #define FB_GET_F3_UID_ID (0x6A2)
 #define FB_GET_F4_UID_ID (0x6B2)
 
+#define SYNC_F1_FW_ID (0x603)
+#define SYNC_F2_FW_ID (0x613)
+#define SYNC_F3_FW_ID (0x623)
+#define SYNC_F4_FW_ID (0x633)
+
+#define FB_SYNC_F1_FW_ID (0x683)
+#define FB_SYNC_F2_FW_ID (0x693)
+#define FB_SYNC_F3_FW_ID (0x6A3)
+#define FB_SYNC_F4_FW_ID (0x6B3)
+
+#define UPDATE_F1_FW_ID (0x604)
+#define UPDATE_F2_FW_ID (0x614)
+#define UPDATE_F3_FW_ID (0x624)
+#define UPDATE_F4_FW_ID (0x634)
+
+#define FB_UPDATE_F1_FW_ID (0x684)
+#define FB_UPDATE_F2_FW_ID (0x694)
+#define FB_UPDATE_F3_FW_ID (0x6A4)
+#define FB_UPDATE_F4_FW_ID (0x6B4)
+
 #define SET_TRAY_WS2812B_ID (0x703)
 #define FB_SET_TRAY_F1_WS2812B_ID (0x783)
 #define FB_SET_TRAY_F2_WS2812B_ID (0x793)

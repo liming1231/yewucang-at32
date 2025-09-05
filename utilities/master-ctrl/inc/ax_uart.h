@@ -42,6 +42,9 @@
 #define SET_IHAWK_CMD_ID (0x10B)
 #define GET_IHAWK_STS_ID (0x10C)
 
+#define SYNC_SUB_FW_INFO_ID (0x10D)
+#define SUB_UPDATING_APP_ID (0x10F)
+
 #define FB_REBOOT_CMD_ID (0x201)
 #define FB_GET_VERSION_CMD_ID (0x202)
 #define FB_SET_LEDS_CMD_ID (0x203)
@@ -55,6 +58,9 @@
 
 #define FB_SET_IHAWK_CMD_ID (0x20B)
 #define FB_GET_IHAWK_STS_ID (0x20C)
+
+#define FB_SYNC_SUB_FW_INFO_ID (0x20D)
+#define FB_SUB_UPDATING_APP_ID (0x20F)
 
 #define TRAY_MASTER (0x00)
 #define TRAY_F1 (0x01)
