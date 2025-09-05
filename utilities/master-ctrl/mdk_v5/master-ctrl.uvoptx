@@ -192,6 +192,11 @@
           <WinNumber>2</WinNumber>
           <ItemText>canSetLeds[0]</ItemText>
         </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>uart2_data</ItemText>
+        </Ww>
       </WatchWindow2>
       <MemoryWindow1>
         <Mm>
@@ -328,7 +333,7 @@
       <GroupNumber>1</GroupNumber>
       <FileNumber>7</FileNumber>
       <FileType>1</FileType>
-      <tvExp>1</tvExp>
+      <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\ax_ws2812.c</PathWithFileName>

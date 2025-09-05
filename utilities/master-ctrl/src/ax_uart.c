@@ -6,12 +6,15 @@
 
 const char *usart1_tx_buf = "1234567890abcdefghijklmnopqrstuvwxwz";
 
-struct uart_data uart1_data;
+struct uart_data uart1_data, uart2_data;
 
 uint8_t ctrl_buff[32] = {0};
+uint8_t ctrl_buff2[32] = {0};
 volatile uint8_t recvCmdFlag = 0;
+volatile uint8_t recvCmdFlag2 = 0;
 
 uint16_t cmdId = 0;               // usart1_rx_task_function()
+uint16_t cmdId2 = 0;              // usart1_rx_task_function()
 can_tx_message_type ctrlData2Can; // usart1_rx_task_function()
 
 void device_ctrl_pins_init(void)
@@ -23,6 +26,9 @@ void device_ctrl_pins_init(void)
     crm_periph_clock_enable(SWITCH_PWR_CLK, TRUE);
     crm_periph_clock_enable(ANDRIOD_PWR_CLK, TRUE);
     crm_periph_clock_enable(CAR_CMPUTER_ACC_CLK, TRUE);
+
+    crm_periph_clock_enable(IHAWK_POWER_1_CLK, TRUE);
+    crm_periph_clock_enable(IHAWK_POWER_2_CLK, TRUE);
 
     /* set default parameter */
     gpio_default_para_init(&gpio_init_struct);
@@ -47,7 +53,13 @@ void device_ctrl_pins_init(void)
     gpio_init_struct.gpio_pins = CAR_CMPUTER_ACC_PIN;
     gpio_init(CAR_CMPUTER_ACC_PORT, &gpio_init_struct);
 
-    open_device_pwr();
+    gpio_init_struct.gpio_pins = IHAWK_POWER_1_PIN;
+    gpio_init(IHAWK_POWER_1_PORT, &gpio_init_struct);
+
+    gpio_init_struct.gpio_pins = IHAWK_POWER_2_PIN;
+    gpio_init(IHAWK_POWER_2_PORT, &gpio_init_struct);
+
+    //    open_device_pwr();
 }
 
 void usbhub_ctrl(uint8_t sts)
@@ -98,12 +110,95 @@ void car_acc_ctrl(uint8_t sts)
     }
 }
 
+void ihawk_lower_ctrl(uint8_t sts)
+{
+    if (sts == TURN_ON)
+    {
+        gpio_bits_reset(IHAWK_POWER_1_PORT, IHAWK_POWER_1_PIN);
+    }
+    else
+    {
+        gpio_bits_set(IHAWK_POWER_1_PORT, IHAWK_POWER_1_PIN);
+    }
+}
+
+void ihawk_upper_ctrl(uint8_t sts)
+{
+    if (sts == TURN_ON)
+    {
+        gpio_bits_reset(IHAWK_POWER_2_PORT, IHAWK_POWER_2_PIN);
+    }
+    else
+    {
+        gpio_bits_set(IHAWK_POWER_2_PORT, IHAWK_POWER_2_PIN);
+    }
+}
+
+void ihawk_ctrl(uint8_t index, uint8_t sts)
+{
+    if (sts <= 2) // enum CTRL_ACTION Type
+    {
+        switch (index)
+        {
+        case LOWER_USB: // ����USB��
+        {
+            if (sts == RESET_IHAWK)
+            {
+                ihawk_lower_ctrl(TURN_OFF);
+                vTaskDelay(200);
+                ihawk_lower_ctrl(TURN_ON);
+            }
+            else
+            {
+                ihawk_lower_ctrl(sts);
+            }
+            break;
+        }
+        case UPPER_USB: // ����USB��
+        {
+            if (sts == RESET_IHAWK)
+            {
+                ihawk_upper_ctrl(TURN_OFF);
+                vTaskDelay(200);
+                ihawk_upper_ctrl(TURN_ON);
+            }
+            else
+            {
+                ihawk_upper_ctrl(sts);
+            }
+            break;
+        }
+        case DUAL_USB: // ͬʱ����˫USB
+        {
+            if (sts == RESET_IHAWK)
+            {
+                ihawk_lower_ctrl(TURN_OFF);
+                ihawk_upper_ctrl(TURN_OFF);
+                vTaskDelay(200);
+                ihawk_lower_ctrl(TURN_ON);
+                ihawk_upper_ctrl(TURN_ON);
+            }
+            else
+            {
+                ihawk_lower_ctrl(sts);
+                ihawk_upper_ctrl(sts);
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+}
+
 void open_device_pwr(void)
 {
     usbhub_ctrl(TURN_ON);
     switch_pwr_ctrl(TURN_ON);
     andriod_pwr_ctrl(TURN_ON);
     car_acc_ctrl(TURN_ON);
+    ihawk_ctrl(LOWER_USB, TURN_ON);
+    ihawk_ctrl(UPPER_USB, TURN_ON);
 }
 
 void toggle_led_stat(void)
@@ -113,12 +208,12 @@ void toggle_led_stat(void)
 
 void init_uart1_data(void)
 {
-    memcpy(uart1_data.usart1_tx_buffer, usart1_tx_buf, strlen(usart1_tx_buf));
-    memset(uart1_data.usart1_rx_buffer, 0, sizeof(uart1_data.usart1_rx_buffer));
-    uart1_data.usart1_tx_counter = 0;
-    uart1_data.usart1_rx_counter = 0;
-    uart1_data.usart1_tx_buffer_size = strlen(usart1_tx_buf);
-    uart1_data.usart1_rx_buffer_size = 0;
+    memcpy(uart1_data.usart_tx_buffer, usart1_tx_buf, strlen(usart1_tx_buf));
+    memset(uart1_data.usart_rx_buffer, 0, sizeof(uart1_data.usart_rx_buffer));
+    uart1_data.usart_tx_counter = 0;
+    uart1_data.usart_rx_counter = 0;
+    uart1_data.usart_tx_buffer_size = strlen(usart1_tx_buf);
+    uart1_data.usart_rx_buffer_size = 0;
 }
 
 void usart_configuration(void)
@@ -192,34 +287,32 @@ void usart_int_configuration(void)
 
     gpio_default_para_init(&gpio_init_struct);
 
-    /* configure the usart2 tx pin */
     gpio_init_struct.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
     gpio_init_struct.gpio_out_type = GPIO_OUTPUT_PUSH_PULL;
     gpio_init_struct.gpio_mode = GPIO_MODE_MUX;
     gpio_init_struct.gpio_pull = GPIO_PULL_NONE;
 
+    /* configure the usart1 tx pin */
     gpio_init_struct.gpio_pins = UART1_TX_PIN;
     gpio_init(UART1_TX_PORT, &gpio_init_struct);
-
+    /* configure the usart2 tx pin */
     gpio_init_struct.gpio_pins = UART2_TX_PIN;
     gpio_init(UART2_TX_PORT, &gpio_init_struct);
-
     /* configure the usart3 tx pin */
     gpio_init_struct.gpio_pins = UART3_TX_PIN;
     gpio_init(UART3_TX_PORT, &gpio_init_struct);
 
-    /* configure the usart2 rx pin */
     gpio_init_struct.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
     gpio_init_struct.gpio_out_type = GPIO_OUTPUT_PUSH_PULL;
     gpio_init_struct.gpio_mode = GPIO_MODE_INPUT;
     gpio_init_struct.gpio_pull = GPIO_PULL_UP;
 
+    /* configure the usart1 rx pin */
     gpio_init_struct.gpio_pins = UART1_RX_PIN;
     gpio_init(UART1_RX_PORT, &gpio_init_struct);
-
+    /* configure the usart2 rx pin */
     gpio_init_struct.gpio_pins = UART2_RX_PIN;
     gpio_init(UART2_RX_PORT, &gpio_init_struct);
-
     /* configure the usart3 rx pin */
     gpio_init_struct.gpio_pins = UART3_RX_PIN;
     gpio_init(UART3_RX_PORT, &gpio_init_struct);
@@ -230,7 +323,7 @@ void usart_int_configuration(void)
     nvic_irq_enable(USART2_IRQn, 0, 0);
     nvic_irq_enable(USART3_IRQn, 0, 0);
 
-    /* configure usart2 param */
+    /* configure usart1 param */
     usart_init(USART1, UART_BAUDRATE_115200, USART_DATA_8BITS, USART_STOP_1_BIT);
     usart_transmitter_enable(USART1, TRUE);
     usart_receiver_enable(USART1, TRUE);
@@ -259,37 +352,68 @@ void usart_int_configuration(void)
     //  usart_interrupt_enable(USART3, USART_TDBE_INT, TRUE);
 }
 
+void send_ctrl_ihawk_fb(uint8_t index, uint8_t sts, uint8_t valid_sts)
+{
+    uint16_t getCrc;
+    memset(uart2_data.usart_tx_buffer, 0, sizeof(uart2_data.usart_tx_buffer));
+
+    uart2_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart2_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart2_data.usart_tx_buffer[2] = 0x06;
+    uart2_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_IHAWK_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart2_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_IHAWK_CMD_ID >> 0) & 0xFF); // 0x01;
+    uart2_data.usart_tx_buffer[5] = 0x00;
+    uart2_data.usart_tx_buffer[6] = index;
+    uart2_data.usart_tx_buffer[7] = sts;
+    uart2_data.usart_tx_buffer[8] = valid_sts;
+    getCrc = crc16_modbus(&uart2_data.usart_tx_buffer[3], uart2_data.usart_tx_buffer[2]);
+    uart2_data.usart_tx_buffer[9] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart2_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart2_data.usart_tx_buffer_size = 11;
+
+    while (uart2_data.usart_tx_counter < uart2_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART2, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART2, uart2_data.usart_tx_buffer[uart2_data.usart_tx_counter++]);
+    }
+
+    uart2_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
 void send_reboot_fb(uint8_t rebootDevFlag)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
 #ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 15, "reboot %d succ\r\n", rebootDevFlag);
-    uart1_data.usart1_tx_buffer_size = 15;
+    snprintf(uart1_data.usart_tx_buffer, 15, "reboot %d succ\r\n", rebootDevFlag);
+    uart1_data.usart_tx_buffer_size = 15;
 #else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x04;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_REBOOT_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_REBOOT_CMD_ID >> 0) & 0xFF); // 0x01;
-    uart1_data.usart1_tx_buffer[5] = (rebootDevFlag == CTRL_OWNER_FLAG) ? 0x00 : rebootDevFlag;
-    uart1_data.usart1_tx_buffer[6] = uart1SendTypeFlag.need_reboot_valid;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_REBOOT_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_REBOOT_CMD_ID >> 0) & 0xFF); // 0x01;
+    uart1_data.usart_tx_buffer[5] = (rebootDevFlag == CTRL_OWNER_FLAG) ? 0x00 : rebootDevFlag;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.need_reboot_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
 #endif
 
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 
     if (rebootDevFlag == CTRL_OWNER_FLAG)
@@ -302,409 +426,372 @@ void send_reboot_fb(uint8_t rebootDevFlag)
 void send_distance(void)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
-#ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 108, "F1 Online(%d): %03d %03d %03d;\tF2 Online(%d): %03d %03d %03d;\tF3 Online(%d): %03d %03d %03d;\tF4 Online(%d): %03d %03d %03d\r\n",
-             canAliveCounter.onLine[0],
-             distance[0][0], distance[0][1], distance[0][2],
-             canAliveCounter.onLine[1],
-             distance[1][0], distance[1][1], distance[1][2],
-             canAliveCounter.onLine[2],
-             distance[2][0], distance[2][1], distance[2][2],
-             canAliveCounter.onLine[3],
-             distance[3][0], distance[3][1], distance[3][2]);
-    uart1_data.usart1_tx_buffer_size = 108;
-#else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x22;
-    uart1_data.usart1_tx_buffer[3] = 0x05;
-    uart1_data.usart1_tx_buffer[4] = 0x00;
-    uart1_data.usart1_tx_buffer[5] = 0x01;
-    uart1_data.usart1_tx_buffer[6] = canAliveCounter.onLine[0];
-    uart1_data.usart1_tx_buffer[7] = distance[0][0];
-    uart1_data.usart1_tx_buffer[8] = distance[0][1];
-    uart1_data.usart1_tx_buffer[9] = distance[0][2];
-    uart1_data.usart1_tx_buffer[10] = distance[0][3];
-    uart1_data.usart1_tx_buffer[11] = distance[0][4];
-    uart1_data.usart1_tx_buffer[12] = distance[0][5];
-    uart1_data.usart1_tx_buffer[13] = 0x02;
-    uart1_data.usart1_tx_buffer[14] = canAliveCounter.onLine[1];
-    uart1_data.usart1_tx_buffer[15] = distance[1][0];
-    uart1_data.usart1_tx_buffer[16] = distance[1][1];
-    uart1_data.usart1_tx_buffer[17] = distance[1][2];
-    uart1_data.usart1_tx_buffer[18] = distance[1][3];
-    uart1_data.usart1_tx_buffer[19] = distance[1][4];
-    uart1_data.usart1_tx_buffer[20] = distance[1][5];
-    uart1_data.usart1_tx_buffer[21] = 0x03;
-    uart1_data.usart1_tx_buffer[22] = canAliveCounter.onLine[2];
-    uart1_data.usart1_tx_buffer[23] = distance[2][0];
-    uart1_data.usart1_tx_buffer[24] = distance[2][1];
-    uart1_data.usart1_tx_buffer[25] = distance[2][2];
-    uart1_data.usart1_tx_buffer[26] = distance[2][3];
-    uart1_data.usart1_tx_buffer[27] = distance[2][4];
-    uart1_data.usart1_tx_buffer[28] = distance[2][5];
-    uart1_data.usart1_tx_buffer[29] = 0x04;
-    uart1_data.usart1_tx_buffer[30] = canAliveCounter.onLine[3];
-    uart1_data.usart1_tx_buffer[31] = distance[3][0];
-    uart1_data.usart1_tx_buffer[32] = distance[3][1];
-    uart1_data.usart1_tx_buffer[33] = distance[3][2];
-    uart1_data.usart1_tx_buffer[34] = distance[3][3];
-    uart1_data.usart1_tx_buffer[35] = distance[3][4];
-    uart1_data.usart1_tx_buffer[36] = distance[3][5];
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[37] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[38] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 39;
-#endif
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x22;
+    uart1_data.usart_tx_buffer[3] = 0x05;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x01;
+    uart1_data.usart_tx_buffer[6] = canAliveCounter.onLine[0];
+    uart1_data.usart_tx_buffer[7] = distance[0][0];
+    uart1_data.usart_tx_buffer[8] = distance[0][1];
+    uart1_data.usart_tx_buffer[9] = distance[0][2];
+    uart1_data.usart_tx_buffer[10] = distance[0][3];
+    uart1_data.usart_tx_buffer[11] = distance[0][4];
+    uart1_data.usart_tx_buffer[12] = distance[0][5];
+    uart1_data.usart_tx_buffer[13] = 0x02;
+    uart1_data.usart_tx_buffer[14] = canAliveCounter.onLine[1];
+    uart1_data.usart_tx_buffer[15] = distance[1][0];
+    uart1_data.usart_tx_buffer[16] = distance[1][1];
+    uart1_data.usart_tx_buffer[17] = distance[1][2];
+    uart1_data.usart_tx_buffer[18] = distance[1][3];
+    uart1_data.usart_tx_buffer[19] = distance[1][4];
+    uart1_data.usart_tx_buffer[20] = distance[1][5];
+    uart1_data.usart_tx_buffer[21] = 0x03;
+    uart1_data.usart_tx_buffer[22] = canAliveCounter.onLine[2];
+    uart1_data.usart_tx_buffer[23] = distance[2][0];
+    uart1_data.usart_tx_buffer[24] = distance[2][1];
+    uart1_data.usart_tx_buffer[25] = distance[2][2];
+    uart1_data.usart_tx_buffer[26] = distance[2][3];
+    uart1_data.usart_tx_buffer[27] = distance[2][4];
+    uart1_data.usart_tx_buffer[28] = distance[2][5];
+    uart1_data.usart_tx_buffer[29] = 0x04;
+    uart1_data.usart_tx_buffer[30] = canAliveCounter.onLine[3];
+    uart1_data.usart_tx_buffer[31] = distance[3][0];
+    uart1_data.usart_tx_buffer[32] = distance[3][1];
+    uart1_data.usart_tx_buffer[33] = distance[3][2];
+    uart1_data.usart_tx_buffer[34] = distance[3][3];
+    uart1_data.usart_tx_buffer[35] = distance[3][4];
+    uart1_data.usart_tx_buffer[36] = distance[3][5];
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[37] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[38] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 39;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(50);
 }
 void send_version(uint8_t index)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
-#ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 27, "F%d version:%02X%02X%02X%02X\r\n",
-             index + 1, versionSub[index][0], versionSub[index][1], versionSub[index][2], versionSub[index][3]);
-    uart1_data.usart1_tx_buffer_size = 27;
-#else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x0A;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[5] = index + 1;
-    uart1_data.usart1_tx_buffer[6] = versionSub[index][0];
-    uart1_data.usart1_tx_buffer[7] = versionSub[index][1];
-    uart1_data.usart1_tx_buffer[8] = versionSub[index][2];
-    uart1_data.usart1_tx_buffer[9] = versionSub[index][3];
-    uart1_data.usart1_tx_buffer[10] = 0x00;
-    uart1_data.usart1_tx_buffer[11] = 0x00;
-    uart1_data.usart1_tx_buffer[12] = VALID;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[13] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[14] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 15;
-#endif
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x0A;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[5] = index + 1;
+    uart1_data.usart_tx_buffer[6] = versionSub[index][0];
+    uart1_data.usart_tx_buffer[7] = versionSub[index][1];
+    uart1_data.usart_tx_buffer[8] = versionSub[index][2];
+    uart1_data.usart_tx_buffer[9] = versionSub[index][3];
+    uart1_data.usart_tx_buffer[10] = 0x00;
+    uart1_data.usart_tx_buffer[11] = 0x00;
+    uart1_data.usart_tx_buffer[12] = VALID;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[13] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 15;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
 void send_own_version()
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
-#ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 22, "own version:%08X\r\n", VERSION);
-    uart1_data.usart1_tx_buffer_size = 22;
-#else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x0A;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[5] = 0x00;
-    uart1_data.usart1_tx_buffer[6] = (uint8_t)((VERSION >> 24) & 0xFF);
-    uart1_data.usart1_tx_buffer[7] = (uint8_t)((VERSION >> 16) & 0xFF);
-    uart1_data.usart1_tx_buffer[8] = (uint8_t)((VERSION >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[9] = (uint8_t)((VERSION >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer[10] = 0x00;
-    uart1_data.usart1_tx_buffer[11] = 0x00;
-    uart1_data.usart1_tx_buffer[12] = VALID;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[13] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[14] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 15;
-#endif
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x0A;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[5] = 0x00;
+    uart1_data.usart_tx_buffer[6] = (uint8_t)((VERSION >> 24) & 0xFF);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 16) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((VERSION >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer[10] = 0x00;
+    uart1_data.usart_tx_buffer[11] = 0x00;
+    uart1_data.usart_tx_buffer[12] = VALID;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[13] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 15;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
 void send_ctrl_leds_fb(uint8_t index)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
-#ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 19, "ctrl F%d leds succ\r\n", index);
-    uart1_data.usart1_tx_buffer_size = 19;
-#else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x04;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_SET_LEDS_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_SET_LEDS_CMD_ID >> 0) & 0xFF); // 0x03;
-    uart1_data.usart1_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
-    uart1_data.usart1_tx_buffer[6] = uart1SendTypeFlag.ctrl_leds_valid;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 9;
-#endif
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_LEDS_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_LEDS_CMD_ID >> 0) & 0xFF); // 0x03;
+    uart1_data.usart_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_leds_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
 void send_ctrl_tray_leds_fb(uint8_t index)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x04;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_SET_TRAY_LEDS_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_SET_TRAY_LEDS_CMD_ID >> 0) & 0xFF); // 0x03;
-    uart1_data.usart1_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
-    uart1_data.usart1_tx_buffer[6] = uart1SendTypeFlag.ctrl_tray_leds;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_TRAY_LEDS_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_TRAY_LEDS_CMD_ID >> 0) & 0xFF); // 0x03;
+    uart1_data.usart_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_tray_leds;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
 
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
 void send_reset_sensor_fb(uint8_t index)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
-#ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 22, "reset F%d sensor succ\r\n", index);
-    uart1_data.usart1_tx_buffer_size = 22;
-#else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x04;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_RESET_SENSOR_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_RESET_SENSOR_CMD_ID >> 0) & 0xFF); // 0x04;
-    uart1_data.usart1_tx_buffer[5] = index;
-    uart1_data.usart1_tx_buffer[6] = uart1SendTypeFlag.reset_sensor_valid;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 9;
-#endif
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_SENSOR_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_SENSOR_CMD_ID >> 0) & 0xFF); // 0x04;
+    uart1_data.usart_tx_buffer[5] = index;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_sensor_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
 void send_ctrl_usbhub_fb(uint8_t index)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
-#ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 19, "ctrl F%d leds succ\r\n", index);
-    uart1_data.usart1_tx_buffer_size = 19;
-#else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x04;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_RESET_USBHUB_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_RESET_USBHUB_CMD_ID >> 0) & 0xFF); // 0x05;
-    uart1_data.usart1_tx_buffer[5] = 0x00;
-    uart1_data.usart1_tx_buffer[6] = uart1SendTypeFlag.reset_usbhub_valid;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 9;
-#endif
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_USBHUB_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_USBHUB_CMD_ID >> 0) & 0xFF); // 0x05;
+    uart1_data.usart_tx_buffer[5] = 0x00;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_usbhub_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
 void send_ctrl_switch_fb(uint8_t index)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
-#ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 19, "ctrl F%d leds succ\r\n", index);
-    uart1_data.usart1_tx_buffer_size = 19;
-#else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x04;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_RESET_SWITCH_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_RESET_SWITCH_CMD_ID >> 0) & 0xFF); // 0x06;
-    uart1_data.usart1_tx_buffer[5] = 0x00;
-    uart1_data.usart1_tx_buffer[6] = uart1SendTypeFlag.reset_switch_valid;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 9;
-#endif
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_SWITCH_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_SWITCH_CMD_ID >> 0) & 0xFF); // 0x06;
+    uart1_data.usart_tx_buffer[5] = 0x00;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_switch_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
 void send_ctrl_andriod_fb(uint8_t index)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
-#ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 19, "ctrl F%d leds succ\r\n", index);
-    uart1_data.usart1_tx_buffer_size = 19;
-#else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x04;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_RESET_ANDRIOD_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_RESET_ANDRIOD_CMD_ID >> 0) & 0xFF); // 0x06;
-    uart1_data.usart1_tx_buffer[5] = 0x00;
-    uart1_data.usart1_tx_buffer[6] = uart1SendTypeFlag.reset_andriod_valid;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 9;
-#endif
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_ANDRIOD_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_ANDRIOD_CMD_ID >> 0) & 0xFF); // 0x06;
+    uart1_data.usart_tx_buffer[5] = 0x00;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_andriod_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
 void send_ctrl_acc_fb(uint8_t index)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
-#ifdef DEBUG
-    snprintf(uart1_data.usart1_tx_buffer, 19, "ctrl F%d leds succ\r\n", index);
-    uart1_data.usart1_tx_buffer_size = 19;
-#else
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x04;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_RESET_ACC_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_RESET_ACC_CMD_ID >> 0) & 0xFF); // 0x06;
-    uart1_data.usart1_tx_buffer[5] = 0x00;
-    uart1_data.usart1_tx_buffer[6] = uart1SendTypeFlag.reset_acc_valid;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 9;
-#endif
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x04;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_ACC_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_ACC_CMD_ID >> 0) & 0xFF); // 0x06;
+    uart1_data.usart_tx_buffer[5] = 0x00;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_acc_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 9;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
 void send_uid(uint8_t index)
 {
     uint16_t getCrc;
-    memset(uart1_data.usart1_tx_buffer, 0, sizeof(uart1_data.usart1_tx_buffer));
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
-    uart1_data.usart1_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart1_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart1_tx_buffer[2] = 0x10;
-    uart1_data.usart1_tx_buffer[3] = (uint8_t)((FB_GET_UID_CMD_ID >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[4] = (uint8_t)((FB_GET_UID_CMD_ID >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer[5] = index;
-    uart1_data.usart1_tx_buffer[6] = uidBuf[index][11];
-    uart1_data.usart1_tx_buffer[7] = uidBuf[index][10];
-    uart1_data.usart1_tx_buffer[8] = uidBuf[index][9];
-    uart1_data.usart1_tx_buffer[9] = uidBuf[index][8];
-    uart1_data.usart1_tx_buffer[10] = uidBuf[index][7];
-    uart1_data.usart1_tx_buffer[11] = uidBuf[index][6];
-    uart1_data.usart1_tx_buffer[12] = uidBuf[index][5];
-    uart1_data.usart1_tx_buffer[13] = uidBuf[index][4];
-    uart1_data.usart1_tx_buffer[14] = uidBuf[index][3];
-    uart1_data.usart1_tx_buffer[15] = uidBuf[index][2];
-    uart1_data.usart1_tx_buffer[16] = uidBuf[index][1];
-    uart1_data.usart1_tx_buffer[17] = uidBuf[index][0];
-    uart1_data.usart1_tx_buffer[18] = VALID;
-    getCrc = crc16_modbus(&uart1_data.usart1_tx_buffer[3], uart1_data.usart1_tx_buffer[2]);
-    uart1_data.usart1_tx_buffer[19] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart1_tx_buffer[20] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart1_tx_buffer_size = 21;
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x10;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_UID_CMD_ID >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_UID_CMD_ID >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer[5] = index;
+    uart1_data.usart_tx_buffer[6] = uidBuf[index][11];
+    uart1_data.usart_tx_buffer[7] = uidBuf[index][10];
+    uart1_data.usart_tx_buffer[8] = uidBuf[index][9];
+    uart1_data.usart_tx_buffer[9] = uidBuf[index][8];
+    uart1_data.usart_tx_buffer[10] = uidBuf[index][7];
+    uart1_data.usart_tx_buffer[11] = uidBuf[index][6];
+    uart1_data.usart_tx_buffer[12] = uidBuf[index][5];
+    uart1_data.usart_tx_buffer[13] = uidBuf[index][4];
+    uart1_data.usart_tx_buffer[14] = uidBuf[index][3];
+    uart1_data.usart_tx_buffer[15] = uidBuf[index][2];
+    uart1_data.usart_tx_buffer[16] = uidBuf[index][1];
+    uart1_data.usart_tx_buffer[17] = uidBuf[index][0];
+    uart1_data.usart_tx_buffer[18] = VALID;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[19] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[20] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 21;
 
-    while (uart1_data.usart1_tx_counter < uart1_data.usart1_tx_buffer_size)
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
         while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
             ;
 
-        usart_data_transmit(USART1, uart1_data.usart1_tx_buffer[uart1_data.usart1_tx_counter++]);
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
     }
 
-    uart1_data.usart1_tx_counter = 0;
+    uart1_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
@@ -995,7 +1082,7 @@ void usart1_rx_task_function(void *pvParameters)
                 {
                     if (ctrl_buff[5] > TRAY_SUM)
                     {
-                        // 无效
+                        // ����Ӧ��
                         break;
                     }
 
@@ -1428,41 +1515,31 @@ void USART1_IRQHandler(void)
 
             else if (revFlag == UART_GET_HEADER_2)
             {
-                uart1_data.usart1_rx_buffer[0] = UART_MSG_HEADER_1;
-                uart1_data.usart1_rx_buffer[1] = UART_MSG_HEADER_2;
-                uart1_data.usart1_rx_buffer[2] = usart_data_receive(USART1);
+                uart1_data.usart_rx_buffer[0] = UART_MSG_HEADER_1;
+                uart1_data.usart_rx_buffer[1] = UART_MSG_HEADER_2;
+                uart1_data.usart_rx_buffer[2] = usart_data_receive(USART1);
 
-                if (uart1_data.usart1_rx_buffer[2] <= UART_MSG_DATA_LEN_MAX)
+                if (uart1_data.usart_rx_buffer[2] <= UART_MSG_DATA_LEN_MAX)
                 {
-                    uart1_data.usart1_rx_counter = 3;
+                    uart1_data.usart_rx_counter = 3;
                     revFlag = UART_GET_MSG_DATA_LEN;
                 }
             }
 
             else if (revFlag == UART_GET_MSG_DATA_LEN)
             {
-                uart1_data.usart1_rx_buffer[uart1_data.usart1_rx_counter++] = usart_data_receive(USART1);
+                uart1_data.usart_rx_buffer[uart1_data.usart_rx_counter++] = usart_data_receive(USART1);
 
-                if (uart1_data.usart1_rx_counter == uart1_data.usart1_rx_buffer[2] + 5)
+                if (uart1_data.usart_rx_counter == uart1_data.usart_rx_buffer[2] + 5)
                 {
-                    memcpy(ctrl_buff, uart1_data.usart1_rx_buffer, uart1_data.usart1_rx_counter);
+                    memcpy(ctrl_buff, uart1_data.usart_rx_buffer, uart1_data.usart_rx_counter);
                     recvCmdFlag = 1;
-                    memset(uart1_data.usart1_rx_buffer, 0, sizeof(uart1_data.usart1_rx_buffer));
-                    uart1_data.usart1_rx_counter = 0;
-                    uart1_data.usart1_rx_buffer_size = 0;
+                    memset(uart1_data.usart_rx_buffer, 0, sizeof(uart1_data.usart_rx_buffer));
+                    uart1_data.usart_rx_counter = 0;
+                    uart1_data.usart_rx_buffer_size = 0;
                     revFlag = UART_DATA_INIT;
                 }
             }
-
-            /* read one byte from the receive data register */
-            //      uart1_data.usart1_rx_buffer[uart1_data.usart1_rx_counter++] = usart_data_receive( USART1 );
-
-            //      if( uart1_data.usart1_rx_counter == 6 )
-            //      {
-            /* disable the usart2 receive interrupt */
-            // s  usart_interrupt_enable(USART1, USART_RDBF_INT, FALSE);
-
-            //      }
         }
     }
 
@@ -1471,3 +1548,310 @@ void USART1_IRQHandler(void)
         // USART_TDC_FLAG;
     }
 }
+
+#if 1
+void usart2_rx_task_function(void *pvParameters)
+{
+    uint16_t getCrc2;
+
+    while (1)
+    {
+        if (recvCmdFlag2 == 1)
+        {
+            getCrc2 = crc16_modbus(&ctrl_buff2[3], ctrl_buff2[2]);
+            if (getCrc2 == (((ctrl_buff2[ctrl_buff2[2] + 3] << 8) | ctrl_buff2[ctrl_buff2[2] + 4]) & 0xFFFF))
+            {
+                cmdId2 = ((ctrl_buff2[3] << 8) | ctrl_buff2[4]) & 0xFFFF;
+
+                switch (cmdId2)
+                {
+                case SET_IHAWK_CMD_ID:
+                {
+                    if (ctrl_buff2[5] == TRAY_MASTER)
+                    {
+                        if ((ctrl_buff2[6] > 0) && (ctrl_buff2[6] <= 3) && (ctrl_buff2[7] <= 2))
+                        {
+                            ihawk_ctrl(ctrl_buff2[6], ctrl_buff2[7]);
+                            send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 1);
+                        }
+                        else
+                        {
+                            send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 0);
+                        }
+                    }
+                    else
+                    {
+                        send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 0);
+                    }
+                    break;
+                }
+#if 0
+                    case REBOOT_CMD_ID:
+                    {
+                        if( ctrl_buff2[5] == TRAY_MASTER )
+                        {
+                            uart2SendTypeFlag.need_reboot_valid = 1;
+                            uart2SendTypeFlag.need_reboot = CTRL_OWNER_FLAG;
+                            break;
+                        }
+                        else
+                        {
+                            uart2SendTypeFlag.need_reboot_valid = 0;
+                            uart2SendTypeFlag.need_reboot = ctrl_buff[5]==0x00?CTRL_OWNER_FLAG:ctrl_buff[5];
+                            break;
+                        }
+                        break;
+                    }
+                    case GET_VERSION_CMD_ID:
+                    {
+                        if( ctrl_buff2[5] == TRAY_MASTER )
+                        {
+                            uart2SendTypeFlag.version_own = 1;
+                            break;
+                        }
+                        else
+                        {
+                            // ����Ӧ��
+                            break;
+                        }
+                        break;
+                    }
+
+                    case SET_LEDS_CMD_ID:
+                    {
+                        if(( ctrl_buff2[5] != 0 ) || (ctrl_buff2[6] >LED_MODE_MAX) || (ctrl_buff2[7] >0x80) || (ctrl_buff2[8]>0x80) || (ctrl_buff2[9]>0x80))
+                        {
+                            uart2SendTypeFlag.ctrl_leds_valid = 0;
+                            uart2SendTypeFlag.ctrl_leds = ctrl_buff2[5]==0x00?0x0f:ctrl_buff[5];
+                            break;
+                        }
+                        else if((ctrl_buff2[6] == RAINBOW) && (ctrl_buff2[7] > 0x64))
+                        {
+                            uart2SendTypeFlag.ctrl_leds_valid = 0;
+                            uart2SendTypeFlag.ctrl_leds = ctrl_buff[5];
+                            break;
+                        }
+
+                        else if( ctrl_buff2[5] == TRAY_MASTER )
+                        {
+                            if((ctrl_buff2[6] == RAINBOW) && (ctrl_buff2[7] <= 0x64))
+                            {
+                                ledMode = ctrl_buff2[6];
+                                rainbow_percent = ctrl_buff[7];
+                            }
+                            ledMode = ctrl_buff[6];
+                            color_grb.r = ctrl_buff[7];
+                            color_grb.g = ctrl_buff[8];
+                            color_grb.b = ctrl_buff[9];
+                            uart2SendTypeFlag.ctrl_leds_valid = 1;
+                            uart2SendTypeFlag.ctrl_leds = 0x0f;
+                            break;
+                        }
+                        break;
+                    }
+
+                    case RESET_USBHUB_CMD_ID:
+                    {
+                        if( ctrl_buff2[5] != 0x00 )
+                        {
+                            uart2SendTypeFlag.reset_usbhub_valid = 0;
+                            uart2SendTypeFlag.reset_usbhub = 0x01;
+                            break;
+                        }
+                        else
+                        {
+                            if( ctrl_buff2[6] == 0x00 )
+                            {
+                                usbhub_ctrl(0);
+                                uart2SendTypeFlag.reset_usbhub_valid = 1;
+                            }
+                            else if( ctrl_buff2[6] == 0x01 )
+                            {
+                                usbhub_ctrl(1);
+                                uart2SendTypeFlag.reset_usbhub_valid = 1;
+                            }
+                            else
+                            {
+                                uart2SendTypeFlag.reset_usbhub_valid = 0;
+                            }
+                            uart2SendTypeFlag.reset_usbhub = 0x01;
+                        }
+                        
+                        break;
+                    }
+                    case RESET_SWITCH_CMD_ID:
+                    {
+                        if( ctrl_buff2[5] != 0x00 )
+                        {
+                            uart2SendTypeFlag.reset_switch_valid = 0x00;
+                            uart2SendTypeFlag.reset_switch = 0x01;
+                            break;
+                        }
+                        else
+                        {
+                            if( ctrl_buff2[6] == 0x00 )
+                            {
+                                switch_pwr_ctrl(0);
+                                uart2SendTypeFlag.reset_switch_valid = 0x01;
+                            }
+                            else if( ctrl_buff2[6] == 0x01 )
+                            {
+                                switch_pwr_ctrl(1);
+                                uart2SendTypeFlag.reset_switch_valid = 0x01;
+                            }
+                            else
+                            {
+                                uart2SendTypeFlag.reset_switch_valid = 0x00;
+                            }
+                            uart2SendTypeFlag.reset_switch = 0x01;
+                        }
+                        
+                        break;
+                    }
+                    case RESET_ANDRIOD_CMD_ID:
+                    {
+                        if( ctrl_buff2[5] != 0x00 )
+                        {
+                            uart2SendTypeFlag.reset_andriod_valid = 0x00;
+                            uart2SendTypeFlag.reset_andriod = 0x01;
+                            break;
+                        }
+                        else
+                        {
+                            if( ctrl_buff2[6] == 0x00 )
+                            {
+                                andriod_pwr_ctrl(0);
+                                uart2SendTypeFlag.reset_andriod_valid = 0x01;
+                            }
+                            else if( ctrl_buff2[6] == 0x01 )
+                            {
+                                andriod_pwr_ctrl(1);
+                                uart2SendTypeFlag.reset_andriod_valid = 0x01;
+                            }
+                            else
+                            {
+                                uart2SendTypeFlag.reset_andriod_valid = 0x00;
+                            }
+                            uart2SendTypeFlag.reset_andriod = 0x01;
+                        }
+                        break;
+                    }
+                    case RESET_ACC_CMD_ID:
+                    {
+                        if( ctrl_buff2[5] != 0x00 )
+                        {
+                            uart2SendTypeFlag.reset_acc_valid = 0x00;
+                            uart2SendTypeFlag.reset_acc = 0x01;
+                            break;
+                        }
+                        else
+                        {
+                            if( ctrl_buff2[6] == 0x00 )
+                            {
+                                car_acc_ctrl(0);
+                                uart2SendTypeFlag.reset_acc_valid = 0x01;
+                            }
+                            else if( ctrl_buff2[6] == 0x01 )
+                            {
+                                car_acc_ctrl(1);
+                                uart2SendTypeFlag.reset_acc_valid = 0x01;
+                            }
+                            else
+                            {
+                                uart2SendTypeFlag.reset_acc_valid = 0x00;
+                            }
+                            uart2SendTypeFlag.reset_acc = 0x01;
+                        }
+                        break;
+                    }
+                    case GET_UID_CMD_ID:
+                    {
+                        if( ctrl_buff2[5] > TRAY_SUM )
+                        {
+                            break;
+                        }
+
+                        else if( ctrl_buff2[5] == TRAY_MASTER )
+                        {
+                            uart2SendTypeFlag.uid_own = 1;
+                            break;
+                        }
+                        break;
+                    }
+#endif
+
+                default:
+                {
+                    break;
+                }
+                }
+            }
+            // xTaskResumeAll();
+            recvCmdFlag2 = 0;
+        }
+        taskAliveBits |= TASK_UART_RX_BIT_6;
+        vTaskDelay(5);
+    }
+}
+
+void USART2_IRQHandler(void)
+{
+    static uint8_t revFlag2 = UART_DATA_INIT;
+
+    if (usart_flag_get(USART2, USART_RDBF_FLAG) != RESET)
+    {
+        usart_flag_clear(USART2, USART_RDBF_FLAG);
+        if (recvCmdFlag2 == 0)
+        {
+            if (revFlag2 == UART_DATA_INIT)
+            {
+                if (usart_data_receive(USART2) == UART_MSG_HEADER_1)
+                {
+                    revFlag2 = UART_GET_HEADER_1;
+                }
+            }
+
+            else if (revFlag2 == UART_GET_HEADER_1)
+            {
+                if (usart_data_receive(USART2) == UART_MSG_HEADER_2)
+                {
+                    revFlag2 = UART_GET_HEADER_2;
+                }
+            }
+
+            else if (revFlag2 == UART_GET_HEADER_2)
+            {
+                uart2_data.usart_rx_buffer[0] = UART_MSG_HEADER_1;
+                uart2_data.usart_rx_buffer[1] = UART_MSG_HEADER_2;
+                uart2_data.usart_rx_buffer[2] = usart_data_receive(USART2);
+
+                if (uart2_data.usart_rx_buffer[2] <= UART_MSG_DATA_LEN_MAX)
+                {
+                    uart2_data.usart_rx_counter = 3;
+                    revFlag2 = UART_GET_MSG_DATA_LEN;
+                }
+            }
+
+            else if (revFlag2 == UART_GET_MSG_DATA_LEN)
+            {
+                uart2_data.usart_rx_buffer[uart2_data.usart_rx_counter++] = usart_data_receive(USART2);
+
+                if (uart2_data.usart_rx_counter == uart2_data.usart_rx_buffer[2] + 5)
+                {
+                    memcpy(ctrl_buff2, uart2_data.usart_rx_buffer, uart2_data.usart_rx_counter);
+                    recvCmdFlag2 = 1;
+                    memset(uart2_data.usart_rx_buffer, 0, sizeof(uart2_data.usart_rx_buffer));
+                    uart2_data.usart_rx_counter = 0;
+                    uart2_data.usart_rx_buffer_size = 0;
+                    revFlag2 = UART_DATA_INIT;
+                }
+            }
+        }
+    }
+
+    if (usart_flag_get(USART2, USART_TDBE_FLAG) != RESET)
+    {
+        // USART_TDC_FLAG;
+    }
+}
+#endif

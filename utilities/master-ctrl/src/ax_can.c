@@ -177,22 +177,23 @@ void can_get_alive(void)
 
 void can_transmit_ctrl_data(can_tx_message_type *tx_message_struct)
 {
+#if 0
     static uint8_t count1 = 0;
     uint8_t transmit_mailbox;
 
-    while (can_transmit_status_get(CAN1, (can_tx_mailbox_num_type)transmit_mailbox) == CAN_TX_STATUS_NO_EMPTY)
-        ;
+    while( can_transmit_status_get( CAN1, ( can_tx_mailbox_num_type )transmit_mailbox ) == CAN_TX_STATUS_NO_EMPTY );
 
-    tx_message_struct->data[7] = getSumCrc(tx_message_struct->data, 7);
-    transmit_mailbox = can_message_transmit(CAN1, tx_message_struct);
+    tx_message_struct->data[7] = getSumCrc( tx_message_struct->data,7 );
+    transmit_mailbox = can_message_transmit( CAN1, tx_message_struct );
 
-    while (can_transmit_status_get(CAN1, (can_tx_mailbox_num_type)transmit_mailbox) != CAN_TX_STATUS_SUCCESSFUL)
-        ;
+    while( can_transmit_status_get( CAN1, ( can_tx_mailbox_num_type )transmit_mailbox ) != CAN_TX_STATUS_SUCCESSFUL );
 
-    if (count1 == 0xFF)
+    if( count1 == 0xFF )
     {
         count1 = 0;
     }
+#endif
+    ;
 }
 
 void parse_reboot_fb_msg()

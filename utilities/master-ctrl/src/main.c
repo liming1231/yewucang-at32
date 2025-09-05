@@ -20,6 +20,7 @@
 #define CAN_RX_STK_SIZE (256)
 #define WTDG_STK_SIZE (128)
 #define WS2812B_STK_SIZE (512)
+#define UART2_RX_STK_SIZE (128)
 
 #define LED2_TASK_PRIO (2)
 #define UART1_RX_TASK_PRIO (2)
@@ -28,6 +29,7 @@
 #define CAN_RX_TASK_PRIO (2)
 #define WTDG_TASK_PRIO (6)
 #define WS2812B_TASK_PRIO (5)
+#define UART2_RX_TASK_PRIO (2)
 
 /** @addtogroup FreeRTOS_demo
  * @{
@@ -40,6 +42,7 @@ TaskHandle_t can_tx_handler;
 TaskHandle_t can_rx_handler;
 TaskHandle_t ws2812_handler;
 TaskHandle_t wtdg_handler;
+TaskHandle_t usart2_rx_handler;
 // EventGroupHandle_t xCreatedEventGroup;//事件组句柄
 
 /* led2 task */
@@ -97,7 +100,7 @@ int main(void)
         // printf( "LED2 task was created successfully.\r\n" );
     }
 
-    /* create led3 task */
+    /* create uart1 rx task */
     if (xTaskCreate((TaskFunction_t)usart1_rx_task_function,
                     (const char *)"usart1_rx_task",
                     (uint16_t)UART1_RX_STK_SIZE,
@@ -105,12 +108,12 @@ int main(void)
                     (UBaseType_t)UART1_RX_TASK_PRIO,
                     (TaskHandle_t *)&usart1_rx_handler) != pdPASS)
     {
-        // printf( "LED3 task could not be created as there was insufficient heap memory remaining.\r\n" );
+        // printf( "uart1 rx task could not be created as there was insufficient heap memory remaining.\r\n" );
     }
 
     else
     {
-        // printf( "LED3 task was created successfully.\r\n" );
+        // printf( "uart1 rx was created successfully.\r\n" );
     }
 
     if (xTaskCreate((TaskFunction_t)usart1_tx_task_function,
@@ -186,6 +189,22 @@ int main(void)
     else
     {
         // printf( "watchdog task was created successfully.\r\n" );
+    }
+
+    /* create uart2 rx task */
+    if (xTaskCreate((TaskFunction_t)usart2_rx_task_function,
+                    (const char *)"usart2_rx_task",
+                    (uint16_t)UART2_RX_STK_SIZE,
+                    (void *)NULL,
+                    (UBaseType_t)UART2_RX_TASK_PRIO,
+                    (TaskHandle_t *)&usart2_rx_handler) != pdPASS)
+    {
+        // printf( "uart2 rx task could not be created as there was insufficient heap memory remaining.\r\n" );
+    }
+
+    else
+    {
+        // printf( "uart2 rx was created successfully.\r\n" );
     }
 
     /* exit critical */
