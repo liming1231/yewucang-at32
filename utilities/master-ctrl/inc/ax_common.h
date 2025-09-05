@@ -8,7 +8,7 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x31303034)
+#define VERSION (0x31303035)
 
 // #define DEBUG
 
@@ -84,12 +84,19 @@ struct uart_send_flag
     uint8_t version_f3;
     uint8_t version_f4;
     uint8_t ctrl_leds;
+    uint8_t ctrl_leds_valid;
     uint8_t reset_sensor;
+    uint8_t reset_sensor_valid;
     uint8_t need_reboot;
+    uint8_t need_reboot_valid;
     uint8_t reset_usbhub;
+    uint8_t reset_usbhub_valid;
     uint8_t reset_switch;
+    uint8_t reset_switch_valid;
     uint8_t reset_andriod;
+    uint8_t reset_andriod_valid;
     uint8_t reset_acc;
+    uint8_t reset_acc_valid;
     uint8_t uid_own;
     uint8_t uid_f1;
     uint8_t uid_f2;
