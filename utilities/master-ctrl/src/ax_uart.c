@@ -5,11 +5,13 @@
 #include "ax_flash.h"
 
 const char *usart1_tx_buf = "1234567890abcdefghijklmnopqrstuvwxwz";
+volatile uint8_t sendingUart2 = 0;
 
 struct uart_data uart1_data, uart2_data;
 
 uint8_t ctrl_buff[32] = {0};
-uint8_t ctrl_buff2[32] = {0};
+uint8_t ctrl_buff2[256] = {0};
+uint8_t update_buff[16][128] = {0};
 volatile uint8_t recvCmdFlag = 0;
 volatile uint8_t recvCmdFlag2 = 0;
 
@@ -115,10 +117,12 @@ void ihawk_lower_ctrl(uint8_t sts)
     if (sts == TURN_ON)
     {
         gpio_bits_reset(IHAWK_POWER_1_PORT, IHAWK_POWER_1_PIN);
+        ihawk_power_sts.ihawk_sts_1 = 1;
     }
     else
     {
         gpio_bits_set(IHAWK_POWER_1_PORT, IHAWK_POWER_1_PIN);
+        ihawk_power_sts.ihawk_sts_1 = 0;
     }
 }
 
@@ -127,10 +131,12 @@ void ihawk_upper_ctrl(uint8_t sts)
     if (sts == TURN_ON)
     {
         gpio_bits_reset(IHAWK_POWER_2_PORT, IHAWK_POWER_2_PIN);
+        ihawk_power_sts.ihawk_sts_2 = 1;
     }
     else
     {
         gpio_bits_set(IHAWK_POWER_2_PORT, IHAWK_POWER_2_PIN);
+        ihawk_power_sts.ihawk_sts_2 = 0;
     }
 }
 
@@ -140,7 +146,7 @@ void ihawk_ctrl(uint8_t index, uint8_t sts)
     {
         switch (index)
         {
-        case LOWER_USB: // ����USB��
+        case LOWER_USB: // 下USB口
         {
             if (sts == RESET_IHAWK)
             {
@@ -154,7 +160,7 @@ void ihawk_ctrl(uint8_t index, uint8_t sts)
             }
             break;
         }
-        case UPPER_USB: // ����USB��
+        case UPPER_USB: // 上USB口
         {
             if (sts == RESET_IHAWK)
             {
@@ -168,7 +174,7 @@ void ihawk_ctrl(uint8_t index, uint8_t sts)
             }
             break;
         }
-        case DUAL_USB: // ͬʱ����˫USB
+        case DUAL_USB: // 同时控制双USB
         {
             if (sts == RESET_IHAWK)
             {
@@ -206,7 +212,7 @@ void toggle_led_stat(void)
     RUN_LED_PORT->odt ^= RUN_LED_PIN;
 }
 
-void init_uart1_data(void)
+void init_uart_data(void)
 {
     memcpy(uart1_data.usart_tx_buffer, usart1_tx_buf, strlen(usart1_tx_buf));
     memset(uart1_data.usart_rx_buffer, 0, sizeof(uart1_data.usart_rx_buffer));
@@ -214,6 +220,13 @@ void init_uart1_data(void)
     uart1_data.usart_rx_counter = 0;
     uart1_data.usart_tx_buffer_size = strlen(usart1_tx_buf);
     uart1_data.usart_rx_buffer_size = 0;
+
+    memset(uart2_data.usart_tx_buffer, 0, sizeof(uart2_data.usart_tx_buffer));
+    memset(uart2_data.usart_rx_buffer, 0, sizeof(uart2_data.usart_rx_buffer));
+    uart2_data.usart_tx_counter = 0;
+    uart2_data.usart_rx_counter = 0;
+    uart2_data.usart_tx_buffer_size = 0;
+    uart2_data.usart_rx_buffer_size = 0;
 }
 
 void usart_configuration(void)
@@ -355,6 +368,13 @@ void usart_int_configuration(void)
 void send_ctrl_ihawk_fb(uint8_t index, uint8_t sts, uint8_t valid_sts)
 {
     uint16_t getCrc;
+
+    while (sendingUart2 == 1)
+    {
+        vTaskDelay(2);
+    }
+    sendingUart2 = 1;
+
     memset(uart2_data.usart_tx_buffer, 0, sizeof(uart2_data.usart_tx_buffer));
 
     uart2_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
@@ -380,6 +400,56 @@ void send_ctrl_ihawk_fb(uint8_t index, uint8_t sts, uint8_t valid_sts)
     }
 
     uart2_data.usart_tx_counter = 0;
+    sendingUart2 = 0;
+    vTaskDelay(5);
+}
+
+void send_ihawk_sts_fb(uint8_t valid_sts)
+{
+    uint16_t getCrc;
+
+    while (sendingUart2 == 1)
+    {
+        vTaskDelay(2);
+    }
+    sendingUart2 = 1;
+
+    memset(uart2_data.usart_tx_buffer, 0, sizeof(uart2_data.usart_tx_buffer));
+
+    uart2_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart2_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart2_data.usart_tx_buffer[2] = 0x06;
+    uart2_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_IHAWK_STS_ID >> 8) & 0xFF); // 0x02;
+    uart2_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_IHAWK_STS_ID >> 0) & 0xFF); // 0x01;
+    uart2_data.usart_tx_buffer[5] = 0x00;
+    if (valid_sts == 1)
+    {
+        uart2_data.usart_tx_buffer[6] = ihawk_power_sts.ihawk_sts_1;
+        uart2_data.usart_tx_buffer[7] = ihawk_power_sts.ihawk_sts_2;
+        uart2_data.usart_tx_buffer[8] = valid_sts;
+    }
+    else
+    {
+        uart2_data.usart_tx_buffer[6] = 0x00;
+        uart2_data.usart_tx_buffer[7] = 0x00;
+        uart2_data.usart_tx_buffer[8] = 0x00;
+    }
+
+    getCrc = crc16_modbus(&uart2_data.usart_tx_buffer[3], uart2_data.usart_tx_buffer[2]);
+    uart2_data.usart_tx_buffer[9] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart2_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart2_data.usart_tx_buffer_size = 11;
+
+    while (uart2_data.usart_tx_counter < uart2_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART2, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART2, uart2_data.usart_tx_buffer[uart2_data.usart_tx_counter++]);
+    }
+
+    uart2_data.usart_tx_counter = 0;
+    sendingUart2 = 0;
     vTaskDelay(5);
 }
 
@@ -421,6 +491,35 @@ void send_reboot_fb(uint8_t rebootDevFlag)
         vTaskDelay(1000);
         nvic_system_reset();
     }
+}
+
+void send_reboot2_fb(uint8_t cmdType)
+{
+    uint16_t getCrc;
+    memset(uart2_data.usart_tx_buffer, 0, sizeof(uart2_data.usart_tx_buffer));
+    uart2_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart2_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart2_data.usart_tx_buffer[2] = 0x04;
+    uart2_data.usart_tx_buffer[3] = (uint8_t)((FB_REBOOT_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart2_data.usart_tx_buffer[4] = (uint8_t)((FB_REBOOT_CMD_ID >> 0) & 0xFF); // 0x01;
+    uart2_data.usart_tx_buffer[5] = 0x00;
+    uart2_data.usart_tx_buffer[6] = cmdType;
+    getCrc = crc16_modbus(&uart2_data.usart_tx_buffer[3], uart2_data.usart_tx_buffer[2]);
+    uart2_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart2_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart2_data.usart_tx_buffer_size = 9;
+
+    while (uart2_data.usart_tx_counter < uart2_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART2, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART2, uart2_data.usart_tx_buffer[uart2_data.usart_tx_counter++]);
+    }
+
+    uart2_data.usart_tx_counter = 0;
+    vTaskDelay(1000);
+    nvic_system_reset();
 }
 
 void send_distance(void)
@@ -488,21 +587,23 @@ void send_version(uint8_t index)
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x0A;
+    uart1_data.usart_tx_buffer[2] = 0x0B;
     uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
     uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
     uart1_data.usart_tx_buffer[5] = index + 1;
-    uart1_data.usart_tx_buffer[6] = versionSub[index][0];
-    uart1_data.usart_tx_buffer[7] = versionSub[index][1];
-    uart1_data.usart_tx_buffer[8] = versionSub[index][2];
-    uart1_data.usart_tx_buffer[9] = versionSub[index][3];
-    uart1_data.usart_tx_buffer[10] = 0x00;
-    uart1_data.usart_tx_buffer[11] = 0x00;
-    uart1_data.usart_tx_buffer[12] = VALID;
+    uart1_data.usart_tx_buffer[6] = VALID;
+    uart1_data.usart_tx_buffer[7] = versionSub[index][0];
+    uart1_data.usart_tx_buffer[8] = 0x2E;
+    uart1_data.usart_tx_buffer[9] = versionSub[index][1];
+    uart1_data.usart_tx_buffer[10] = 0x2E;
+    uart1_data.usart_tx_buffer[11] = versionSub[index][2];
+    uart1_data.usart_tx_buffer[12] = 0x2E;
+    uart1_data.usart_tx_buffer[13] = versionSub[index][3];
+
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[13] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 15;
+    uart1_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[15] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 16;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -523,21 +624,20 @@ void send_own_version()
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x0A;
+    uart1_data.usart_tx_buffer[2] = 0x09;
     uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
     uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
     uart1_data.usart_tx_buffer[5] = 0x00;
-    uart1_data.usart_tx_buffer[6] = (uint8_t)((VERSION >> 24) & 0xFF);
+    uart2_data.usart_tx_buffer[6] = VALID;
     uart1_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 16) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((VERSION >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer[10] = 0x00;
-    uart1_data.usart_tx_buffer[11] = 0x00;
-    uart1_data.usart_tx_buffer[12] = VALID;
+    uart1_data.usart_tx_buffer[8] = 0x2E;
+    uart1_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[10] = 0x2E;
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((VERSION >> 0) & 0xFF);
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[13] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 15;
+    uart1_data.usart_tx_buffer[12] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[13] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 14;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -548,6 +648,52 @@ void send_own_version()
     }
 
     uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
+void send_own2_version(bool sts)
+{
+    uint16_t getCrc;
+    memset(uart2_data.usart_tx_buffer, 0, sizeof(uart2_data.usart_tx_buffer));
+
+    uart2_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart2_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart2_data.usart_tx_buffer[2] = 0x09;
+    uart2_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart2_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
+    uart2_data.usart_tx_buffer[5] = 0x00;
+    uart2_data.usart_tx_buffer[6] = sts;
+    if (sts == true)
+    {
+        uart2_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 16) & 0xFF);
+        uart2_data.usart_tx_buffer[8] = 0x2E;
+        uart2_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 8) & 0xFF);
+        uart2_data.usart_tx_buffer[10] = 0x2E;
+        uart2_data.usart_tx_buffer[11] = (uint8_t)((VERSION >> 0) & 0xFF);
+    }
+    else
+    {
+        uart2_data.usart_tx_buffer[7] = 0x00;
+        uart2_data.usart_tx_buffer[8] = 0x00;
+        uart2_data.usart_tx_buffer[9] = 0x00;
+        uart2_data.usart_tx_buffer[10] = 0x00;
+        uart2_data.usart_tx_buffer[11] = 0x00;
+    }
+
+    getCrc = crc16_modbus(&uart2_data.usart_tx_buffer[3], uart2_data.usart_tx_buffer[2]);
+    uart2_data.usart_tx_buffer[12] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart2_data.usart_tx_buffer[13] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart2_data.usart_tx_buffer_size = 14;
+
+    while (uart2_data.usart_tx_counter < uart2_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART2, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART2, uart2_data.usart_tx_buffer[uart2_data.usart_tx_counter++]);
+    }
+
+    uart2_data.usart_tx_counter = 0;
     vTaskDelay(5);
 }
 
@@ -885,7 +1031,10 @@ void usart1_tx_task_function(void *pvParameters)
 {
     while (1)
     {
-        send_distance();
+        if (updateFWFlag == 0)
+        {
+            send_distance();
+        }
 
         if (uart1SendTypeFlag.need_reboot != 0)
         {
@@ -985,6 +1134,38 @@ void init_can_msg(void)
     canResetBoard[3].dlc = 8;
 }
 
+void target_reset_can_data(uint8_t index)
+{
+    canResetBoard[index].data[0] = 0x01;
+    canResetBoard[index].data[1] = 0x00;
+    canResetBoard[index].data[2] = 0x00;
+    canResetBoard[index].data[3] = 0x00;
+    canResetBoard[index].data[4] = 0x00;
+    canResetBoard[index].data[5] = 0x00;
+    canResetBoard[index].data[6] = 0x00;
+}
+void target_set_ws2812b_can_data(uint8_t index, uint8_t mode, uint8_t r, uint8_t g, uint8_t b)
+{
+    canSetLeds[index].data[0] = mode;
+    canSetLeds[index].data[1] = r;
+    canSetLeds[index].data[2] = g;
+    canSetLeds[index].data[3] = b;
+    canSetLeds[index].data[4] = 0x00;
+    canSetLeds[index].data[5] = 0x00;
+    canSetLeds[index].data[6] = 0x00;
+}
+
+void target_reset_sensor_can_data(uint8_t index)
+{
+    canResetSensor[index].data[0] = 0x01;
+    canResetSensor[index].data[1] = 0x00;
+    canResetSensor[index].data[2] = 0x00;
+    canResetSensor[index].data[3] = 0x00;
+    canResetSensor[index].data[4] = 0x00;
+    canResetSensor[index].data[5] = 0x00;
+    canResetSensor[index].data[6] = 0x00;
+}
+
 void usart1_rx_task_function(void *pvParameters)
 {
     uint16_t getCrc;
@@ -996,13 +1177,8 @@ void usart1_rx_task_function(void *pvParameters)
         if (recvCmdFlag == 1)
         {
             // vTaskSuspendAll();
-#ifdef DEBUG
-            getCrc = 1;
-            if (getCrc == 1)
-#else
             getCrc = crc16_modbus(&ctrl_buff[3], ctrl_buff[2]);
             if (getCrc == (((ctrl_buff[ctrl_buff[2] + 3] << 8) | ctrl_buff[ctrl_buff[2] + 4]) & 0xFFFF))
-#endif
             {
                 cmdId = ((ctrl_buff[3] << 8) | ctrl_buff[4]) & 0xFFFF;
 
@@ -1027,51 +1203,27 @@ void usart1_rx_task_function(void *pvParameters)
                     else if (ctrl_buff[5] == TRAY_F1)
                     {
                         canResetBoard[0].standard_id = SET_F1_REBOOT_ID;
-                        canResetBoard[0].data[0] = 0x01;
-                        canResetBoard[0].data[1] = 0x00;
-                        canResetBoard[0].data[2] = 0x00;
-                        canResetBoard[0].data[3] = 0x00;
-                        canResetBoard[0].data[4] = 0x00;
-                        canResetBoard[0].data[5] = 0x00;
-                        canResetBoard[0].data[6] = 0x00;
+                        target_reset_can_data(0);
                         sendCanStr.resetBoard[0] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F2)
                     {
                         canResetBoard[1].standard_id = SET_F2_REBOOT_ID;
-                        canResetBoard[1].data[0] = 0x01;
-                        canResetBoard[1].data[1] = 0x00;
-                        canResetBoard[1].data[2] = 0x00;
-                        canResetBoard[1].data[3] = 0x00;
-                        canResetBoard[1].data[4] = 0x00;
-                        canResetBoard[1].data[5] = 0x00;
-                        canResetBoard[1].data[6] = 0x00;
+                        target_reset_can_data(1);
                         sendCanStr.resetBoard[1] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F3)
                     {
                         canResetBoard[2].standard_id = SET_F3_REBOOT_ID;
-                        canResetBoard[2].data[0] = 0x01;
-                        canResetBoard[2].data[1] = 0x00;
-                        canResetBoard[2].data[2] = 0x00;
-                        canResetBoard[2].data[3] = 0x00;
-                        canResetBoard[2].data[4] = 0x00;
-                        canResetBoard[2].data[5] = 0x00;
-                        canResetBoard[2].data[6] = 0x00;
+                        target_reset_can_data(2);
                         sendCanStr.resetBoard[2] = 1;
                     }
                     else if (ctrl_buff[5] == TRAY_F4)
                     {
                         canResetBoard[3].standard_id = SET_F4_REBOOT_ID;
-                        canResetBoard[3].data[0] = 0x01;
-                        canResetBoard[3].data[1] = 0x00;
-                        canResetBoard[3].data[2] = 0x00;
-                        canResetBoard[3].data[3] = 0x00;
-                        canResetBoard[3].data[4] = 0x00;
-                        canResetBoard[3].data[5] = 0x00;
-                        canResetBoard[3].data[6] = 0x00;
+                        target_reset_can_data(3);
                         sendCanStr.resetBoard[3] = 1;
                     }
 
@@ -1156,53 +1308,28 @@ void usart1_rx_task_function(void *pvParameters)
                     else if (ctrl_buff[5] == TRAY_F1)
                     {
                         canSetLeds[0].standard_id = SET_F1_WS2812B_ID;
-
-                        canSetLeds[0].data[0] = ctrl_buff[6];
-                        canSetLeds[0].data[1] = ctrl_buff[7];
-                        canSetLeds[0].data[2] = ctrl_buff[8];
-                        canSetLeds[0].data[3] = ctrl_buff[9];
-                        canSetLeds[0].data[4] = 0x00;
-                        canSetLeds[0].data[5] = 0x00;
-                        canSetLeds[0].data[6] = 0x00;
+                        target_set_ws2812b_can_data(0, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
                         sendCanStr.setWs2812b[0] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F2)
                     {
                         canSetLeds[1].standard_id = SET_F2_WS2812B_ID;
-                        canSetLeds[1].data[0] = ctrl_buff[6];
-                        canSetLeds[1].data[1] = ctrl_buff[7];
-                        canSetLeds[1].data[2] = ctrl_buff[8];
-                        canSetLeds[1].data[3] = ctrl_buff[9];
-                        canSetLeds[1].data[4] = 0x00;
-                        canSetLeds[1].data[5] = 0x00;
-                        canSetLeds[1].data[6] = 0x00;
+                        target_set_ws2812b_can_data(1, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
                         sendCanStr.setWs2812b[1] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F3)
                     {
                         canSetLeds[2].standard_id = SET_F3_WS2812B_ID;
-                        canSetLeds[2].data[0] = ctrl_buff[6];
-                        canSetLeds[2].data[1] = ctrl_buff[7];
-                        canSetLeds[2].data[2] = ctrl_buff[8];
-                        canSetLeds[2].data[3] = ctrl_buff[9];
-                        canSetLeds[2].data[4] = 0x00;
-                        canSetLeds[2].data[5] = 0x00;
-                        canSetLeds[2].data[6] = 0x00;
+                        target_set_ws2812b_can_data(2, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
                         sendCanStr.setWs2812b[2] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F4)
                     {
                         canSetLeds[3].standard_id = SET_F4_WS2812B_ID;
-                        canSetLeds[3].data[0] = ctrl_buff[6];
-                        canSetLeds[3].data[1] = ctrl_buff[7];
-                        canSetLeds[3].data[2] = ctrl_buff[8];
-                        canSetLeds[3].data[3] = ctrl_buff[9];
-                        canSetLeds[3].data[4] = 0x00;
-                        canSetLeds[3].data[5] = 0x00;
-                        canSetLeds[3].data[6] = 0x00;
+                        target_set_ws2812b_can_data(3, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
                         sendCanStr.setWs2812b[3] = 1;
                     }
 
@@ -1265,52 +1392,28 @@ void usart1_rx_task_function(void *pvParameters)
                     else if (ctrl_buff[5] == TRAY_F1)
                     {
                         canResetSensor[0].standard_id = RESET_F1_SENSOR_ID;
-                        canResetSensor[0].data[0] = 0x01;
-                        canResetSensor[0].data[1] = 0x00;
-                        canResetSensor[0].data[2] = 0x00;
-                        canResetSensor[0].data[3] = 0x00;
-                        canResetSensor[0].data[4] = 0x00;
-                        canResetSensor[0].data[5] = 0x00;
-                        canResetSensor[0].data[6] = 0x00;
+                        target_reset_sensor_can_data(0);
                         sendCanStr.resetSensor[0] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F2)
                     {
                         canResetSensor[1].standard_id = RESET_F2_SENSOR_ID;
-                        canResetSensor[1].data[0] = 0x01;
-                        canResetSensor[1].data[1] = 0x00;
-                        canResetSensor[1].data[2] = 0x00;
-                        canResetSensor[1].data[3] = 0x00;
-                        canResetSensor[1].data[4] = 0x00;
-                        canResetSensor[1].data[5] = 0x00;
-                        canResetSensor[1].data[6] = 0x00;
+                        target_reset_sensor_can_data(1);
                         sendCanStr.resetSensor[1] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F3)
                     {
                         canResetSensor[2].standard_id = RESET_F3_SENSOR_ID;
-                        canResetSensor[2].data[0] = 0x01;
-                        canResetSensor[2].data[1] = 0x00;
-                        canResetSensor[2].data[2] = 0x00;
-                        canResetSensor[2].data[3] = 0x00;
-                        canResetSensor[2].data[4] = 0x00;
-                        canResetSensor[2].data[5] = 0x00;
-                        canResetSensor[2].data[6] = 0x00;
+                        target_reset_sensor_can_data(2);
                         sendCanStr.resetSensor[2] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F4)
                     {
                         canResetSensor[3].standard_id = RESET_F4_SENSOR_ID;
-                        canResetSensor[3].data[0] = 0x01;
-                        canResetSensor[3].data[1] = 0x00;
-                        canResetSensor[3].data[2] = 0x00;
-                        canResetSensor[3].data[3] = 0x00;
-                        canResetSensor[3].data[4] = 0x00;
-                        canResetSensor[3].data[5] = 0x00;
-                        canResetSensor[3].data[6] = 0x00;
+                        target_reset_sensor_can_data(3);
                         sendCanStr.resetSensor[3] = 1;
                     }
 
@@ -1549,6 +1652,311 @@ void USART1_IRQHandler(void)
     }
 }
 
+uint8_t packageUpdateFwMsg(uint16_t cmd, uint8_t sts, uint8_t updateAppFlag)
+{
+    uint16_t getCrc;
+    updateFwData[0] = 0x55;
+    updateFwData[1] = 0xAA;
+    updateFwData[2] = 0x04;
+    updateFwData[3] = (uint8_t)((cmd >> 8) & 0xFF);
+    updateFwData[4] = (uint8_t)((cmd >> 0) & 0xFF);
+    updateFwData[5] = sts;
+    updateFwData[6] = updateAppFlag;
+    getCrc = crc16_modbus(&updateFwData[3], updateFwData[2]);
+    updateFwData[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    updateFwData[8] = (uint8_t)((getCrc >> 0) & 0xFF);
+    return 9;
+}
+uint8_t packageUpdateFwMsg1(uint16_t cmd, uint8_t sts, uint16_t index)
+{
+    uint16_t getCrc;
+    updateFwData[0] = 0x55;
+    updateFwData[1] = 0xAA;
+    updateFwData[2] = 0x05;
+    updateFwData[3] = (uint8_t)((cmd >> 8) & 0xFF);
+    updateFwData[4] = (uint8_t)((cmd >> 0) & 0xFF);
+    updateFwData[5] = sts;
+    updateFwData[6] = (uint8_t)((index >> 8) & 0xFF);
+    updateFwData[7] = (uint8_t)((index >> 0) & 0xFF);
+    getCrc = crc16_modbus(&updateFwData[3], updateFwData[2]);
+    updateFwData[8] = (uint8_t)((getCrc >> 8) & 0xFF);
+    updateFwData[9] = (uint8_t)((getCrc >> 0) & 0xFF);
+    return 10;
+}
+
+void send_2_uart2(uint8_t *pdate, uint8_t len)
+{
+    uint8_t i;
+
+    while (sendingUart2 == 1)
+    {
+        vTaskDelay(2);
+    }
+    sendingUart2 = 1;
+
+    if (len < 128)
+    {
+        memset(uart2_data.usart_tx_buffer, 0, sizeof(uart2_data.usart_tx_buffer));
+
+        for (i = 0; i < len; i++)
+        {
+            uart2_data.usart_tx_buffer[i] = pdate[i];
+        }
+
+        uart2_data.usart_tx_buffer_size = len;
+
+        while (uart2_data.usart_tx_counter < uart2_data.usart_tx_buffer_size)
+        {
+            while (usart_flag_get(USART2, USART_TDBE_FLAG) == RESET)
+                ;
+
+            usart_data_transmit(USART2, uart2_data.usart_tx_buffer[uart2_data.usart_tx_counter++]);
+        }
+
+        uart2_data.usart_tx_counter = 0;
+        vTaskDelay(5);
+        sendingUart2 = 0;
+    }
+}
+
+void parse_get_app_flag_msg(void)
+{
+    if ((updateFw.updateFwFlag == UPDATE_NONE) || (updateFw.updateFwFlag == UPDATE_FW_INFO))
+    {
+        // update app addr
+        if ((ctrl_buff2[5] == 1) && (ctrl_buff2[6] == 1))
+        {
+            msglen2 = packageUpdateFwMsg(FB_GET_UPDATE_APP_FLAG_ID, VALID, updateFw.updateAppAddrFlag);
+            send_2_uart2(updateFwData, msglen2);
+            updateFw.updateFwFlag = UPDATE_FW_INFO;
+        }
+
+        else
+        {
+            msglen2 = packageUpdateFwMsg(FB_GET_UPDATE_APP_FLAG_ID, INVALID, updateFw.updateAppAddrFlag);
+            send_2_uart2(updateFwData, msglen2);
+        }
+    }
+
+    else
+    {
+        msglen2 = packageUpdateFwMsg(FB_GET_UPDATE_APP_FLAG_ID, INVALID, updateFw.updateAppAddrFlag);
+        send_2_uart2(updateFwData, msglen2);
+    }
+}
+
+void parse_send_fw_info_msg(void)
+{
+    if (updateFw.updateFwFlag == UPDATE_FW_INFO)
+    {
+        if (ctrl_buff2[6] != updateFw.updateAppAddrFlag)
+        {
+            updateFw.updateFwFlag = UPDATE_NONE;
+            msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_FW_INFO_ID, INVALID, updateFw.updateAppAddrFlag);
+            send_2_uart2(updateFwData, msglen2);
+        }
+
+        else
+        {
+            updateFw.fileSize = ((ctrl_buff2[7] << 24) | (ctrl_buff2[8] << 16) | (ctrl_buff2[9] << 8) | (ctrl_buff2[10] << 0)) & 0xFFFFFFFF;
+            updateFw.fwMsgSum = ((ctrl_buff2[11] << 8) | (ctrl_buff2[12] << 0)) & 0xFFFF;
+
+            if ((updateFw.fileSize % 128) == 0)
+            {
+                updateFw.fwMsgSumConform = (uint8_t)(updateFw.fileSize / 128);
+            }
+
+            else
+            {
+                updateFw.fwMsgSumConform = (uint8_t)(updateFw.fileSize / 128 + 1);
+            }
+
+            if ((updateFw.fileSize > APP_FW_MAX_LEN) || (updateFw.fwMsgSum != updateFw.fwMsgSumConform))
+            {
+                updateFw.updateFwFlag = UPDATE_NONE;
+                msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_FW_INFO_ID, INVALID, updateFw.updateAppAddrFlag);
+                send_2_uart2(updateFwData, msglen2);
+            }
+
+            else
+            {
+                msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_FW_INFO_ID, VALID, updateFw.updateAppAddrFlag);
+                send_2_uart2(updateFwData, msglen2);
+                updateFw.updateFwFlag = UPDATE_FW_START;
+            }
+        }
+    }
+
+    else
+    {
+        updateFw.updateFwFlag = UPDATE_NONE;
+        msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_FW_INFO_ID, INVALID, updateFw.updateAppAddrFlag);
+        send_2_uart2(updateFwData, msglen2);
+    }
+}
+
+void parse_send_start_update_signal(void)
+{
+    if (updateFw.updateFwFlag == UPDATE_FW_START)
+    {
+        if ((ctrl_buff2[5] != 0x01) || (ctrl_buff2[6] != updateFw.updateAppAddrFlag))
+        {
+            updateFw.updateFwFlag = UPDATE_NONE;
+            msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_START_ID, INVALID, updateFw.updateAppAddrFlag);
+            send_2_uart2(updateFwData, msglen2);
+        }
+
+        else
+        {
+            updateFw.updateAppAddr = updateFw.updateAppBaseAddr;
+            xorData[0] = 0xFF;
+            xorData[1] = 0xFF;
+            updateFw.fileSizeConform = ((ctrl_buff2[7] << 24) | (ctrl_buff2[8] << 16) | (ctrl_buff2[9] << 8) | (ctrl_buff2[10] << 0)) & 0xFFFFFFFF;
+            updateFw.fwMsgSumConform = ((ctrl_buff2[11] << 8) | (ctrl_buff2[12] << 0)) & 0xFFFF;
+
+            if ((updateFw.fileSizeConform != updateFw.fileSize) || (updateFw.fwMsgSumConform != updateFw.fwMsgSum))
+            {
+                updateFw.updateFwFlag = UPDATE_NONE;
+                msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_START_ID, INVALID, updateFw.updateAppAddrFlag);
+                send_2_uart2(updateFwData, msglen2);
+            }
+
+            else
+            {
+                updateFWFlag = 1;
+                // nvic_irq_disable(USART1_IRQn);
+                msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_START_ID, VALID, updateFw.updateAppAddrFlag);
+                send_2_uart2(updateFwData, msglen2);
+                updateFw.updateFwFlag = UPDATE_FW_ING;
+            }
+        }
+    }
+
+    else
+    {
+        updateFw.updateFwFlag = UPDATE_NONE;
+        msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_START_ID, INVALID, updateFw.updateAppAddrFlag);
+        send_2_uart2(updateFwData, msglen2);
+    }
+}
+
+void parse_fw_data_msg(void)
+{
+    updateFw.currentIndex = ((ctrl_buff2[6] << 8) | (ctrl_buff2[7] << 0)) & 0xFFFF;
+
+    if (updateFw.updateFwFlag == UPDATE_FW_ING)
+    {
+        if (ctrl_buff2[5] != 0x01)
+        {
+            updateFw.updateFwFlag = UPDATE_NONE;
+            msglen2 = packageUpdateFwMsg1(FB_SET_UPDATE_DATA_ID, INVALID, updateFw.currentIndex);
+            send_2_uart2(updateFwData, msglen2);
+        }
+
+        else
+        {
+            if (updateFw.currentIndex >= updateFw.fwMsgSum)
+            {
+                msglen2 = packageUpdateFwMsg1(FB_SET_UPDATE_DATA_ID, INVALID, updateFw.currentIndex);
+                send_2_uart2(updateFwData, msglen2);
+                updateFw.updateFwFlag = UPDATE_NONE;
+            }
+
+            else
+            {
+                // get crc
+                xorData[0] = crc8_rcc(xorData[0], ctrl_buff2[ctrl_buff2[2] + 3]);
+                xorData[1] = crc8_rcc(xorData[1], ctrl_buff2[ctrl_buff2[2] + 4]);
+                memcpy(&update_buff[updateFw.currentIndex % 16][0], &ctrl_buff2[8], ctrl_buff2[2] - 5);
+
+                if ((updateFw.currentIndex == (updateFw.fwMsgSum - 1)) || ((updateFw.currentIndex % 16) == 15))
+                {
+                    // writeflash
+                    write2flash(updateFw.updateAppAddr, &update_buff[0][0], sizeof(update_buff));
+                    updateFw.updateAppAddr += 2048;
+                    memset(update_buff, 0, sizeof(update_buff));
+                }
+
+                msglen2 = packageUpdateFwMsg1(FB_SET_UPDATE_DATA_ID, VALID, updateFw.currentIndex);
+                send_2_uart2(updateFwData, msglen2);
+
+                if (updateFw.currentIndex == updateFw.fwMsgSum - 1)
+                {
+                    updateFw.updateFwFlag = UPDATE_END;
+                }
+            }
+        }
+    }
+
+    else
+    {
+        updateFw.updateFwFlag = UPDATE_NONE;
+        msglen2 = packageUpdateFwMsg1(FB_SET_UPDATE_DATA_ID, INVALID, updateFw.currentIndex);
+        send_2_uart2(updateFwData, msglen2);
+    }
+}
+
+void parse_update_end_msg(void)
+{
+    if (updateFw.updateFwFlag == UPDATE_END)
+    {
+        if (ctrl_buff2[5] != 0x01)
+        {
+            msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_END_ID, INVALID, updateFw.updateAppAddrFlag);
+            send_2_uart2(updateFwData, msglen2);
+        }
+
+        else if ((ctrl_buff2[6] != xorData[0]) || (ctrl_buff2[7] != xorData[1]))
+        {
+            msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_END_ID, INVALID, updateFw.updateAppAddrFlag);
+            send_2_uart2(updateFwData, msglen2);
+        }
+
+        else
+        {
+            updateFw.updateConformAddr[0] = updateFw.updateAppAddrFlag;
+            write2flash(START_APP_FLAG_ADDR, updateFw.updateConformAddr, 1);
+            msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_END_ID, VALID, updateFw.updateAppAddrFlag);
+            send_2_uart2(updateFwData, msglen2);
+            vTaskDelay(1000);
+            nvic_system_reset();
+
+            // xorData[0] = 0xFF;
+            // xorData[1] = 0xFF;
+            // updateFw.updateAppAddr = updateFw.updateAppBaseAddr;
+            // updateFWFlag = 0;
+            // updateFw.updateFwFlag = UPDATE_NONE;
+        }
+    }
+
+    else
+    {
+        msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_END_ID, INVALID, updateFw.updateAppAddrFlag);
+        send_2_uart2(updateFwData, msglen2);
+    }
+}
+
+void parse_update_abort_msg(void)
+{
+    if ((ctrl_buff2[5] != 0x01) || (ctrl_buff2[5] != 0x01))
+    {
+        msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_ABORT_ID, INVALID, updateFw.updateAppAddrFlag);
+        send_2_uart2(updateFwData, msglen2);
+    }
+
+    else
+    {
+        msglen2 = packageUpdateFwMsg(FB_SET_UPDATE_ABORT_ID, VALID, updateFw.updateAppAddrFlag);
+        send_2_uart2(updateFwData, msglen2);
+        updateFw.updateAppAddr = updateFw.updateAppBaseAddr;
+        updateFw.updateFwFlag = UPDATE_NONE;
+        xorData[0] = 0xFF;
+        xorData[1] = 0xFF;
+        updateFWFlag = 0;
+        // usart_interrupt_enable( USART1, USART_RDBF_INT, TRUE );
+    }
+}
+
 #if 1
 void usart2_rx_task_function(void *pvParameters)
 {
@@ -1565,26 +1973,98 @@ void usart2_rx_task_function(void *pvParameters)
 
                 switch (cmdId2)
                 {
-                case SET_IHAWK_CMD_ID:
+                case REBOOT_CMD_ID:
                 {
                     if (ctrl_buff2[5] == TRAY_MASTER)
                     {
-                        if ((ctrl_buff2[6] > 0) && (ctrl_buff2[6] <= 3) && (ctrl_buff2[7] <= 2))
+                        send_reboot2_fb(1);
+                    }
+                    else
+                    {
+                        send_reboot2_fb(0);
+                    }
+                    break;
+                }
+                case GET_VERSION_CMD_ID:
+                {
+                    if (ctrl_buff[5] == TRAY_MASTER)
+                    {
+                        send_own2_version(true);
+                    }
+                    else
+                    {
+                        send_own2_version(false);
+                    }
+                    break;
+                }
+#if 0 // 停用USB电源控制
+                    case SET_IHAWK_CMD_ID:
+                    {
+                        if( ctrl_buff2[5] == TRAY_MASTER )
                         {
-                            ihawk_ctrl(ctrl_buff2[6], ctrl_buff2[7]);
-                            send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 1);
+                            if((ctrl_buff2[6] > 0) && (ctrl_buff2[6] <= 3) && (ctrl_buff2[7] <= 2))
+                            {
+                                ihawk_ctrl(ctrl_buff2[6], ctrl_buff2[7]);
+                                send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 1);
+                            }
+                            else
+                            {
+                                send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 0);
+                            }
                         }
                         else
                         {
                             send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 0);
                         }
+                        break;
                     }
-                    else
+                    case GET_IHAWK_STS_ID:
                     {
-                        send_ctrl_ihawk_fb(ctrl_buff2[6], ctrl_buff2[7], 0);
+                        if( ctrl_buff2[5] == TRAY_MASTER )
+                        {
+                            send_ihawk_sts_fb(1);
+                        }
+                        else
+                        {
+                            send_ihawk_sts_fb(0);
+                        }
+                        break;
                     }
+#endif
+                case GET_UPDATE_APP_FLAG_ID:
+                {
+                    parse_get_app_flag_msg();
                     break;
                 }
+                case SET_UPDATE_FW_INFO_ID: // send firmware info
+                {
+                    parse_send_fw_info_msg();
+                    break;
+                }
+                case SET_UPDATE_START_ID: // start update signal
+                {
+                    parse_send_start_update_signal();
+                    break;
+                }
+
+                case SET_UPDATE_DATA_ID: // updating firmware
+                {
+                    parse_fw_data_msg();
+                    break;
+                }
+
+                case SET_UPDATE_END_ID: // update firmware sending completed
+                {
+                    parse_update_end_msg();
+                    break;
+                }
+
+                case SET_UPDATE_ABORT_ID: // abort update
+                {
+                    parse_update_abort_msg();
+                    break;
+                }
+
 #if 0
                     case REBOOT_CMD_ID:
                     {
@@ -1676,7 +2156,7 @@ void usart2_rx_task_function(void *pvParameters)
                             }
                             uart2SendTypeFlag.reset_usbhub = 0x01;
                         }
-                        
+
                         break;
                     }
                     case RESET_SWITCH_CMD_ID:
@@ -1705,7 +2185,7 @@ void usart2_rx_task_function(void *pvParameters)
                             }
                             uart2SendTypeFlag.reset_switch = 0x01;
                         }
-                        
+
                         break;
                     }
                     case RESET_ANDRIOD_CMD_ID:
@@ -1829,6 +2309,10 @@ void USART2_IRQHandler(void)
                 {
                     uart2_data.usart_rx_counter = 3;
                     revFlag2 = UART_GET_MSG_DATA_LEN;
+                }
+                if (uart2_data.usart_rx_buffer[2] == UART_MSG_DATA_LEN_MAX)
+                {
+                    uart2_data.usart_rx_buffer[2] = UART_MSG_DATA_LEN_MAX;
                 }
             }
 

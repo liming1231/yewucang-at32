@@ -12,6 +12,8 @@
 
 #define SECTOR_SIZE 2048 /* this parameter depends on the specific model of the chip */
 
+update_fw updateFw = {0};
+
 uint16_t flash_buf[SECTOR_SIZE / 2];
 
 /**
@@ -23,22 +25,22 @@ uint16_t flash_buf[SECTOR_SIZE / 2];
  */
 void flash_read(uint32_t read_addr, uint16_t *p_buffer, uint16_t num_read)
 {
-  uint16_t i;
-  for (i = 0; i < num_read; i++)
-  {
-    p_buffer[i] = *(uint16_t *)(read_addr);
-    read_addr += 2;
-  }
+    uint16_t i;
+    for (i = 0; i < num_read; i++)
+    {
+        p_buffer[i] = *(uint16_t *)(read_addr);
+        read_addr += 2;
+    }
 }
 
 void flash_read_u8(uint32_t read_addr, uint8_t *p_buffer, uint8_t num_read)
 {
-  uint16_t i;
-  for (i = 0; i < num_read; i++)
-  {
-    p_buffer[i] = *(uint8_t *)(read_addr);
-    read_addr += 1;
-  }
+    uint16_t i;
+    for (i = 0; i < num_read; i++)
+    {
+        p_buffer[i] = *(uint8_t *)(read_addr);
+        read_addr += 1;
+    }
 }
 
 /**
@@ -50,16 +52,16 @@ void flash_read_u8(uint32_t read_addr, uint8_t *p_buffer, uint8_t num_read)
  */
 error_status flash_write_nocheck(uint32_t write_addr, uint16_t *p_buffer, uint16_t num_write)
 {
-  uint16_t i;
-  flash_status_type status = FLASH_OPERATE_DONE;
-  for (i = 0; i < num_write; i++)
-  {
-    status = flash_halfword_program(write_addr, p_buffer[i]);
-    if (status != FLASH_OPERATE_DONE)
-      return ERROR;
-    write_addr += 2;
-  }
-  return SUCCESS;
+    uint16_t i;
+    flash_status_type status = FLASH_OPERATE_DONE;
+    for (i = 0; i < num_write; i++)
+    {
+        status = flash_halfword_program(write_addr, p_buffer[i]);
+        if (status != FLASH_OPERATE_DONE)
+            return ERROR;
+        write_addr += 2;
+    }
+    return SUCCESS;
 }
 
 /**
@@ -71,69 +73,125 @@ error_status flash_write_nocheck(uint32_t write_addr, uint16_t *p_buffer, uint16
  */
 error_status flash_write(uint32_t write_addr, uint16_t *p_buffer, uint16_t num_write)
 {
-  uint32_t offset_addr;
-  uint32_t sector_position;
-  uint16_t sector_offset;
-  uint16_t sector_remain;
-  uint16_t i;
-  flash_status_type status = FLASH_OPERATE_DONE;
+    uint32_t offset_addr;
+    uint32_t sector_position;
+    uint16_t sector_offset;
+    uint16_t sector_remain;
+    uint16_t i;
+    flash_status_type status = FLASH_OPERATE_DONE;
 
-  flash_unlock();
-  offset_addr = write_addr - FLASH_BASE;
-  sector_position = offset_addr / SECTOR_SIZE;
-  sector_offset = (offset_addr % SECTOR_SIZE) / 2;
-  sector_remain = SECTOR_SIZE / 2 - sector_offset;
-  if (num_write <= sector_remain)
-    sector_remain = num_write;
-  while (1)
-  {
-    flash_read(sector_position * SECTOR_SIZE + FLASH_BASE, flash_buf, SECTOR_SIZE / 2);
-    for (i = 0; i < sector_remain; i++)
-    {
-      if (flash_buf[sector_offset + i] != 0xFFFF)
-        break;
-    }
-    if (i < sector_remain)
-    {
-      /* wait for operation to be completed */
-      status = flash_operation_wait_for(ERASE_TIMEOUT);
-
-      if ((status == FLASH_PROGRAM_ERROR) || (status == FLASH_EPP_ERROR))
-        flash_flag_clear(FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);
-      else if (status == FLASH_OPERATE_TIMEOUT)
-        return ERROR;
-      status = flash_sector_erase(sector_position * SECTOR_SIZE + FLASH_BASE);
-      if (status != FLASH_OPERATE_DONE)
-        return ERROR;
-      for (i = 0; i < sector_remain; i++)
-      {
-        flash_buf[i + sector_offset] = p_buffer[i];
-      }
-      if (flash_write_nocheck(sector_position * SECTOR_SIZE + FLASH_BASE, flash_buf, SECTOR_SIZE / 2) != SUCCESS)
-        return ERROR;
-    }
-    else
-    {
-      if (flash_write_nocheck(write_addr, p_buffer, sector_remain) != SUCCESS)
-        return ERROR;
-    }
-    if (num_write == sector_remain)
-      break;
-    else
-    {
-      sector_position++;
-      sector_offset = 0;
-      p_buffer += sector_remain;
-      write_addr += (sector_remain * 2);
-      num_write -= sector_remain;
-      if (num_write > (SECTOR_SIZE / 2))
-        sector_remain = SECTOR_SIZE / 2;
-      else
+    flash_unlock();
+    offset_addr = write_addr - FLASH_BASE;
+    sector_position = offset_addr / SECTOR_SIZE;
+    sector_offset = (offset_addr % SECTOR_SIZE) / 2;
+    sector_remain = SECTOR_SIZE / 2 - sector_offset;
+    if (num_write <= sector_remain)
         sector_remain = num_write;
+    while (1)
+    {
+        flash_read(sector_position * SECTOR_SIZE + FLASH_BASE, flash_buf, SECTOR_SIZE / 2);
+        for (i = 0; i < sector_remain; i++)
+        {
+            if (flash_buf[sector_offset + i] != 0xFFFF)
+                break;
+        }
+        if (i < sector_remain)
+        {
+            /* wait for operation to be completed */
+            status = flash_operation_wait_for(ERASE_TIMEOUT);
+
+            if ((status == FLASH_PROGRAM_ERROR) || (status == FLASH_EPP_ERROR))
+                flash_flag_clear(FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);
+            else if (status == FLASH_OPERATE_TIMEOUT)
+                return ERROR;
+            status = flash_sector_erase(sector_position * SECTOR_SIZE + FLASH_BASE);
+            if (status != FLASH_OPERATE_DONE)
+                return ERROR;
+            for (i = 0; i < sector_remain; i++)
+            {
+                flash_buf[i + sector_offset] = p_buffer[i];
+            }
+            if (flash_write_nocheck(sector_position * SECTOR_SIZE + FLASH_BASE, flash_buf, SECTOR_SIZE / 2) != SUCCESS)
+                return ERROR;
+        }
+        else
+        {
+            if (flash_write_nocheck(write_addr, p_buffer, sector_remain) != SUCCESS)
+                return ERROR;
+        }
+        if (num_write == sector_remain)
+            break;
+        else
+        {
+            sector_position++;
+            sector_offset = 0;
+            p_buffer += sector_remain;
+            write_addr += (sector_remain * 2);
+            num_write -= sector_remain;
+            if (num_write > (SECTOR_SIZE / 2))
+                sector_remain = SECTOR_SIZE / 2;
+            else
+                sector_remain = num_write;
+        }
     }
-  }
-  flash_lock();
-  return SUCCESS;
+    flash_lock();
+    return SUCCESS;
+}
+
+void flash_2kb_write(uint32_t write_addr, uint8_t *pbuffer)
+{
+    uint16_t index, write_data;
+    flash_unlock();
+    flash_sector_erase(write_addr);
+
+    for (index = 0; index < 2048; index += 2)
+    {
+        write_data = (pbuffer[index + 1] << 8) + pbuffer[index];
+        flash_halfword_program(write_addr, write_data);
+        write_addr += sizeof(uint16_t);
+    }
+
+    flash_lock();
+}
+
+error_status write2flash(uint32_t write_addr, uint8_t *pbuffer, uint16_t bufLen)
+{
+    uint16_t index, write_data;
+    flash_status_type status = FLASH_OPERATE_DONE;
+
+    if (bufLen > 2048)
+    {
+        return ERROR;
+    }
+
+    else
+    {
+        flash_unlock();
+        /* wait for operation to be completed */
+        status = flash_operation_wait_for(ERASE_TIMEOUT);
+
+        if ((status == FLASH_PROGRAM_ERROR) || (status == FLASH_EPP_ERROR))
+            flash_flag_clear(FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);
+
+        else if (status == FLASH_OPERATE_TIMEOUT)
+            return ERROR;
+
+        status = flash_sector_erase(write_addr);
+
+        if (status != FLASH_OPERATE_DONE)
+            return ERROR;
+
+        for (index = 0; index < bufLen; index += 2)
+        {
+            write_data = (pbuffer[index + 1] << 8) + pbuffer[index];
+            flash_halfword_program(write_addr, write_data);
+            write_addr += sizeof(uint16_t);
+        }
+
+        flash_lock();
+    }
+
+    return SUCCESS;
 }
 
 /**

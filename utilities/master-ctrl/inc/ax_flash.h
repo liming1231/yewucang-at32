@@ -1,71 +1,108 @@
 /**
- **************************************************************************
- * @file     flash.h
- * @version  v2.0.7
- * @date     2022-08-16
- * @brief    flash header file
- **************************************************************************
- *                       Copyright notice & Disclaimer
- *
- * The software Board Support Package (BSP) that is made available to
- * download from Artery official website is the copyrighted work of Artery.
- * Artery authorizes customers to use, copy, and distribute the BSP
- * software and its related documentation for the purpose of design and
- * development in conjunction with Artery microcontrollers. Use of the
- * software is governed by this copyright notice and the following disclaimer.
- *
- * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
- * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
- * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
- * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
- * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
- *
- **************************************************************************
- */
+  **************************************************************************
+  * @file     flash.h
+  * @version  v2.0.7
+  * @date     2022-08-16
+  * @brief    flash header file
+  **************************************************************************
+  *                       Copyright notice & Disclaimer
+  *
+  * The software Board Support Package (BSP) that is made available to
+  * download from Artery official website is the copyrighted work of Artery.
+  * Artery authorizes customers to use, copy, and distribute the BSP
+  * software and its related documentation for the purpose of design and
+  * development in conjunction with Artery microcontrollers. Use of the
+  * software is governed by this copyright notice and the following disclaimer.
+  *
+  * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
+  * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
+  * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
+  * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
+  * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+  * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+  *
+  **************************************************************************
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __FLASH_H__
 #define __FLASH_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include "at32f415_board.h"
+#include "stdbool.h"
 
-  /** @addtogroup AT32F415_periph_examples
-   * @{
-   */
+/** @addtogroup AT32F415_periph_examples
+  * @{
+  */
 
-  /** @addtogroup 415_FLASH_write_read
-   * @{
-   */
+/** @addtogroup 415_FLASH_write_read
+  * @{
+  */
 
-  /** @defgroup FLASH_write_read_functions
-   * @{
-   */
 
-  void flash_read(uint32_t read_addr, uint16_t *p_buffer, uint16_t num_read);
-  void flash_read_u8(uint32_t read_addr, uint8_t *p_buffer, uint8_t num_read);
-  error_status flash_write_nocheck(uint32_t write_addr, uint16_t *p_buffer, uint16_t num_write);
-  error_status flash_write(uint32_t write_addr, uint16_t *p_Buffer, uint16_t num_write);
+/** @defgroup FLASH_write_read_functions
+  * @{
+  */
 
-  /**
-   * @}
-   */
+typedef struct up_fw
+{
+    volatile uint8_t runningAppAddrFlag;
+    volatile uint8_t updateAppAddrFlag;
+    volatile uint8_t updateFwFlag;
+    uint32_t runningAppBaseAddr;
+    uint32_t updateAppBaseAddr;
+    uint32_t updateAppAddr;
+    uint32_t fileSize;
+    uint32_t fileSizeConform;
+    uint16_t fwMsgSum;
+    uint16_t fwMsgSumConform;
+    uint16_t currentIndex;
+    uint8_t updateConformAddr[2];
+} update_fw;
 
-  /**
-   * @}
-   */
+extern update_fw updateFw;
 
-  /**
-   * @}
-   */
+void flash_read(uint32_t read_addr, uint16_t *p_buffer, uint16_t num_read);
+void flash_read_u8(uint32_t read_addr, uint8_t *p_buffer, uint8_t num_read);
+error_status flash_write_nocheck(uint32_t write_addr, uint16_t *p_buffer, uint16_t num_write);
+error_status flash_write(uint32_t write_addr,uint16_t *p_Buffer, uint16_t num_write);
+error_status write2flash(uint32_t write_addr, uint8_t *pbuffer, uint16_t bufLen);
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

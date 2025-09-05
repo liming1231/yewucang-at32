@@ -88,12 +88,12 @@
 #define FREERTOS_CONFIG_H
 
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
 #if defined(__ICCARM__) || defined(__CC_ARM) || defined(__GNUC__)
-    #include <stdint.h>
-    static uint32_t systemcoreclock = 144000000;
+#include <stdint.h>
+static uint32_t systemcoreclock = 144000000;
 #endif
 
 
@@ -117,7 +117,7 @@
 #define configMAX_PRIORITIES		( 5 )
 #define configMINIMAL_STACK_SIZE	( ( unsigned short ) 128 )
 #define configSUPPORT_DYNAMIC_ALLOCATION        1
-#define configTOTAL_HEAP_SIZE		( ( size_t ) ( 25 * 1024 ) ) //( 8 * 1024 ) )
+#define configTOTAL_HEAP_SIZE		( ( size_t ) ( 20 * 1024 ) ) //( 8 * 1024 ) )
 #define configMAX_TASK_NAME_LEN		( 16 )
 #define configUSE_16_BIT_TICKS		0
 #define configIDLE_SHOULD_YIELD		1
@@ -140,10 +140,10 @@ to exclude the API function. */
 #define INCLUDE_xTaskGetCurrentTaskHandle 1
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS
-	/* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
-	#define configPRIO_BITS       		__NVIC_PRIO_BITS
+/* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
+#define configPRIO_BITS       		__NVIC_PRIO_BITS
 #else
-	#define configPRIO_BITS       		4        /* 15 priority levels */
+#define configPRIO_BITS       		4        /* 15 priority levels */
 #endif
 
 /* The lowest interrupt priority that can be used in a call to a "set priority"
@@ -174,7 +174,7 @@ standard names. */
 #define xPortSysTickHandler SysTick_Handler
 
 #ifdef __cplusplus
-    }
+}
 #endif
 
 #endif /* FREERTOS_CONFIG_H */

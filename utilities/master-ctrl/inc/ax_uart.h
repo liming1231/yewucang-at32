@@ -12,7 +12,21 @@
 
 #define COUNTOF(a) (sizeof(a) / sizeof(*(a)))
 #define USART_1_2_TX_BUFFER_SIZE (128u)
-#define USART_1_2_RX_BUFFER_SIZE (64u)
+#define USART_1_2_RX_BUFFER_SIZE (256u)
+
+#define GET_UPDATE_APP_FLAG_ID (0x88)
+#define SET_UPDATE_FW_INFO_ID (0x89)
+#define SET_UPDATE_START_ID (0x8A)
+#define SET_UPDATE_DATA_ID (0x8B)
+#define SET_UPDATE_END_ID (0x8C)
+#define SET_UPDATE_ABORT_ID (0x8D)
+
+#define FB_GET_UPDATE_APP_FLAG_ID (0x98)
+#define FB_SET_UPDATE_FW_INFO_ID (0x99)
+#define FB_SET_UPDATE_START_ID (0x9A)
+#define FB_SET_UPDATE_DATA_ID (0x9B)
+#define FB_SET_UPDATE_END_ID (0x9C)
+#define FB_SET_UPDATE_ABORT_ID (0x9D)
 
 #define REBOOT_CMD_ID (0x101)
 #define GET_VERSION_CMD_ID (0x102)
@@ -26,6 +40,7 @@
 #define SET_TRAY_LEDS_CMD_ID (0x10A)
 
 #define SET_IHAWK_CMD_ID (0x10B)
+#define GET_IHAWK_STS_ID (0x10C)
 
 #define FB_REBOOT_CMD_ID (0x201)
 #define FB_GET_VERSION_CMD_ID (0x202)
@@ -39,6 +54,7 @@
 #define FB_SET_TRAY_LEDS_CMD_ID (0x20A)
 
 #define FB_SET_IHAWK_CMD_ID (0x20B)
+#define FB_GET_IHAWK_STS_ID (0x20C)
 
 #define TRAY_MASTER (0x00)
 #define TRAY_F1 (0x01)
@@ -59,7 +75,7 @@
 #define UART_GET_HEADER_1 (0x01)
 #define UART_GET_HEADER_2 (0x02)
 #define UART_GET_MSG_DATA_LEN (0x03)
-#define UART_MSG_DATA_LEN_MAX (15)
+#define UART_MSG_DATA_LEN_MAX (128 + 5)
 
 #define CTRL_OWNER_FLAG (0x0F)
 
@@ -76,7 +92,8 @@ struct uart_data
 extern struct uart_data uart1_data, uart2_data;
 
 extern uint8_t ctrl_buff[32];
-extern uint8_t ctrl_buff2[32];
+extern uint8_t ctrl_buff2[256];
+extern uint8_t update_buff[16][128];
 
 /**
  * @brief       设备控制引脚初始化
@@ -184,6 +201,6 @@ void usart_int_configuration(void);
  * @param[null]
  * @return      null
  */
-void init_uart1_data(void);
+void init_uart_data(void);
 
 #endif

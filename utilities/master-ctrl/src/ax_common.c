@@ -8,10 +8,17 @@ uint8_t uidBuf[5][12] = {0};
 struct uart_send_flag uart1SendTypeFlag = {0};
 struct _send_can_str sendCanStr = {0};
 
+struct _ihawk_power_sts ihawk_power_sts = {0};
+
 can_tx_message_type canResetSensor[4] = {0};
 can_tx_message_type canSetLeds[4] = {0};
 can_tx_message_type canSetTrayLeds;
 can_tx_message_type canResetBoard[4] = {0};
+
+uint8_t updateFwData[16] = {0};
+volatile uint8_t msglen2 = 0;
+volatile uint8_t updateFWFlag = 0; // OTA状态标识
+volatile uint8_t xorData[2] = {0xFF, 0xFF};
 
 uint16_t crc16_modbus(uint8_t *pszBuf, uint8_t unLength)
 {
@@ -35,4 +42,9 @@ uint16_t crc16_modbus(uint8_t *pszBuf, uint8_t unLength)
         }
     }
     return crc_t;
+}
+
+uint8_t crc8_rcc(uint8_t a, uint8_t b)
+{
+    return a ^ b;
 }

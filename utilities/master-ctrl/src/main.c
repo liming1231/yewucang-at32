@@ -57,6 +57,28 @@ void wtdg_task_function(void *pvParameters);
  */
 int main(void)
 {
+    updateFw.runningAppAddrFlag = *(uint8_t *)(START_APP_FLAG_ADDR);
+
+    if (updateFw.runningAppAddrFlag == APP2_FLAG)
+    {
+        updateFw.runningAppBaseAddr = RUNNING_APP2_ADDR;
+        updateFw.updateAppBaseAddr = RUNNING_APP1_ADDR;
+        updateFw.updateAppAddr = RUNNING_APP1_ADDR;
+        updateFw.updateAppAddrFlag = APP1_FLAG;
+        nvic_vector_table_set(NVIC_VECTTAB_FLASH, RUNNING_APP2_ADDR - ROM_BASE_ADDR);
+        // SCB->VTOR = 0x801C000;
+    }
+
+    else
+    {
+        updateFw.runningAppBaseAddr = RUNNING_APP1_ADDR;
+        updateFw.updateAppBaseAddr = RUNNING_APP2_ADDR;
+        updateFw.updateAppAddr = RUNNING_APP2_ADDR;
+        updateFw.updateAppAddrFlag = APP2_FLAG;
+        nvic_vector_table_set(NVIC_VECTTAB_FLASH, RUNNING_APP1_ADDR - ROM_BASE_ADDR);
+        // SCB->VTOR = 0x8004000;
+    }
+
     nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
 
     system_clock_config();
@@ -67,7 +89,7 @@ int main(void)
     device_ctrl_pins_init();
     open_device_pwr();
 
-    init_uart1_data();
+    init_uart_data();
     usart_int_configuration();
     /* init usart1 */
     // uart_print_init( UART_BAUDRATE_115200 );

@@ -8,7 +8,8 @@
 #include "task.h"
 #include "event_groups.h"
 
-#define VERSION (0x31303039)
+// #define VERSION (0x31303039)//1.0.0.a
+#define VERSION (0x313130) // 1.1.0
 
 // #define DEBUG
 
@@ -72,6 +73,23 @@
 #define TASK_CAN_RX_BIT_5 (0x01 << 4)
 #define TASK_UART_RX_BIT_6 (0x01 << 5)
 #define TASK_BIT_ALL (TASK_DEBUG_LED_BIT_1 | TASK_UART_RX_BIT_2 | TASK_UART_TX_BIT_3 | TASK_CAN_TX_BIT_4 | TASK_CAN_RX_BIT_5 | TASK_UART_RX_BIT_6)
+
+#define ROM_BASE_ADDR (0x8000000)
+#define START_APP_FLAG_ADDR (0x8003800)
+#define RUNNING_APP1_ADDR (0x8004000)
+#define RUNNING_APP2_ADDR (0x801C000)
+#define APP_FW_MAX_LEN (0x18000)
+
+#define APP1_FLAG (0x01)
+#define APP2_FLAG (0x02)
+enum UPDATE_FW_STEP
+{
+    UPDATE_NONE = 0,
+    UPDATE_FW_INFO = 1,
+    UPDATE_FW_START = 2,
+    UPDATE_FW_ING = 3,
+    UPDATE_END = 4
+};
 
 enum DATA_VALIDITY
 {
@@ -138,11 +156,19 @@ struct _send_can_str
     uint8_t setTrayWs2812b;
 };
 
+struct _ihawk_power_sts
+{
+    uint8_t ihawk_sts_1;
+    uint8_t ihawk_sts_2;
+};
+
 extern EventBits_t taskAliveBits;
 extern volatile uint16_t distance[4][6];
 extern struct uart_send_flag uart1SendTypeFlag;
 extern struct can_alive_counter canAliveCounter;
 extern struct _send_can_str sendCanStr;
+
+extern struct _ihawk_power_sts ihawk_power_sts;
 
 extern can_tx_message_type canResetSensor[4];
 extern can_tx_message_type canSetLeds[4];
@@ -152,6 +178,11 @@ extern can_tx_message_type canResetBoard[4];
 extern uint8_t versionSub[4][6];
 extern uint8_t uidBuf[5][12];
 
+extern uint8_t updateFwData[16];
+extern volatile uint8_t msglen2;
+extern volatile uint8_t updateFWFlag;
+extern volatile uint8_t xorData[2];
+
 /**
  * @brief       计算CRC16校验
  * @param[uint8_t*] 数据指针
@@ -159,5 +190,7 @@ extern uint8_t uidBuf[5][12];
  * @return      null
  */
 uint16_t crc16_modbus(uint8_t *pszBuf, uint8_t unLength);
+
+uint8_t crc8_rcc(uint8_t a, uint8_t b);
 
 #endif
