@@ -113,10 +113,23 @@ struct can_alive_counter
     uint8_t loopCounter;
 };
 
+struct _send_can_str
+{
+    uint8_t setWs2812b[4];
+    uint8_t resetSensor[4];
+    uint8_t resetBoard[4];
+};
+
 extern EventBits_t taskAliveBits;
 extern volatile uint16_t distance[4][6];
 extern struct uart_send_flag uart1SendTypeFlag;
 extern struct can_alive_counter canAliveCounter;
+extern struct _send_can_str sendCanStr;
+
+extern can_tx_message_type canResetSensor[4];
+extern can_tx_message_type canSetLeds[4];
+extern can_tx_message_type canResetBoard[4];
+
 extern uint8_t versionSub[4][6];
 extern uint8_t uidBuf[5][12];
 

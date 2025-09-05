@@ -676,22 +676,110 @@ void parse_distance_msg()
     }
 }
 
+void send_ws2812b_msg(void)
+{
+    if (sendCanStr.setWs2812b[0] == 1)
+    {
+        can_transmit_ctrl_data(&canSetLeds[0]);
+        sendCanStr.setWs2812b[0] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+
+    if (sendCanStr.setWs2812b[1] == 1)
+    {
+        can_transmit_ctrl_data(&canSetLeds[1]);
+        sendCanStr.setWs2812b[1] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+
+    if (sendCanStr.setWs2812b[2] == 1)
+    {
+        can_transmit_ctrl_data(&canSetLeds[2]);
+        sendCanStr.setWs2812b[2] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+
+    if (sendCanStr.setWs2812b[3] == 1)
+    {
+        can_transmit_ctrl_data(&canSetLeds[3]);
+        sendCanStr.setWs2812b[3] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+}
+
+void send_reset_sensor_msg(void)
+{
+    if (sendCanStr.resetSensor[0] == 1)
+    {
+        can_transmit_ctrl_data(&canResetSensor[0]);
+        sendCanStr.resetSensor[0] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+
+    if (sendCanStr.resetSensor[1] == 1)
+    {
+        can_transmit_ctrl_data(&canResetSensor[1]);
+        sendCanStr.resetSensor[1] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+
+    if (sendCanStr.resetSensor[2] == 1)
+    {
+        can_transmit_ctrl_data(&canResetSensor[2]);
+        sendCanStr.resetSensor[2] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+
+    if (sendCanStr.resetSensor[3] == 1)
+    {
+        can_transmit_ctrl_data(&canResetSensor[3]);
+        sendCanStr.resetSensor[3] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+}
+
+void send_reset_board_msg(void)
+{
+    if (sendCanStr.resetBoard[0] == 1)
+    {
+        can_transmit_ctrl_data(&canResetBoard[0]);
+        sendCanStr.resetBoard[0] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+
+    if (sendCanStr.resetBoard[1] == 1)
+    {
+        can_transmit_ctrl_data(&canResetBoard[1]);
+        sendCanStr.resetBoard[1] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+
+    if (sendCanStr.resetBoard[2] == 1)
+    {
+        can_transmit_ctrl_data(&canResetBoard[2]);
+        sendCanStr.resetBoard[2] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+
+    if (sendCanStr.resetBoard[3] == 1)
+    {
+        can_transmit_ctrl_data(&canResetBoard[3]);
+        sendCanStr.resetBoard[3] = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+}
+
 void can_tx_task_function(void *pvParameters)
 {
     //	uint8_t CounterTm = 0;
 
     while (1)
     {
-        //		CounterTm++;
-
-        //		if( CounterTm >= 10 )
-        //		{
-        //			can_get_alive();
-        //			CounterTm = 0;
-        //		}
-
+        send_ws2812b_msg();
+        send_reset_sensor_msg();
+        send_reset_board_msg();
+        vTaskDelay(50);
         taskAliveBits |= TASK_CAN_TX_BIT_4;
-        vTaskDelay(100);
     }
 }
 void can_rx_task_function(void *pvParameters)

@@ -70,6 +70,8 @@
 
 #define UNDEFINED (0x00)
 
+#define SEND_CAN_MSG_TMVAL (10)
+
 extern can_rx_message_type rx_message_struct_g;
 extern volatile uint8_t newMsgFlag;
 

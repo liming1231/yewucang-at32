@@ -26,7 +26,7 @@
 #define UART1_TX_TASK_PRIO (2)
 #define CAN_TX_TASK_PRIO (2)
 #define CAN_RX_TASK_PRIO (2)
-#define WTDG_TASK_PRIO (3)
+#define WTDG_TASK_PRIO (6)
 #define WS2812B_TASK_PRIO (5)
 
 /** @addtogroup FreeRTOS_demo

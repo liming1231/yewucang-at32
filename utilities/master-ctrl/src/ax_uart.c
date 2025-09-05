@@ -799,17 +799,73 @@ void usart1_tx_task_function(void *pvParameters)
     }
 }
 
-void usart1_rx_task_function(void *pvParameters)
+void init_can_msg(void)
 {
-    uint16_t getCrc;
     ctrlData2Can.extended_id = 0;
     ctrlData2Can.id_type = CAN_ID_STANDARD;
     ctrlData2Can.frame_type = CAN_TFT_DATA;
     ctrlData2Can.dlc = 8;
 
+    canSetLeds[0].extended_id = 0;
+    canSetLeds[0].id_type = CAN_ID_STANDARD;
+    canSetLeds[0].frame_type = CAN_TFT_DATA;
+    canSetLeds[0].dlc = 8;
+    canSetLeds[1].extended_id = 0;
+    canSetLeds[1].id_type = CAN_ID_STANDARD;
+    canSetLeds[1].frame_type = CAN_TFT_DATA;
+    canSetLeds[1].dlc = 8;
+    canSetLeds[2].extended_id = 0;
+    canSetLeds[2].id_type = CAN_ID_STANDARD;
+    canSetLeds[2].frame_type = CAN_TFT_DATA;
+    canSetLeds[2].dlc = 8;
+    canSetLeds[3].extended_id = 0;
+    canSetLeds[3].id_type = CAN_ID_STANDARD;
+    canSetLeds[3].frame_type = CAN_TFT_DATA;
+    canSetLeds[3].dlc = 8;
+
+    canResetSensor[0].extended_id = 0;
+    canResetSensor[0].id_type = CAN_ID_STANDARD;
+    canResetSensor[0].frame_type = CAN_TFT_DATA;
+    canResetSensor[0].dlc = 8;
+    canResetSensor[1].extended_id = 0;
+    canResetSensor[1].id_type = CAN_ID_STANDARD;
+    canResetSensor[1].frame_type = CAN_TFT_DATA;
+    canResetSensor[1].dlc = 8;
+    canResetSensor[2].extended_id = 0;
+    canResetSensor[2].id_type = CAN_ID_STANDARD;
+    canResetSensor[2].frame_type = CAN_TFT_DATA;
+    canResetSensor[2].dlc = 8;
+    canResetSensor[3].extended_id = 0;
+    canResetSensor[3].id_type = CAN_ID_STANDARD;
+    canResetSensor[3].frame_type = CAN_TFT_DATA;
+    canResetSensor[3].dlc = 8;
+
+    canResetBoard[0].extended_id = 0;
+    canResetBoard[0].id_type = CAN_ID_STANDARD;
+    canResetBoard[0].frame_type = CAN_TFT_DATA;
+    canResetBoard[0].dlc = 8;
+    canResetBoard[1].extended_id = 0;
+    canResetBoard[1].id_type = CAN_ID_STANDARD;
+    canResetBoard[1].frame_type = CAN_TFT_DATA;
+    canResetBoard[1].dlc = 8;
+    canResetBoard[2].extended_id = 0;
+    canResetBoard[2].id_type = CAN_ID_STANDARD;
+    canResetBoard[2].frame_type = CAN_TFT_DATA;
+    canResetBoard[2].dlc = 8;
+    canResetBoard[3].extended_id = 0;
+    canResetBoard[3].id_type = CAN_ID_STANDARD;
+    canResetBoard[3].frame_type = CAN_TFT_DATA;
+    canResetBoard[3].dlc = 8;
+}
+
+void usart1_rx_task_function(void *pvParameters)
+{
+    uint16_t getCrc;
+
+    init_can_msg();
+
     while (1)
     {
-#if 1
         if (recvCmdFlag == 1)
         {
             // vTaskSuspendAll();
@@ -843,31 +899,55 @@ void usart1_rx_task_function(void *pvParameters)
 
                     else if (ctrl_buff[5] == TRAY_F1)
                     {
-                        ctrlData2Can.standard_id = SET_F1_REBOOT_ID;
+                        canResetBoard[0].standard_id = SET_F1_REBOOT_ID;
+                        canResetBoard[0].data[0] = 0x01;
+                        canResetBoard[0].data[1] = 0x00;
+                        canResetBoard[0].data[2] = 0x00;
+                        canResetBoard[0].data[3] = 0x00;
+                        canResetBoard[0].data[4] = 0x00;
+                        canResetBoard[0].data[5] = 0x00;
+                        canResetBoard[0].data[6] = 0x00;
+                        sendCanStr.resetBoard[0] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F2)
                     {
-                        ctrlData2Can.standard_id = SET_F2_REBOOT_ID;
+                        canResetBoard[1].standard_id = SET_F2_REBOOT_ID;
+                        canResetBoard[1].data[0] = 0x01;
+                        canResetBoard[1].data[1] = 0x00;
+                        canResetBoard[1].data[2] = 0x00;
+                        canResetBoard[1].data[3] = 0x00;
+                        canResetBoard[1].data[4] = 0x00;
+                        canResetBoard[1].data[5] = 0x00;
+                        canResetBoard[1].data[6] = 0x00;
+                        sendCanStr.resetBoard[1] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F3)
                     {
-                        ctrlData2Can.standard_id = SET_F3_REBOOT_ID;
+                        canResetBoard[2].standard_id = SET_F3_REBOOT_ID;
+                        canResetBoard[2].data[0] = 0x01;
+                        canResetBoard[2].data[1] = 0x00;
+                        canResetBoard[2].data[2] = 0x00;
+                        canResetBoard[2].data[3] = 0x00;
+                        canResetBoard[2].data[4] = 0x00;
+                        canResetBoard[2].data[5] = 0x00;
+                        canResetBoard[2].data[6] = 0x00;
+                        sendCanStr.resetBoard[2] = 1;
                     }
                     else if (ctrl_buff[5] == TRAY_F4)
                     {
-                        ctrlData2Can.standard_id = SET_F4_REBOOT_ID;
+                        canResetBoard[3].standard_id = SET_F4_REBOOT_ID;
+                        canResetBoard[3].data[0] = 0x01;
+                        canResetBoard[3].data[1] = 0x00;
+                        canResetBoard[3].data[2] = 0x00;
+                        canResetBoard[3].data[3] = 0x00;
+                        canResetBoard[3].data[4] = 0x00;
+                        canResetBoard[3].data[5] = 0x00;
+                        canResetBoard[3].data[6] = 0x00;
+                        sendCanStr.resetBoard[3] = 1;
                     }
 
-                    ctrlData2Can.data[0] = 0x01;
-                    ctrlData2Can.data[1] = 0x00;
-                    ctrlData2Can.data[2] = 0x00;
-                    ctrlData2Can.data[3] = 0x00;
-                    ctrlData2Can.data[4] = 0x00;
-                    ctrlData2Can.data[5] = 0x00;
-                    ctrlData2Can.data[6] = 0x00;
-                    can_transmit_ctrl_data(&ctrlData2Can);
                     break;
                 }
 
@@ -943,32 +1023,57 @@ void usart1_rx_task_function(void *pvParameters)
 
                     else if (ctrl_buff[5] == TRAY_F1)
                     {
-                        ctrlData2Can.standard_id = SET_F1_WS2812B_ID;
+                        canSetLeds[0].standard_id = SET_F1_WS2812B_ID;
+
+                        canSetLeds[0].data[0] = ctrl_buff[6];
+                        canSetLeds[0].data[1] = ctrl_buff[7];
+                        canSetLeds[0].data[2] = ctrl_buff[8];
+                        canSetLeds[0].data[3] = ctrl_buff[9];
+                        canSetLeds[0].data[4] = 0x00;
+                        canSetLeds[0].data[5] = 0x00;
+                        canSetLeds[0].data[6] = 0x00;
+                        sendCanStr.setWs2812b[0] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F2)
                     {
-                        ctrlData2Can.standard_id = SET_F2_WS2812B_ID;
+                        canSetLeds[1].standard_id = SET_F2_WS2812B_ID;
+                        canSetLeds[1].data[0] = ctrl_buff[6];
+                        canSetLeds[1].data[1] = ctrl_buff[7];
+                        canSetLeds[1].data[2] = ctrl_buff[8];
+                        canSetLeds[1].data[3] = ctrl_buff[9];
+                        canSetLeds[1].data[4] = 0x00;
+                        canSetLeds[1].data[5] = 0x00;
+                        canSetLeds[1].data[6] = 0x00;
+                        sendCanStr.setWs2812b[1] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F3)
                     {
-                        ctrlData2Can.standard_id = SET_F3_WS2812B_ID;
+                        canSetLeds[2].standard_id = SET_F3_WS2812B_ID;
+                        canSetLeds[2].data[0] = ctrl_buff[6];
+                        canSetLeds[2].data[1] = ctrl_buff[7];
+                        canSetLeds[2].data[2] = ctrl_buff[8];
+                        canSetLeds[2].data[3] = ctrl_buff[9];
+                        canSetLeds[2].data[4] = 0x00;
+                        canSetLeds[2].data[5] = 0x00;
+                        canSetLeds[2].data[6] = 0x00;
+                        sendCanStr.setWs2812b[2] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F4)
                     {
-                        ctrlData2Can.standard_id = SET_F4_WS2812B_ID;
+                        canSetLeds[3].standard_id = SET_F4_WS2812B_ID;
+                        canSetLeds[3].data[0] = ctrl_buff[6];
+                        canSetLeds[3].data[1] = ctrl_buff[7];
+                        canSetLeds[3].data[2] = ctrl_buff[8];
+                        canSetLeds[3].data[3] = ctrl_buff[9];
+                        canSetLeds[3].data[4] = 0x00;
+                        canSetLeds[3].data[5] = 0x00;
+                        canSetLeds[3].data[6] = 0x00;
+                        sendCanStr.setWs2812b[3] = 1;
                     }
 
-                    ctrlData2Can.data[0] = ctrl_buff[6];
-                    ctrlData2Can.data[1] = ctrl_buff[7];
-                    ctrlData2Can.data[2] = ctrl_buff[8];
-                    ctrlData2Can.data[3] = ctrl_buff[9];
-                    ctrlData2Can.data[4] = 0x00;
-                    ctrlData2Can.data[5] = 0x00;
-                    ctrlData2Can.data[6] = 0x00;
-                    can_transmit_ctrl_data(&ctrlData2Can);
                     break;
                 }
 
@@ -983,32 +1088,56 @@ void usart1_rx_task_function(void *pvParameters)
 
                     else if (ctrl_buff[5] == TRAY_F1)
                     {
-                        ctrlData2Can.standard_id = RESET_F1_SENSOR_ID;
+                        canResetSensor[0].standard_id = RESET_F1_SENSOR_ID;
+                        canResetSensor[0].data[0] = 0x01;
+                        canResetSensor[0].data[1] = 0x00;
+                        canResetSensor[0].data[2] = 0x00;
+                        canResetSensor[0].data[3] = 0x00;
+                        canResetSensor[0].data[4] = 0x00;
+                        canResetSensor[0].data[5] = 0x00;
+                        canResetSensor[0].data[6] = 0x00;
+                        sendCanStr.resetSensor[0] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F2)
                     {
-                        ctrlData2Can.standard_id = RESET_F2_SENSOR_ID;
+                        canResetSensor[1].standard_id = RESET_F2_SENSOR_ID;
+                        canResetSensor[1].data[0] = 0x01;
+                        canResetSensor[1].data[1] = 0x00;
+                        canResetSensor[1].data[2] = 0x00;
+                        canResetSensor[1].data[3] = 0x00;
+                        canResetSensor[1].data[4] = 0x00;
+                        canResetSensor[1].data[5] = 0x00;
+                        canResetSensor[1].data[6] = 0x00;
+                        sendCanStr.resetSensor[1] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F3)
                     {
-                        ctrlData2Can.standard_id = RESET_F3_SENSOR_ID;
+                        canResetSensor[2].standard_id = RESET_F3_SENSOR_ID;
+                        canResetSensor[2].data[0] = 0x01;
+                        canResetSensor[2].data[1] = 0x00;
+                        canResetSensor[2].data[2] = 0x00;
+                        canResetSensor[2].data[3] = 0x00;
+                        canResetSensor[2].data[4] = 0x00;
+                        canResetSensor[2].data[5] = 0x00;
+                        canResetSensor[2].data[6] = 0x00;
+                        sendCanStr.resetSensor[2] = 1;
                     }
 
                     else if (ctrl_buff[5] == TRAY_F4)
                     {
-                        ctrlData2Can.standard_id = RESET_F4_SENSOR_ID;
+                        canResetSensor[3].standard_id = RESET_F4_SENSOR_ID;
+                        canResetSensor[3].data[0] = 0x01;
+                        canResetSensor[3].data[1] = 0x00;
+                        canResetSensor[3].data[2] = 0x00;
+                        canResetSensor[3].data[3] = 0x00;
+                        canResetSensor[3].data[4] = 0x00;
+                        canResetSensor[3].data[5] = 0x00;
+                        canResetSensor[3].data[6] = 0x00;
+                        sendCanStr.resetSensor[3] = 1;
                     }
 
-                    ctrlData2Can.data[0] = 0x01;
-                    ctrlData2Can.data[1] = 0x00;
-                    ctrlData2Can.data[2] = 0x00;
-                    ctrlData2Can.data[3] = 0x00;
-                    ctrlData2Can.data[4] = 0x00;
-                    ctrlData2Can.data[5] = 0x00;
-                    ctrlData2Can.data[6] = 0x00;
-                    can_transmit_ctrl_data(&ctrlData2Can);
                     break;
                 }
 
@@ -1180,54 +1309,6 @@ void usart1_rx_task_function(void *pvParameters)
         }
         taskAliveBits |= TASK_UART_RX_BIT_2;
         vTaskDelay(5);
-
-#else
-        // for debug
-        uint8_t onlineIndex = 0;
-        if (canAliveCounter.onLine[0] == 0x01)
-        {
-            ctrlData2Can.standard_id = SET_F1_WS2812B_ID;
-            onlineIndex = 1;
-        }
-        else if (canAliveCounter.onLine[1] == 0x01)
-        {
-            ctrlData2Can.standard_id = SET_F2_WS2812B_ID;
-            onlineIndex = 2;
-        }
-        else if (canAliveCounter.onLine[2] == 0x01)
-        {
-            ctrlData2Can.standard_id = SET_F3_WS2812B_ID;
-            onlineIndex = 3;
-        }
-        else if (canAliveCounter.onLine[3] == 0x01)
-        {
-            ctrlData2Can.standard_id = SET_F4_WS2812B_ID;
-            onlineIndex = 4;
-        }
-
-        ctrlData2Can.data[0] = 1;
-        ctrlData2Can.data[1] = 0x00;
-        ctrlData2Can.data[2] = 0x00;
-        ctrlData2Can.data[3] = 0x00;
-        if ((distance[onlineIndex - 1][0] < 25) && ((distance[onlineIndex - 1][0] > 0)))
-        {
-            ctrlData2Can.data[1] |= 0xFF;
-        }
-        if ((distance[onlineIndex - 1][1] < 25) && ((distance[onlineIndex - 1][1] > 0)))
-        {
-            ctrlData2Can.data[2] |= 0xFF;
-        }
-        if ((distance[onlineIndex - 1][2] < 25) && ((distance[onlineIndex - 1][2] > 0)))
-        {
-            ctrlData2Can.data[3] |= 0xFF;
-        }
-        ctrlData2Can.data[4] = 0x00;
-        ctrlData2Can.data[5] = 0x00;
-        ctrlData2Can.data[6] = 0x00;
-        can_transmit_ctrl_data(&ctrlData2Can);
-        taskAliveBits |= TASK_UART_RX_BIT_2;
-        vTaskDelay(50);
-#endif
     }
 }
 
@@ -1237,6 +1318,7 @@ void USART1_IRQHandler(void)
 
     if (usart_flag_get(USART1, USART_RDBF_FLAG) != RESET)
     {
+        usart_flag_clear(USART1, USART_RDBF_FLAG);
         if (recvCmdFlag == 0)
         {
             if (revFlag == UART_DATA_INIT)
