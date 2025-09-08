@@ -139,11 +139,6 @@
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-          <Name>d</Name>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>CMSIS_AGDI</Key>
           <Name>-X"AT-Link-EZ-CMSIS-DAP" -U7B5D45000040366813177D02 -O206 -S0 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD20000000 -FC1000 -FN1 -FF0AT32F415_256.FLM -FS08000000 -FL040000 -FP0($$Device:-AT32F415RCT7$Flash\AT32F415_256.FLM)</Name>
         </SetRegEntry>
@@ -153,40 +148,7 @@
           <Name>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0AT32F415_256 -FS08000000 -FL040000 -FP0($$Device:-AT32F415RCT7$Flash\AT32F415_256.FLM))</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint>
-        <Bp>
-          <Number>0</Number>
-          <Type>0</Type>
-          <LineNumber>85</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134244176</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\master-ctrl-1.2.0.7-3\src\main.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\master_ctrl\../src/main.c\85</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>65</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134244118</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\master-ctrl-1.2.0.7-3\src\main.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\master_ctrl\../src/main.c\65</Expression>
-        </Bp>
-      </Breakpoint>
+      <Breakpoint/>
       <WatchWindow1>
         <Ww>
           <count>0</count>
@@ -230,6 +192,16 @@
         </Ww>
         <Ww>
           <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>uart1_data</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>uf</ItemText>
+        </Ww>
+        <Ww>
+          <count>10</count>
           <WinNumber>1</WinNumber>
           <ItemText>uart1_data</ItemText>
         </Ww>

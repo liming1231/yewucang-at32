@@ -7,7 +7,7 @@
 const char *usart1_tx_buf = "1234567890abcdefghijklmnopqrstuvwxwz";
 volatile uint8_t sendingUart2 = 0;
 
-struct uart_data uart1_data, uart2_data;
+struct uart_data uart1_data, uart2_data, uart3_data;
 
 static uint8_t diyShowDataSts = 1;
 
@@ -20,6 +20,8 @@ volatile uint8_t recvCmdFlag2 = 0;
 uint16_t cmdId = 0;               // usart1_rx_task_function()
 uint16_t cmdId2 = 0;              // usart1_rx_task_function()
 can_tx_message_type ctrlData2Can; // usart1_rx_task_function()
+
+struct roller_data rollerData = {0};
 
 void device_ctrl_pins_init(void)
 {
@@ -325,6 +327,13 @@ void init_uart_data(void)
     uart2_data.usart_rx_counter = 0;
     uart2_data.usart_tx_buffer_size = 0;
     uart2_data.usart_rx_buffer_size = 0;
+
+    memset(uart3_data.usart_tx_buffer, 0, sizeof(uart3_data.usart_tx_buffer));
+    memset(uart3_data.usart_rx_buffer, 0, sizeof(uart3_data.usart_rx_buffer));
+    uart3_data.usart_tx_counter = 0;
+    uart3_data.usart_rx_counter = 0;
+    uart3_data.usart_tx_buffer_size = 0;
+    uart3_data.usart_rx_buffer_size = 0;
 }
 
 void usart_configuration(void)
@@ -373,7 +382,7 @@ void usart_configuration(void)
     usart_enable(USART2, TRUE);
 
     /* configure usart3 param */
-    usart_init(USART3, 115200, USART_DATA_8BITS, USART_STOP_1_BIT);
+    usart_init(USART3, 9600, USART_DATA_8BITS, USART_STOP_1_BIT);
     usart_parity_selection_config(USART3, USART_PARITY_NONE);
     usart_transmitter_enable(USART3, TRUE);
     usart_receiver_enable(USART3, TRUE);
@@ -440,12 +449,12 @@ void usart_int_configuration(void)
     usart_receiver_enable(USART1, TRUE);
 
     /* configure usart2 param */
-    usart_init(USART2, UART_BAUDRATE_115200, USART_DATA_8BITS, USART_STOP_1_BIT);
+    usart_init(USART2, 115200, USART_DATA_8BITS, USART_STOP_1_BIT);
     usart_transmitter_enable(USART2, TRUE);
     usart_receiver_enable(USART2, TRUE);
 
     /* configure usart3 param */
-    usart_init(USART3, UART_BAUDRATE_115200, USART_DATA_8BITS, USART_STOP_1_BIT);
+    usart_init(USART3, 9600, USART_DATA_8BITS, USART_STOP_1_BIT);
     usart_transmitter_enable(USART3, TRUE);
     usart_receiver_enable(USART3, TRUE);
 
@@ -1469,6 +1478,31 @@ void check_ctrl_sw_cmd(void)
     }
 }
 
+void send_ctrl_roller_fb(void)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+    memcpy(uart1_data.usart_tx_buffer, rollerData.ctrl_buffer, rollerData.ctrl_buffer[2] + 5);
+    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_ROLLER_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_ROLLER_CMD_ID >> 0) & 0xFF); // 0x16;
+    uart1_data.usart_tx_buffer[5] = uart1SendTypeFlag.set_roller_valid;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[uart1_data.usart_tx_buffer[2] + 3] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[uart1_data.usart_tx_buffer[2] + 4] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = uart1_data.usart_tx_buffer[2] + 5;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
 void usart1_tx_task_function(void *pvParameters)
 {
     while (1)
@@ -1512,6 +1546,12 @@ void usart1_tx_task_function(void *pvParameters)
         {
             send_reset_sensor_fb(uart1SendTypeFlag.reset_sensor);
             uart1SendTypeFlag.reset_sensor = 0;
+        }
+
+        if (uart1SendTypeFlag.set_roller != 0)
+        {
+            send_ctrl_roller_fb();
+            uart1SendTypeFlag.set_roller = 0;
         }
 
         check_version();
@@ -2091,6 +2131,219 @@ void parse_get_uid_cmd(void)
     }
 }
 
+uint8_t rollerCtrlBuf[32] = {0};
+
+void send_2_uart3(uint8_t *pdate, uint8_t len)
+{
+    uint8_t i;
+    static uint8_t sendingUart3 = 0;
+
+    while (sendingUart3 == 1)
+    {
+        vTaskDelay(2);
+    }
+    sendingUart3 = 1;
+
+    if (len < 128)
+    {
+        memset(uart3_data.usart_tx_buffer, 0, sizeof(uart3_data.usart_tx_buffer));
+
+        for (i = 0; i < len; i++)
+        {
+            uart3_data.usart_tx_buffer[i] = pdate[i];
+        }
+
+        uart3_data.usart_tx_buffer_size = len;
+
+        while (uart3_data.usart_tx_counter < uart3_data.usart_tx_buffer_size)
+        {
+            while (usart_flag_get(USART3, USART_TDBE_FLAG) == RESET)
+                ;
+
+            usart_data_transmit(USART3, uart3_data.usart_tx_buffer[uart3_data.usart_tx_counter++]);
+        }
+
+        uart3_data.usart_tx_counter = 0;
+        vTaskDelay(5);
+        sendingUart3 = 0;
+    }
+}
+
+void send_ctrl_roller(uint8_t mode, uint16_t spd)
+{
+    uint16_t getCrc;
+    rollerCtrlBuf[0] = 0x01;
+    rollerCtrlBuf[1] = 0x10;
+    rollerCtrlBuf[2] = 0x00;
+    rollerCtrlBuf[3] = 0x64;
+    rollerCtrlBuf[4] = 0x00;
+    rollerCtrlBuf[5] = 0x03;
+    rollerCtrlBuf[6] = 0x06;
+    rollerCtrlBuf[7] = 0x00;
+    if (mode == 0)
+    {
+        rollerCtrlBuf[8] = 0;
+    }
+    else
+    {
+        rollerCtrlBuf[8] = 1;
+        if (mode == 1)
+        {
+            rollerCtrlBuf[10] = 0x00;
+        }
+        else if (mode == 2)
+        {
+            rollerCtrlBuf[10] = 0x01;
+        }
+    }
+
+    rollerCtrlBuf[9] = 0x00;
+    // 800 = 0x230
+    rollerCtrlBuf[11] = (uint8_t)((spd >> 8) & 0xFF); // 0x03;
+    rollerCtrlBuf[12] = (uint8_t)((spd >> 0) & 0xFF); // 0x20;
+    getCrc = crc16_modbus(&rollerCtrlBuf[0], 13);
+    rollerCtrlBuf[13] = (uint8_t)((getCrc >> 0) & 0xFF);
+    rollerCtrlBuf[14] = (uint8_t)((getCrc >> 8) & 0xFF);
+    if (mode < 3)
+    {
+        send_2_uart3(rollerCtrlBuf, 15);
+    }
+}
+
+void send_set_roller_acc(uint16_t acc, uint16_t dec)
+{
+    uint16_t getCrc;
+    rollerCtrlBuf[0] = 0x01;
+    rollerCtrlBuf[1] = 0x10;
+    rollerCtrlBuf[2] = 0x00;
+    rollerCtrlBuf[3] = 0x67;
+    rollerCtrlBuf[4] = 0x00;
+    rollerCtrlBuf[5] = 0x02;
+    rollerCtrlBuf[6] = 0x04;
+    rollerCtrlBuf[7] = (uint8_t)((acc >> 8) & 0xFF);
+    rollerCtrlBuf[8] = (uint8_t)((acc >> 0) & 0xFF);
+    rollerCtrlBuf[9] = (uint8_t)((dec >> 8) & 0xFF);
+    rollerCtrlBuf[10] = (uint8_t)((dec >> 0) & 0xFF);
+    getCrc = crc16_modbus(&rollerCtrlBuf[0], 11);
+    rollerCtrlBuf[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    rollerCtrlBuf[12] = (uint8_t)((getCrc >> 8) & 0xFF);
+    send_2_uart3(rollerCtrlBuf, 13);
+}
+
+void send_set_roller_lock(uint16_t isNeedLock)
+{
+    uint16_t getCrc;
+    rollerCtrlBuf[0] = 0x01;
+    rollerCtrlBuf[1] = 0x06;
+    rollerCtrlBuf[2] = 0x00;
+    rollerCtrlBuf[3] = 0x6B;
+    rollerCtrlBuf[4] = (uint8_t)((isNeedLock >> 8) & 0xFF);
+    rollerCtrlBuf[5] = (uint8_t)((isNeedLock >> 0) & 0xFF);
+    getCrc = crc16_modbus(&rollerCtrlBuf[0], 6);
+    rollerCtrlBuf[6] = (uint8_t)((getCrc >> 0) & 0xFF);
+    rollerCtrlBuf[7] = (uint8_t)((getCrc >> 8) & 0xFF);
+    send_2_uart3(rollerCtrlBuf, 8);
+}
+
+void parse_set_roller_cmd(void)
+{
+    uint16_t spd, acc_m, dec_m;
+    uint8_t need_lock_m;
+    if ((rollerData.ctrl_buffer[6] == 0x01) && (rollerData.ctrl_buffer[2] == 0x07))
+    {
+        uart1SendTypeFlag.actionDir = rollerData.ctrl_buffer[7];
+        spd = (uint16_t)(((rollerData.ctrl_buffer[8] << 8) | (rollerData.ctrl_buffer[9] << 0)) & 0xFFFF);
+        switch (uart1SendTypeFlag.actionDir)
+        {
+        case DIR_STOP:
+        {
+            uart1SendTypeFlag.set_roller_valid = 0x01;
+            rollerData.action_dir = DIR_STOP;
+            rollerData.spd = 0;
+            send_ctrl_roller(DIR_STOP, rollerData.spd);
+            break;
+        }
+        case DIR_FORWARD:
+        {
+            // forward
+            if (spd <= 2500)
+            {
+                rollerData.action_dir = DIR_FORWARD;
+                rollerData.spd = spd;
+                send_ctrl_roller(DIR_FORWARD, rollerData.spd);
+                uart1SendTypeFlag.set_roller_valid = 0x01;
+            }
+            else
+            {
+                uart1SendTypeFlag.set_roller_valid = 0x00;
+            }
+
+            break;
+        }
+        case DIR_BACKWARD:
+        {
+            // backward
+            if (spd <= 2500)
+            {
+                rollerData.action_dir = DIR_BACKWARD;
+                rollerData.spd = spd;
+                send_ctrl_roller(DIR_BACKWARD, rollerData.spd);
+                uart1SendTypeFlag.set_roller_valid = 0x01;
+            }
+            else
+            {
+                uart1SendTypeFlag.set_roller_valid = 0x00;
+            }
+            break;
+        }
+        default:
+        {
+            uart1SendTypeFlag.set_roller_valid = 0x00;
+            break;
+        }
+        }
+        uart1SendTypeFlag.set_roller = 0x01;
+    }
+    else if ((rollerData.ctrl_buffer[6] == 0x02) && (rollerData.ctrl_buffer[2] == 0x08))
+    {
+        acc_m = (uint16_t)(((rollerData.ctrl_buffer[7] << 8) | (rollerData.ctrl_buffer[8] << 0)) & 0xFFFF);
+        dec_m = (uint16_t)(((rollerData.ctrl_buffer[9] << 8) | (rollerData.ctrl_buffer[10] << 0)) & 0xFFFF);
+        if ((acc_m >= 500) && (acc_m <= 3000) && (dec_m >= 500) && (dec_m <= 3000))
+        {
+            rollerData.acc = acc_m;
+            rollerData.dec = dec_m;
+            send_set_roller_acc(rollerData.acc, rollerData.dec);
+            uart1SendTypeFlag.set_roller_valid = 0x01;
+        }
+        else
+        {
+            uart1SendTypeFlag.set_roller_valid = 0x00;
+        }
+        uart1SendTypeFlag.set_roller = 0x01;
+    }
+    else if ((rollerData.ctrl_buffer[6] == 0x03) && (rollerData.ctrl_buffer[2] == 0x05))
+    {
+        need_lock_m = rollerData.ctrl_buffer[7];
+        if ((need_lock_m != 0) && (need_lock_m != 1))
+        {
+            uart1SendTypeFlag.set_roller_valid = 0x00;
+        }
+        else
+        {
+            rollerData.need_lock = need_lock_m;
+            send_set_roller_lock(rollerData.need_lock);
+            uart1SendTypeFlag.set_roller_valid = 0x01;
+        }
+        uart1SendTypeFlag.set_roller = 0x01;
+    }
+    else
+    {
+        uart1SendTypeFlag.actionDir = rollerData.ctrl_buffer[7];
+        uart1SendTypeFlag.set_roller_valid = 0x00;
+        uart1SendTypeFlag.set_roller = 0x01;
+    }
+}
+
 void usart1_rx_task_function(void *pvParameters)
 {
     uint16_t getCrc;
@@ -2174,6 +2427,14 @@ void usart1_rx_task_function(void *pvParameters)
                 case GET_UID_CMD_ID:
                 {
                     parse_get_uid_cmd();
+                    break;
+                }
+
+                case SET_ROLLER_CMD_ID:
+                {
+                    memset(rollerData.ctrl_buffer, 0, sizeof(rollerData.ctrl_buffer));
+                    memcpy(rollerData.ctrl_buffer, ctrl_buff, ctrl_buff[2] + 5);
+                    parse_set_roller_cmd();
                     break;
                 }
 
@@ -2865,4 +3126,23 @@ void USART2_IRQHandler(void)
         // USART_TDC_FLAG;
     }
 }
+
+void USART3_IRQHandler(void)
+{
+    if (usart_flag_get(USART3, USART_RDBF_FLAG) != RESET)
+    {
+        usart_flag_clear(USART3, USART_RDBF_FLAG);
+    }
+    //    if( usart_flag_get( USART3, USART_TDC_FLAG ) != RESET )
+    //    {
+    // USART_TDC_FLAG;
+    //        usart_flag_clear(USART3, USART_TDC_FLAG);
+    //    }
+    //    if( usart_flag_get( USART3, USART_TDBE_FLAG ) != RESET )
+    //    {
+    // USART_TDC_FLAG;
+    //  usart_flag_clear(USART3, USART_TDBE_FLAG);
+    //    }
+}
+
 #endif

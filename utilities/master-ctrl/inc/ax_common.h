@@ -224,6 +224,11 @@ struct uart_send_flag
     uint8_t uid_f2;
     uint8_t uid_f3;
     uint8_t uid_f4;
+
+    uint8_t actionDir;
+    uint8_t set_roller_valid;
+    uint8_t set_roller;
+    uint16_t roll_spd;
 };
 
 struct can_alive_counter

@@ -52,6 +52,8 @@
 #define SET_INTEGRATED_PWR_ID (0x114)
 #define FB_SET_INTEGRATED_PWR_ID (0x115)
 
+#define SET_ROLLER_CMD_ID (0x116)
+
 #define FB_REBOOT_CMD_ID (0x201)
 #define FB_GET_VERSION_CMD_ID (0x202)
 #define FB_SET_LEDS_CMD_ID (0x203)
@@ -70,6 +72,8 @@
 #define FB_SUB_UPDATING_APP_ID (0x20F)
 #define FB_SET_DIY_CMD_ID (0x210)
 #define FB_SET_DIY2_CMD_ID (0x211)
+
+#define FB_SET_ROLLER_CMD_ID (0x216)
 
 #define TRAY_MASTER (0x00)
 #define TRAY_F1 (0x01)
@@ -104,7 +108,24 @@ struct uart_data
     uint8_t usart_rx_buffer_size;
 };
 
-extern struct uart_data uart1_data, uart2_data;
+extern struct uart_data uart1_data, uart2_data, uart3_data;
+
+struct roller_data
+{
+    uint8_t need_lock;
+    uint8_t action_dir;
+    uint8_t ctrl_buffer[72];
+    uint16_t spd;
+    uint16_t acc;
+    uint16_t dec;
+};
+extern struct roller_data rollerData;
+enum ACTION_DIR
+{
+    DIR_STOP = 0,
+    DIR_FORWARD = 1,
+    DIR_BACKWARD = 2
+};
 
 extern uint8_t ctrl_buff[32];
 extern uint8_t ctrl_buff2[256];
@@ -182,6 +203,8 @@ void open_device_pwr(void);
  * @return      null
  */
 void toggle_led_stat(void);
+
+void send_2_uart2(uint8_t *pdate, uint8_t len);
 
 /**
  * @brief       uart发送任务
