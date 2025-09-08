@@ -4,9 +4,12 @@
 #include "ax_ws2812.h"
 
 volatile uint8_t newOtherMsgFlag = 0;
-volatile uint8_t newStsMsgFlag = 0;
+volatile uint8_t newF1StsMsgFlag = 0;
+volatile uint8_t newF2StsMsgFlag = 0;
+volatile uint8_t newF3StsMsgFlag = 0;
+volatile uint8_t newF4StsMsgFlag = 0;
 
-can_rx_message_type rx_message_struct_g, rx_message_struct_s;
+can_rx_message_type rx_message_struct_g, rx_message_struct_s[4];
 
 struct can_alive_counter canAliveCounter = {0};
 
@@ -663,43 +666,43 @@ void parse_distance_msg()
     }
 }
 
-void parse_distance_msg1()
+void parse_distance_msg1(uint8_t index)
 {
-    switch (rx_message_struct_s.standard_id)
+    switch (index)
     {
-    case RECV_F1_DISTANCE_ID:
+    case 0:
     {
-        distance[0][0] = rx_message_struct_s.data[0];
-        distance[0][1] = rx_message_struct_s.data[1];
-        distance[0][2] = rx_message_struct_s.data[2];
-        canAliveCounter.canNowCounter[0] = rx_message_struct_s.data[6];
+        distance[0][0] = rx_message_struct_s[0].data[0];
+        distance[0][1] = rx_message_struct_s[0].data[1];
+        distance[0][2] = rx_message_struct_s[0].data[2];
+        canAliveCounter.canNowCounter[0] = rx_message_struct_s[0].data[6];
         break;
     }
 
-    case RECV_F2_DISTANCE_ID:
+    case 1:
     {
-        distance[1][0] = rx_message_struct_s.data[0];
-        distance[1][1] = rx_message_struct_s.data[1];
-        distance[1][2] = rx_message_struct_s.data[2];
-        canAliveCounter.canNowCounter[1] = rx_message_struct_s.data[6];
+        distance[1][0] = rx_message_struct_s[1].data[0];
+        distance[1][1] = rx_message_struct_s[1].data[1];
+        distance[1][2] = rx_message_struct_s[1].data[2];
+        canAliveCounter.canNowCounter[1] = rx_message_struct_s[1].data[6];
         break;
     }
 
-    case RECV_F3_DISTANCE_ID:
+    case 2:
     {
-        distance[2][0] = rx_message_struct_s.data[0];
-        distance[2][1] = rx_message_struct_s.data[1];
-        distance[2][2] = rx_message_struct_s.data[2];
-        canAliveCounter.canNowCounter[2] = rx_message_struct_s.data[6];
+        distance[2][0] = rx_message_struct_s[2].data[0];
+        distance[2][1] = rx_message_struct_s[2].data[1];
+        distance[2][2] = rx_message_struct_s[2].data[2];
+        canAliveCounter.canNowCounter[2] = rx_message_struct_s[2].data[6];
         break;
     }
 
-    case RECV_F4_DISTANCE_ID:
+    case 3:
     {
-        distance[3][0] = rx_message_struct_s.data[0];
-        distance[3][1] = rx_message_struct_s.data[1];
-        distance[3][2] = rx_message_struct_s.data[2];
-        canAliveCounter.canNowCounter[3] = rx_message_struct_s.data[6];
+        distance[3][0] = rx_message_struct_s[3].data[0];
+        distance[3][1] = rx_message_struct_s[3].data[1];
+        distance[3][2] = rx_message_struct_s[3].data[2];
+        canAliveCounter.canNowCounter[3] = rx_message_struct_s[3].data[6];
         break;
     }
 
@@ -831,20 +834,25 @@ void can_rx_task_function(void *pvParameters)
     uint8_t j;
     while (1)
     {
-        if (newStsMsgFlag == VALID)
+        if (newF1StsMsgFlag == VALID)
         {
-            switch (rx_message_struct_s.standard_id)
-            {
-            case RECV_F1_DISTANCE_ID:
-            case RECV_F2_DISTANCE_ID:
-            case RECV_F3_DISTANCE_ID:
-            case RECV_F4_DISTANCE_ID:
-            {
-                parse_distance_msg1();
-                break;
-            }
-            }
-            newStsMsgFlag = INVALID;
+            parse_distance_msg1(0);
+            newF1StsMsgFlag = INVALID;
+        }
+        if (newF2StsMsgFlag == VALID)
+        {
+            parse_distance_msg1(1);
+            newF2StsMsgFlag = INVALID;
+        }
+        if (newF3StsMsgFlag == VALID)
+        {
+            parse_distance_msg1(2);
+            newF3StsMsgFlag = INVALID;
+        }
+        if (newF4StsMsgFlag == VALID)
+        {
+            parse_distance_msg1(3);
+            newF4StsMsgFlag = INVALID;
         }
         if (newOtherMsgFlag == VALID)
         {
@@ -990,10 +998,25 @@ void CAN1_RX0_IRQHandler(void)
 
         if ((rx_message_struct.standard_id >= 0x100) && (rx_message_struct.standard_id <= 0x7FF))
         {
-            if ((rx_message_struct.standard_id >= RECV_F1_DISTANCE_ID) && (rx_message_struct.standard_id <= RECV_F4_DISTANCE_ID))
+            if (rx_message_struct.standard_id == RECV_F1_DISTANCE_ID)
             {
-                memcpy((void *)&rx_message_struct_s, (void *)&rx_message_struct, sizeof(rx_message_struct));
-                newStsMsgFlag = VALID;
+                memcpy((void *)&rx_message_struct_s[0], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                newF1StsMsgFlag = VALID;
+            }
+            else if (rx_message_struct.standard_id == RECV_F2_DISTANCE_ID)
+            {
+                memcpy((void *)&rx_message_struct_s[1], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                newF2StsMsgFlag = VALID;
+            }
+            else if (rx_message_struct.standard_id == RECV_F3_DISTANCE_ID)
+            {
+                memcpy((void *)&rx_message_struct_s[2], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                newF3StsMsgFlag = VALID;
+            }
+            else if (rx_message_struct.standard_id == RECV_F4_DISTANCE_ID)
+            {
+                memcpy((void *)&rx_message_struct_s[3], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                newF4StsMsgFlag = VALID;
             }
             else
             {
