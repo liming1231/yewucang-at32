@@ -140,6 +140,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
+          <Name></Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -152,7 +153,88 @@
           <Name>UL2CM3(-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0AT32F415_256 -FS08000000 -FL040000 -FP0($$Device:-AT32F415RCT7$Flash\AT32F415_256.FLM))</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint>
+        <Bp>
+          <Number>0</Number>
+          <Type>0</Type>
+          <LineNumber>2351</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134245642</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\master_ctrl\../src/ax_uart.c\2351</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>2358</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134245670</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\master_ctrl\../src/ax_uart.c\2358</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>2370</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134246124</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\master_ctrl\../src/ax_uart.c\2370</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>2407</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134246328</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\master_ctrl\../src/ax_uart.c\2407</Expression>
+        </Bp>
+        <Bp>
+          <Number>4</Number>
+          <Type>0</Type>
+          <LineNumber>2376</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134246152</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\master_ctrl\../src/ax_uart.c\2376</Expression>
+        </Bp>
+      </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
@@ -199,6 +281,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>uart1_data</ItemText>
         </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ctrl_buff2</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
@@ -215,6 +302,11 @@
           <count>2</count>
           <WinNumber>2</WinNumber>
           <ItemText>uart2_data</ItemText>
+        </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>updateFw</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>
@@ -316,7 +408,7 @@
       <GroupNumber>1</GroupNumber>
       <FileNumber>4</FileNumber>
       <FileType>1</FileType>
-      <tvExp>1</tvExp>
+      <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\ax_uart.c</PathWithFileName>
