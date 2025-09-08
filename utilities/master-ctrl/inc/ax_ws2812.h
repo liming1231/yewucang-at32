@@ -48,7 +48,21 @@ typedef struct
     uint8_t b;
 } COLOR;
 
+typedef struct
+{
+    uint8_t mode;
+    uint8_t g;
+    uint8_t r;
+    uint8_t b;
+    uint8_t brightness;
+    uint8_t diyType;
+    uint8_t diyArr[4][2];
+} update_color_data;
+
 extern COLOR color_grb;
+
+extern update_color_data updateColorData;
+
 extern uint8_t ledMode;
 extern uint8_t ledHeaderCount;
 extern uint8_t u8TxData[LED_ARR];

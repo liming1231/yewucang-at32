@@ -106,6 +106,12 @@ int main(void)
     /* enter critical */
     taskENTER_CRITICAL();
 
+    xTimer = xTimerCreate("singalTIMERS",  // 创建定时器任务
+                          100,             // 时间周期(单位ms)
+                          pdTRUE,          // 计时模式：pdTRUE为重复计时，pdFALSE为单次计时
+                          (void *)1,       // 计时器ID=1
+                          vTimerCallback); // 计时器回调函数
+
     /* create led2 task */
     if (xTaskCreate((TaskFunction_t)led2_task_function,
                     (const char *)"LED2_task",

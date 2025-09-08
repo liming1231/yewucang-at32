@@ -113,13 +113,18 @@ extern "C"
 #define configUSE_TICK_HOOK 0
 #define configCPU_CLOCK_HZ ((unsigned long)systemcoreclock)
 #define configTICK_RATE_HZ ((TickType_t)1000)
-#define configMAX_PRIORITIES (5)
+#define configMAX_PRIORITIES (8)
 #define configMINIMAL_STACK_SIZE ((unsigned short)128)
 #define configSUPPORT_DYNAMIC_ALLOCATION 1
 #define configTOTAL_HEAP_SIZE ((size_t)(20 * 1024)) //( 8 * 1024 ) )
 #define configMAX_TASK_NAME_LEN (16)
 #define configUSE_16_BIT_TICKS 0
 #define configIDLE_SHOULD_YIELD 1
+
+#define configUSE_TIMERS 1                                          // 使用定时器
+#define configTIMER_TASK_PRIORITY 7                                 // 定时器任务优先级
+#define configTIMER_QUEUE_LENGTH 10                                 // 定时器队列长度
+#define configTIMER_TASK_STACK_DEPTH (configMINIMAL_STACK_SIZE * 5) // 定时器任务栈大小
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 0

@@ -16,6 +16,12 @@
 #define FB_F3_SET_REBOOT_ID (0x2A1)
 #define FB_F4_SET_REBOOT_ID (0x2B1)
 
+#define CTRL_GATE_ID (0x300)
+#define FB_CTRL_GATE_L_ID (0x301)
+#define FB_CTRL_GATE_H_ID (0x302)
+#define GATE_L_STS_ID (0x303)
+#define GATE_H_STS_ID (0x304)
+
 #define GET_HEARDBEAT_ID (0x600)
 
 #define FB_F1_HEARDBEAT_ID (0x680)
@@ -99,6 +105,8 @@
 #define SEND_CAN_MSG_TMVAL (10)
 
 extern can_rx_message_type rx_message_struct_g;
+extern can_rx_message_type rx_fb_ctrl_gate_struct[2];
+extern can_rx_message_type rx_gate_sts_struct[2];
 extern volatile uint8_t newOtherMsgFlag;
 
 /**

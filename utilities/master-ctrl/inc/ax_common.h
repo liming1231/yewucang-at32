@@ -11,11 +11,11 @@
 // #define VERSION (0x313136)
 
 // #define DEBUG
-// #define CAN_DAUL
+#define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31323030)
+#define VERSION (0x31323032)
 #else
-#define VERSION (0x31323031)
+#define VERSION (0x31323033)
 #endif
 #define IHAWK_CTRL
 
@@ -129,6 +129,14 @@ typedef struct _can_fw_info
 
 } can_fw_info;
 
+typedef struct _timer_flags
+{
+    uint8_t timer100ms;
+    uint8_t timer200ms;
+    uint8_t timer500ms;
+    uint8_t timer1000ms;
+} timer_flags;
+
 struct uart_send_flag
 {
     uint8_t version_own;
@@ -164,6 +172,8 @@ struct uart_send_flag
     uint8_t uid_f2;
     uint8_t uid_f3;
     uint8_t uid_f4;
+    uint8_t ctrl_gate;
+    uint8_t ctrl_gate_valid;
 };
 
 struct can_alive_counter
@@ -190,8 +200,20 @@ struct _ihawk_power_sts
     uint8_t ihawk_sts_2;
 };
 
+typedef struct _ctrl_gate_data
+{
+    uint8_t ctrlGateValid;
+    uint8_t right_l;
+    uint8_t left_l;
+    uint8_t right_h;
+    uint8_t left_h;
+} ctrl_gate_data;
+extern ctrl_gate_data ctrlGateData;
+
 extern EventBits_t taskAliveBits;
 extern volatile uint16_t distance[4][6];
+extern volatile uint8_t gateSts[2][4];
+extern volatile uint8_t gateCtrlFbValid[2];
 extern struct uart_send_flag uart1SendTypeFlag;
 extern struct uart_send_flag uart2SendTypeFlag;
 extern struct can_alive_counter canAliveCounter;
@@ -199,11 +221,14 @@ extern struct _send_can_str sendCanStr;
 
 extern struct _ihawk_power_sts ihawk_power_sts;
 
-extern can_tx_message_type canResetSensor[4];
 extern can_tx_message_type canSetLeds[4];
 extern can_tx_message_type canSetTrayLeds;
 extern can_tx_message_type canResetBoard[4];
 extern can_tx_message_type canSyncFw[4];
+
+extern can_tx_message_type gateCtrlCan;
+
+extern timer_flags timerFlags;
 
 extern uint8_t versionSub[4][6];
 extern uint8_t uidBuf[5][12];

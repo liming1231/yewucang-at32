@@ -21,6 +21,11 @@ uint16_t cmdId = 0;               // usart1_rx_task_function()
 uint16_t cmdId2 = 0;              // usart1_rx_task_function()
 can_tx_message_type ctrlData2Can; // usart1_rx_task_function()
 
+can_tx_message_type gateCtrlCan;
+
+TimerHandle_t xTimer = NULL;
+uint32_t timerCnt = 0;
+
 void device_ctrl_pins_init(void)
 {
     gpio_init_type gpio_init_struct;
@@ -641,6 +646,50 @@ void send_distance(void)
     uart1_data.usart_tx_counter = 0;
     vTaskDelay(50);
 }
+
+void send_status(void)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x11;
+    uart1_data.usart_tx_buffer[3] = 0x10;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x00;
+    uart1_data.usart_tx_buffer[6] = 0x00;
+    uart1_data.usart_tx_buffer[7] = 0x00;
+    uart1_data.usart_tx_buffer[8] = gateSts[0][0];
+    uart1_data.usart_tx_buffer[9] = gateSts[0][1];
+    uart1_data.usart_tx_buffer[10] = gateSts[0][2];
+    uart1_data.usart_tx_buffer[11] = gateSts[0][3];
+    uart1_data.usart_tx_buffer[12] = gateSts[1][0];
+    uart1_data.usart_tx_buffer[13] = gateSts[1][1];
+    uart1_data.usart_tx_buffer[14] = gateSts[1][2];
+    uart1_data.usart_tx_buffer[15] = gateSts[1][3];
+    uart1_data.usart_tx_buffer[16] = ledMode;
+    uart1_data.usart_tx_buffer[17] = color_grb.r;
+    uart1_data.usart_tx_buffer[18] = color_grb.g;
+    uart1_data.usart_tx_buffer[19] = color_grb.b;
+
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[20] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[21] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 22;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
 void send_version(uint8_t index)
 {
     uint16_t getCrc;
@@ -648,23 +697,19 @@ void send_version(uint8_t index)
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x0B;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[5] = index + 1;
-    uart1_data.usart_tx_buffer[6] = VALID;
-    uart1_data.usart_tx_buffer[7] = versionSub[index][0];
-    uart1_data.usart_tx_buffer[8] = 0x2E;
-    uart1_data.usart_tx_buffer[9] = versionSub[index][1];
-    uart1_data.usart_tx_buffer[10] = 0x2E;
-    uart1_data.usart_tx_buffer[11] = versionSub[index][2];
-    uart1_data.usart_tx_buffer[12] = 0x2E;
-    uart1_data.usart_tx_buffer[13] = versionSub[index][3];
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = 01;
+    uart1_data.usart_tx_buffer[4] = index + 1;
+    uart1_data.usart_tx_buffer[5] = 0x22;
+    uart1_data.usart_tx_buffer[6] = versionSub[index][0];
+    uart1_data.usart_tx_buffer[7] = versionSub[index][1];
+    uart1_data.usart_tx_buffer[8] = versionSub[index][2];
+    uart1_data.usart_tx_buffer[9] = versionSub[index][3];
 
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[15] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 16;
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -685,22 +730,18 @@ void send_own_version()
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x0B;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[5] = 0x00;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.version_own_valid;
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 24) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = 0x2E;
-    uart1_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 16) & 0xFF);
-    uart1_data.usart_tx_buffer[10] = 0x2E;
-    uart1_data.usart_tx_buffer[11] = (uint8_t)((VERSION >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[12] = 0x2E;
-    uart1_data.usart_tx_buffer[13] = (uint8_t)((VERSION >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = 0x01;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x22;
+    uart1_data.usart_tx_buffer[6] = (uint8_t)((VERSION >> 24) & 0xFF);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 16) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((VERSION >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 0) & 0xFF);
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[15] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 16;
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -764,22 +805,25 @@ void send_own2_version(bool sts)
     vTaskDelay(5);
 }
 
-void send_ctrl_leds_fb(uint8_t index)
+void send_ctrl_leds_fb(uint8_t sts)
 {
     uint16_t getCrc;
     memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_LEDS_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_LEDS_CMD_ID >> 0) & 0xFF); // 0x03;
-    uart1_data.usart_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_leds_valid;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x11;
+    uart1_data.usart_tx_buffer[6] = updateColorData.mode;
+    uart1_data.usart_tx_buffer[7] = updateColorData.r;
+    uart1_data.usart_tx_buffer[8] = updateColorData.g;
+    uart1_data.usart_tx_buffer[9] = updateColorData.b;
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -793,22 +837,31 @@ void send_ctrl_leds_fb(uint8_t index)
     vTaskDelay(5);
 }
 
-void send_ctrl_diy_leds_fb(uint8_t index)
+void send_ctrl_diy_leds_fb(uint8_t sts)
 {
     uint16_t getCrc;
     memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_DIY_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_DIY_CMD_ID >> 0) & 0xFF); // 0x03;
-    uart1_data.usart_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_diy_leds_valid;
+    uart1_data.usart_tx_buffer[2] = 0x0D;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x11;
+    uart1_data.usart_tx_buffer[6] = updateColorData.mode;
+    uart1_data.usart_tx_buffer[7] = updateColorData.diyArr[0][0];
+    uart1_data.usart_tx_buffer[8] = updateColorData.diyArr[0][1];
+    uart1_data.usart_tx_buffer[9] = updateColorData.diyArr[1][0];
+    uart1_data.usart_tx_buffer[10] = updateColorData.diyArr[1][1];
+    uart1_data.usart_tx_buffer[11] = updateColorData.diyArr[2][0];
+    uart1_data.usart_tx_buffer[12] = updateColorData.diyArr[2][1];
+    uart1_data.usart_tx_buffer[13] = updateColorData.diyArr[3][0];
+    uart1_data.usart_tx_buffer[14] = updateColorData.diyArr[3][1];
+    uart1_data.usart_tx_buffer[15] = updateColorData.diyType;
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[16] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[17] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 18;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -822,22 +875,31 @@ void send_ctrl_diy_leds_fb(uint8_t index)
     vTaskDelay(5);
 }
 
-void send_ctrl_diy2_leds_fb(uint8_t index)
+void send_ctrl_diy2_leds_fb(uint8_t sts)
 {
     uint16_t getCrc;
     memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_DIY2_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_DIY2_CMD_ID >> 0) & 0xFF); // 0x03;
-    uart1_data.usart_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_diy2_leds_valid;
+    uart1_data.usart_tx_buffer[2] = 0x0D;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x11;
+    uart1_data.usart_tx_buffer[6] = updateColorData.mode;
+    uart1_data.usart_tx_buffer[7] = updateColorData.diyArr[0][0];
+    uart1_data.usart_tx_buffer[8] = updateColorData.diyArr[0][1];
+    uart1_data.usart_tx_buffer[9] = updateColorData.diyArr[1][0];
+    uart1_data.usart_tx_buffer[10] = updateColorData.diyArr[1][1];
+    uart1_data.usart_tx_buffer[11] = updateColorData.diyArr[2][0];
+    uart1_data.usart_tx_buffer[12] = updateColorData.diyArr[2][1];
+    uart1_data.usart_tx_buffer[13] = updateColorData.diyArr[3][0];
+    uart1_data.usart_tx_buffer[14] = updateColorData.diyArr[3][1];
+    uart1_data.usart_tx_buffer[15] = updateColorData.diyType;
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[16] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[17] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 18;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -880,22 +942,25 @@ void send_ctrl_tray_leds_fb(uint8_t index)
     vTaskDelay(5);
 }
 
-void send_reset_sensor_fb(uint8_t index)
+void send_ctrl_usbhub_fb(uint8_t sts)
 {
     uint16_t getCrc;
     memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_SENSOR_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_SENSOR_CMD_ID >> 0) & 0xFF); // 0x04;
-    uart1_data.usart_tx_buffer[5] = index;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_sensor_valid;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x06;
+    uart1_data.usart_tx_buffer[6] = updateColorData.mode;
+    uart1_data.usart_tx_buffer[7] = 0x00;
+    uart1_data.usart_tx_buffer[8] = 0x00;
+    uart1_data.usart_tx_buffer[9] = 0x00;
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -909,22 +974,25 @@ void send_reset_sensor_fb(uint8_t index)
     vTaskDelay(5);
 }
 
-void send_ctrl_usbhub_fb(uint8_t index)
+void send_ctrl_switch_fb(uint8_t sts)
 {
     uint16_t getCrc;
     memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_USBHUB_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_USBHUB_CMD_ID >> 0) & 0xFF); // 0x05;
-    uart1_data.usart_tx_buffer[5] = 0x00;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_usbhub_valid;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x06;
+    uart1_data.usart_tx_buffer[6] = updateColorData.mode;
+    uart1_data.usart_tx_buffer[7] = 0x00;
+    uart1_data.usart_tx_buffer[8] = 0x00;
+    uart1_data.usart_tx_buffer[9] = 0x00;
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -938,22 +1006,25 @@ void send_ctrl_usbhub_fb(uint8_t index)
     vTaskDelay(5);
 }
 
-void send_ctrl_switch_fb(uint8_t index)
+void send_ctrl_andriod_fb(uint8_t sts)
 {
     uint16_t getCrc;
     memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_SWITCH_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_SWITCH_CMD_ID >> 0) & 0xFF); // 0x06;
-    uart1_data.usart_tx_buffer[5] = 0x00;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_switch_valid;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x06;
+    uart1_data.usart_tx_buffer[6] = updateColorData.mode;
+    uart1_data.usart_tx_buffer[7] = 0x00;
+    uart1_data.usart_tx_buffer[8] = 0x00;
+    uart1_data.usart_tx_buffer[9] = 0x00;
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -967,51 +1038,25 @@ void send_ctrl_switch_fb(uint8_t index)
     vTaskDelay(5);
 }
 
-void send_ctrl_andriod_fb(uint8_t index)
+void send_ctrl_acc_fb(uint8_t sts)
 {
     uint16_t getCrc;
     memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_ANDRIOD_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_ANDRIOD_CMD_ID >> 0) & 0xFF); // 0x06;
-    uart1_data.usart_tx_buffer[5] = 0x00;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_andriod_valid;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x06;
+    uart1_data.usart_tx_buffer[6] = updateColorData.mode;
+    uart1_data.usart_tx_buffer[7] = 0x00;
+    uart1_data.usart_tx_buffer[8] = 0x00;
+    uart1_data.usart_tx_buffer[9] = 0x00;
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
-
-    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
-    {
-        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
-            ;
-
-        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
-    }
-
-    uart1_data.usart_tx_counter = 0;
-    vTaskDelay(5);
-}
-
-void send_ctrl_acc_fb(uint8_t index)
-{
-    uint16_t getCrc;
-    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
-
-    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
-    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_ACC_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_ACC_CMD_ID >> 0) & 0xFF); // 0x06;
-    uart1_data.usart_tx_buffer[5] = 0x00;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_acc_valid;
-    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -1073,29 +1118,15 @@ void check_version(void)
         send_own_version();
         uart1SendTypeFlag.version_own = 0;
     }
-
     if (uart1SendTypeFlag.version_f1 == 1)
     {
-        send_version(VERSION_INDEX_F1);
+        send_version(0);
         uart1SendTypeFlag.version_f1 = 0;
     }
-
     if (uart1SendTypeFlag.version_f2 == 1)
     {
-        send_version(VERSION_INDEX_F2);
+        send_version(1);
         uart1SendTypeFlag.version_f2 = 0;
-    }
-
-    if (uart1SendTypeFlag.version_f3 == 1)
-    {
-        send_version(VERSION_INDEX_F3);
-        uart1SendTypeFlag.version_f3 = 0;
-    }
-
-    if (uart1SendTypeFlag.version_f4 == 1)
-    {
-        send_version(VERSION_INDEX_F4);
-        uart1SendTypeFlag.version_f4 = 0;
     }
 }
 
@@ -1132,74 +1163,128 @@ void check_ctrl_sw_cmd(void)
 {
     if (uart1SendTypeFlag.reset_usbhub == 1)
     {
-        send_ctrl_usbhub_fb(1);
+        send_ctrl_usbhub_fb(uart1SendTypeFlag.reset_usbhub_valid);
         uart1SendTypeFlag.reset_usbhub = 0;
     }
     if (uart1SendTypeFlag.reset_switch == 1)
     {
-        send_ctrl_switch_fb(1);
+        send_ctrl_switch_fb(uart1SendTypeFlag.reset_switch_valid);
         uart1SendTypeFlag.reset_switch = 0;
     }
     if (uart1SendTypeFlag.reset_andriod == 1)
     {
-        send_ctrl_andriod_fb(1);
+        send_ctrl_andriod_fb(uart1SendTypeFlag.reset_andriod_valid);
         uart1SendTypeFlag.reset_andriod = 0;
     }
     if (uart1SendTypeFlag.reset_acc == 1)
     {
-        send_ctrl_acc_fb(1);
+        send_ctrl_acc_fb(uart1SendTypeFlag.reset_acc_valid);
         uart1SendTypeFlag.reset_acc = 0;
+    }
+}
+
+void send_ctrl_gate_fb(uint8_t sts)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = 0x00;
+    uart1_data.usart_tx_buffer[5] = 0x24;
+    uart1_data.usart_tx_buffer[6] = ctrlGateData.right_l;
+    uart1_data.usart_tx_buffer[7] = ctrlGateData.left_l;
+    uart1_data.usart_tx_buffer[8] = ctrlGateData.right_h;
+    uart1_data.usart_tx_buffer[9] = ctrlGateData.left_h;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
+void vTimerCallback(xTimerHandle pxTimer)
+{
+    configASSERT(pxTimer);
+    timerCnt++;
+    if (timerCnt % 1 == 0)
+    {
+        timerFlags.timer100ms = 1;
+    }
+    if (timerCnt % 2 == 0)
+    {
+        timerFlags.timer200ms = 1;
+    }
+    if (timerCnt % 5 == 0)
+    {
+        timerFlags.timer500ms = 1;
+    }
+    if (timerCnt % 10 == 0)
+    {
+        timerFlags.timer1000ms = 1;
+    }
+    if (timerCnt == 10000)
+    {
+        timerCnt = 0;
     }
 }
 
 void usart1_tx_task_function(void *pvParameters)
 {
+    xTimerStart(xTimer, 200);
     while (1)
     {
-        if (updateFWFlag == 0)
+        if (updateFWFlag == 1)
         {
-            send_distance();
+            if (xTimerIsTimerActive(xTimer))
+            {
+                xTimerStop(xTimer, portMAX_DELAY);
+            }
+            taskAliveBits |= TASK_UART_TX_BIT_3;
+            vTaskDelay(500);
+            continue;
         }
 
-        if (uart1SendTypeFlag.need_reboot != 0)
+        if (uart1SendTypeFlag.ctrl_gate == 1)
         {
-            send_reboot_fb(uart1SendTypeFlag.need_reboot);
-            uart1SendTypeFlag.need_reboot = 0;
+            send_ctrl_gate_fb(uart1SendTypeFlag.ctrl_gate_valid);
+            uart1SendTypeFlag.ctrl_gate = 0;
         }
-
+        if (uart1SendTypeFlag.ctrl_leds == 1)
+        {
+            send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_leds_valid);
+            uart1SendTypeFlag.ctrl_leds = 0;
+        }
         if (uart1SendTypeFlag.ctrl_diy_leds != 0x00)
         {
-            send_ctrl_diy_leds_fb(uart1SendTypeFlag.ctrl_diy_leds);
+            send_ctrl_diy_leds_fb(uart1SendTypeFlag.ctrl_diy_leds_valid);
             uart1SendTypeFlag.ctrl_diy_leds = 0;
         }
 
         if (uart1SendTypeFlag.ctrl_diy2_leds != 0x00)
         {
-            send_ctrl_diy2_leds_fb(uart1SendTypeFlag.ctrl_diy2_leds);
+            send_ctrl_diy2_leds_fb(uart1SendTypeFlag.ctrl_diy2_leds_valid);
             uart1SendTypeFlag.ctrl_diy2_leds = 0;
         }
-
-        if (uart1SendTypeFlag.ctrl_leds != 0)
+        if (timerFlags.timer200ms == 1)
         {
-            send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_leds);
-            uart1SendTypeFlag.ctrl_leds = 0;
-        }
-
-        if (uart1SendTypeFlag.ctrl_tray_leds != 0)
-        {
-            send_ctrl_tray_leds_fb(uart1SendTypeFlag.ctrl_tray_leds);
-            uart1SendTypeFlag.ctrl_tray_leds = 0;
-        }
-
-        if (uart1SendTypeFlag.reset_sensor != 0)
-        {
-            send_reset_sensor_fb(uart1SendTypeFlag.reset_sensor);
-            uart1SendTypeFlag.reset_sensor = 0;
+            send_status();
+            timerFlags.timer200ms = 0;
         }
 
         check_version();
-
-        check_uid();
 
         check_ctrl_sw_cmd();
 
@@ -1236,23 +1321,6 @@ void init_can_msg(void)
     canSetTrayLeds.frame_type = CAN_TFT_DATA;
     canSetTrayLeds.dlc = 8;
 
-    canResetSensor[0].extended_id = 0;
-    canResetSensor[0].id_type = CAN_ID_STANDARD;
-    canResetSensor[0].frame_type = CAN_TFT_DATA;
-    canResetSensor[0].dlc = 8;
-    canResetSensor[1].extended_id = 0;
-    canResetSensor[1].id_type = CAN_ID_STANDARD;
-    canResetSensor[1].frame_type = CAN_TFT_DATA;
-    canResetSensor[1].dlc = 8;
-    canResetSensor[2].extended_id = 0;
-    canResetSensor[2].id_type = CAN_ID_STANDARD;
-    canResetSensor[2].frame_type = CAN_TFT_DATA;
-    canResetSensor[2].dlc = 8;
-    canResetSensor[3].extended_id = 0;
-    canResetSensor[3].id_type = CAN_ID_STANDARD;
-    canResetSensor[3].frame_type = CAN_TFT_DATA;
-    canResetSensor[3].dlc = 8;
-
     canResetBoard[0].extended_id = 0;
     canResetBoard[0].id_type = CAN_ID_STANDARD;
     canResetBoard[0].frame_type = CAN_TFT_DATA;
@@ -1269,6 +1337,11 @@ void init_can_msg(void)
     canResetBoard[3].id_type = CAN_ID_STANDARD;
     canResetBoard[3].frame_type = CAN_TFT_DATA;
     canResetBoard[3].dlc = 8;
+
+    gateCtrlCan.extended_id = 0;
+    gateCtrlCan.id_type = CAN_ID_STANDARD;
+    gateCtrlCan.frame_type = CAN_TFT_DATA;
+    gateCtrlCan.dlc = 8;
 }
 
 void target_reset_can_data(uint8_t index)
@@ -1290,17 +1363,6 @@ void target_set_ws2812b_can_data(uint8_t index, uint8_t mode, uint8_t r, uint8_t
     canSetLeds[index].data[4] = 0x00;
     canSetLeds[index].data[5] = 0x00;
     canSetLeds[index].data[6] = 0x00;
-}
-
-void target_reset_sensor_can_data(uint8_t index)
-{
-    canResetSensor[index].data[0] = 0x01;
-    canResetSensor[index].data[1] = 0x00;
-    canResetSensor[index].data[2] = 0x00;
-    canResetSensor[index].data[3] = 0x00;
-    canResetSensor[index].data[4] = 0x00;
-    canResetSensor[index].data[5] = 0x00;
-    canResetSensor[index].data[6] = 0x00;
 }
 
 void target_sync_fw_can_data(uint8_t index, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4, uint8_t data5, uint8_t data6, uint8_t data7, uint8_t data8)
@@ -1421,11 +1483,22 @@ void parse_at32_get_ver_cmd(uint8_t index)
         if (index == 1)
         {
             ctrlData2Can.standard_id = GET_F1_VERSION_ID;
+            ctrlData2Can.data[0] = 0x01;
+            ctrlData2Can.data[1] = 0x00;
+            ctrlData2Can.data[2] = 0x00;
+            ctrlData2Can.data[3] = 0x00;
+            can_transmit_ctrl_data(&ctrlData2Can);
         }
 
         else if (index == 2)
         {
             ctrlData2Can.standard_id = GET_F2_VERSION_ID;
+
+            ctrlData2Can.data[0] = 0x01;
+            ctrlData2Can.data[1] = 0x00;
+            ctrlData2Can.data[2] = 0x00;
+            ctrlData2Can.data[3] = 0x00;
+            can_transmit_ctrl_data(&ctrlData2Can);
         }
 
         //		target_ver_uid_can_data();
@@ -1437,7 +1510,7 @@ void parse_at32_ctrl_usbhub_cmd(uint8_t mode)
 {
     if (mode > 2)
     {
-        uart1SendTypeFlag.reset_usbhub_valid = 0;
+        uart1SendTypeFlag.reset_usbhub_valid = 2;
         uart1SendTypeFlag.reset_usbhub = 0x01;
     }
     else
@@ -1459,6 +1532,7 @@ void parse_at32_ctrl_usbhub_cmd(uint8_t mode)
             usbhub_ctrl(1);
             uart1SendTypeFlag.reset_usbhub_valid = 1;
         }
+        uart1SendTypeFlag.reset_usbhub = 0x01;
     }
 }
 
@@ -1759,53 +1833,76 @@ void parse_ctrl_tray_leds_cmd(void)
 
 void parse_at32_diy_led_cmd(update_color_data *updateColorData)
 {
-    if (ctrl_buff[2] != 0x0C)
+
+    if (updateColorData->diyType > LED_COLOR_TYPE_MAX)
     {
         diyShowDataSts = 0;
-        uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_diy_leds_valid = 2;
+        uart1SendTypeFlag.ctrl_diy_leds = 0x01;
     }
     else
     {
-        if ((ctrl_buff[5] != 0x00) || (ctrl_buff[14] > LED_COLOR_TYPE_MAX))
-        {
-            diyShowDataSts = 0;
-            uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
-            uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
-        }
-        else
-        {
-            diyShowDataSts = 1;
-            uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
-            uart1SendTypeFlag.ctrl_diy_leds = 0x0f;
-        }
-        if (diyShowDataSts == 1)
-        {
-            diyArr[0][0] = ctrl_buff[6];
-            diyArr[0][1] = ctrl_buff[7];
-            diyArr[1][0] = ctrl_buff[8];
-            diyArr[1][1] = ctrl_buff[9];
-            diyArr[2][0] = ctrl_buff[10];
-            diyArr[2][1] = ctrl_buff[11];
-            diyArr[3][0] = ctrl_buff[12];
-            diyArr[3][1] = ctrl_buff[13];
-            diyColor = ctrl_buff[14];
-            ledMode = DIY_SHOW;
-        }
+        diyShowDataSts = 1;
+        uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
+        uart1SendTypeFlag.ctrl_diy_leds = 0x01;
+    }
+    if (diyShowDataSts == 1)
+    {
+        diyArr[0][0] = updateColorData->diyArr[0][0];
+        diyArr[0][1] = updateColorData->diyArr[0][1];
+        diyArr[1][0] = updateColorData->diyArr[1][0];
+        diyArr[1][1] = updateColorData->diyArr[1][1];
+        diyArr[2][0] = updateColorData->diyArr[2][0];
+        diyArr[2][1] = updateColorData->diyArr[2][1];
+        diyArr[3][0] = updateColorData->diyArr[3][0];
+        diyArr[3][1] = updateColorData->diyArr[3][1];
+        diyColor = updateColorData->diyType;
+        ledMode = DIY_SHOW;
     }
 }
+
+void parse_at32_diy2_led_cmd(update_color_data *updateColorData)
+{
+
+    if (updateColorData->diyType > LED_COLOR_TYPE_MAX)
+    {
+        diyShowDataSts = 0;
+        uart1SendTypeFlag.ctrl_diy_leds_valid = 2;
+        uart1SendTypeFlag.ctrl_diy_leds = 0x01;
+    }
+    else
+    {
+        diyShowDataSts = 1;
+        uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
+        uart1SendTypeFlag.ctrl_diy_leds = 0x01;
+    }
+    if (diyShowDataSts == 1)
+    {
+        diyArr[0][0] = updateColorData->diyArr[0][0];
+        diyArr[0][1] = updateColorData->diyArr[0][1];
+        diyArr[1][0] = updateColorData->diyArr[1][0];
+        diyArr[1][1] = updateColorData->diyArr[1][1];
+        diyArr[2][0] = updateColorData->diyArr[2][0];
+        diyArr[2][1] = updateColorData->diyArr[2][1];
+        diyArr[3][0] = updateColorData->diyArr[3][0];
+        diyArr[3][1] = updateColorData->diyArr[3][1];
+        diyColor = updateColorData->diyType;
+        ledMode = DIY2_SHOW;
+    }
+}
+
 void parse_at32_ctrl_leds_cmd(update_color_data *updateColorData)
 {
     if ((updateColorData->mode > 6))
     {
-        uart1SendTypeFlag.ctrl_leds_valid = 0;
+        uart1SendTypeFlag.ctrl_leds_valid = 2;
         uart1SendTypeFlag.ctrl_leds = 1;
     }
     else if (updateColorData->mode <= 4)
     {
-        if ((updateColorData->r > MAX_BRIGHTNESS) && (updateColorData->g > MAX_BRIGHTNESS) && (updateColorData->b > MAX_BRIGHTNESS))
+        if ((updateColorData->r > MAX_BRIGHTNESS) || (updateColorData->g > MAX_BRIGHTNESS) || (updateColorData->b > MAX_BRIGHTNESS))
         {
-            uart1SendTypeFlag.ctrl_leds_valid = 0;
+            uart1SendTypeFlag.ctrl_leds_valid = 2;
             uart1SendTypeFlag.ctrl_leds = 1;
         }
         else
@@ -1821,54 +1918,14 @@ void parse_at32_ctrl_leds_cmd(update_color_data *updateColorData)
     else if (updateColorData->mode == 5)
     {
         parse_at32_diy_led_cmd(updateColorData);
+        uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
+        uart1SendTypeFlag.ctrl_diy_leds = 0x01;
     }
-    else if ((mode == RAINBOW) && (ctrl_buff[7] > 0x64))
+    else if (updateColorData->mode == 6)
     {
-        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
-    }
-
-    else if (ctrl_buff[5] == TRAY_MASTER)
-    {
-        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
-    }
-}
-
-void parse_reset_sensor_cmd(void)
-{
-    if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[5] == TRAY_MASTER))
-    {
-        uart1SendTypeFlag.reset_sensor_valid = 0;
-        uart1SendTypeFlag.reset_sensor = ctrl_buff[5];
-    }
-
-    else if (ctrl_buff[5] == TRAY_F1)
-    {
-        canResetSensor[0].standard_id = RESET_F1_SENSOR_ID;
-        target_reset_sensor_can_data(0);
-        sendCanStr.resetSensor[0] = 1;
-    }
-
-    else if (ctrl_buff[5] == TRAY_F2)
-    {
-        canResetSensor[1].standard_id = RESET_F2_SENSOR_ID;
-        target_reset_sensor_can_data(1);
-        sendCanStr.resetSensor[1] = 1;
-    }
-
-    else if (ctrl_buff[5] == TRAY_F3)
-    {
-        canResetSensor[2].standard_id = RESET_F3_SENSOR_ID;
-        target_reset_sensor_can_data(2);
-        sendCanStr.resetSensor[2] = 1;
-    }
-
-    else if (ctrl_buff[5] == TRAY_F4)
-    {
-        canResetSensor[3].standard_id = RESET_F4_SENSOR_ID;
-        target_reset_sensor_can_data(3);
-        sendCanStr.resetSensor[3] = 1;
+        parse_at32_diy2_led_cmd(updateColorData);
+        uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
+        uart1SendTypeFlag.ctrl_diy_leds = 0x01;
     }
 }
 
@@ -2020,6 +2077,16 @@ void parse_get_uid_cmd(void)
     }
 }
 
+void parse_at32_ctrl_gate_24_cmd(ctrl_gate_data *cgd)
+{
+    gateCtrlCan.standard_id = CTRL_GATE_ID;
+    gateCtrlCan.data[0] = cgd->right_l;
+    gateCtrlCan.data[1] = cgd->left_l;
+    gateCtrlCan.data[2] = cgd->right_h;
+    gateCtrlCan.data[3] = cgd->left_h;
+    can_transmit_ctrl_data(&gateCtrlCan);
+}
+
 void usart1_rx_task_function(void *pvParameters)
 {
     uint16_t getCrc;
@@ -2036,7 +2103,7 @@ void usart1_rx_task_function(void *pvParameters)
             {
                 if (ctrl_buff[3] == 0x00)
                 {
-                    cmdId = ((ctrl_buff[4] << 8) | ctrl_buff[5]) & 0xFFFF;
+                    cmdId = ctrl_buff[5];
                     switch (cmdId)
                     {
                     case AT32_REBOOT_CMD_ID:
@@ -2046,7 +2113,7 @@ void usart1_rx_task_function(void *pvParameters)
                     }
                     case AT32_GET_VERSION_CMD_ID:
                     {
-                        parse_at32_get_ver_cmd(ctrl_buff[6]);
+                        parse_at32_get_ver_cmd(ctrl_buff[4]);
                         break;
                     }
                     case AT32_CTRL_USBHUB_CMD_ID:
@@ -2056,7 +2123,27 @@ void usart1_rx_task_function(void *pvParameters)
                     }
                     case AT32_CTRL_WS2812B_CMD_ID:
                     {
-                        parse_at32_ctrl_ws2812b_cmd(ctrl_buff[6]);
+                        updateColorData.mode = ctrl_buff[6];
+                        if (updateColorData.mode <= 4)
+                        {
+                            updateColorData.r = ctrl_buff[7];
+                            updateColorData.g = ctrl_buff[8];
+                            updateColorData.b = ctrl_buff[9];
+                            parse_at32_ctrl_leds_cmd(&updateColorData);
+                        }
+                        else if ((updateColorData.mode >= 5) && (updateColorData.mode <= 6))
+                        {
+                            updateColorData.diyArr[0][0] = updateColorData.r = ctrl_buff[7];
+                            updateColorData.diyArr[0][1] = updateColorData.r = ctrl_buff[8];
+                            updateColorData.diyArr[1][0] = updateColorData.r = ctrl_buff[9];
+                            updateColorData.diyArr[1][1] = updateColorData.r = ctrl_buff[10];
+                            updateColorData.diyArr[2][0] = updateColorData.r = ctrl_buff[11];
+                            updateColorData.diyArr[2][1] = updateColorData.r = ctrl_buff[12];
+                            updateColorData.diyArr[3][0] = updateColorData.r = ctrl_buff[13];
+                            updateColorData.diyArr[3][1] = updateColorData.r = ctrl_buff[14];
+                            updateColorData.diyType = ctrl_buff[15];
+                            parse_at32_ctrl_leds_cmd(&updateColorData);
+                        }
                         break;
                     }
                     case AT32_CTRL_ACC_CMD_ID:
@@ -2078,12 +2165,54 @@ void usart1_rx_task_function(void *pvParameters)
 
                     case AT32_CTRL_GATE_23_CMD_ID:
                     {
-                        // parse_at32_ctrl_gate_23_cmd(ctrl_buff[6]);
+                        if ((ctrl_buff[6] != 0x01) && (ctrl_buff[6] != 0x02))
+                        {
+                            uart1SendTypeFlag.ctrl_gate_valid = 2;
+                            uart1SendTypeFlag.ctrl_gate = 1;
+                        }
+                        else if (ctrl_buff[6] == 0x01)
+                        {
+
+                            ctrlGateData.right_l = 0x01;
+                            ctrlGateData.left_l = 0x01;
+                            ctrlGateData.right_h = 0x01;
+                            ctrlGateData.left_h = 0x01;
+                            uart1SendTypeFlag.ctrl_gate_valid = 1;
+                            uart1SendTypeFlag.ctrl_gate = 1;
+                            parse_at32_ctrl_gate_24_cmd(&ctrlGateData);
+                            ctrlGateData.ctrlGateValid = 1;
+                        }
+                        else if (ctrl_buff[6] == 0x02)
+                        {
+                            ctrlGateData.right_l = 0x02;
+                            ctrlGateData.left_l = 0x02;
+                            ctrlGateData.right_h = 0x02;
+                            ctrlGateData.left_h = 0x02;
+                            uart1SendTypeFlag.ctrl_gate_valid = 1;
+                            uart1SendTypeFlag.ctrl_gate = 1;
+                            parse_at32_ctrl_gate_24_cmd(&ctrlGateData);
+                            ctrlGateData.ctrlGateValid = 1;
+                        }
                         break;
                     }
                     case AT32_CTRL_GATE_24_CMD_ID:
                     {
-                        // parse_at32_ctrl_gate_24_cmd(ctrl_buff[6]);
+                        if ((ctrl_buff[6] > 3) || (ctrl_buff[7] > 3) || (ctrl_buff[8] > 3) || (ctrl_buff[9] > 3))
+                        {
+                            uart1SendTypeFlag.ctrl_gate_valid = 2;
+                            uart1SendTypeFlag.ctrl_gate = 1;
+                        }
+                        else
+                        {
+                            ctrlGateData.right_l = ctrl_buff[6];
+                            ctrlGateData.left_l = ctrl_buff[7];
+                            ctrlGateData.right_h = ctrl_buff[8];
+                            ctrlGateData.left_h = ctrl_buff[9];
+                            uart1SendTypeFlag.ctrl_gate_valid = 1;
+                            uart1SendTypeFlag.ctrl_gate = 1;
+                            ctrlGateData.ctrlGateValid = 1;
+                            parse_at32_ctrl_gate_24_cmd(&ctrlGateData);
+                        }
                         break;
                     }
                     default:
@@ -2091,83 +2220,6 @@ void usart1_rx_task_function(void *pvParameters)
                         break;
                     }
                     }
-                }
-                cmdId = ((ctrl_buff[3] << 8) | ctrl_buff[4]) & 0xFFFF;
-
-                switch (cmdId)
-                {
-                case REBOOT_CMD_ID:
-                {
-                    parse_reboot_cmd(ctrl_buff[5]);
-                    break;
-                }
-
-                case GET_VERSION_CMD_ID:
-                {
-                    parse_get_ver_cmd(ctrl_buff[5]);
-                    break;
-                }
-
-                case SET_DIY_CMD_ID:
-                {
-                    parse_diy_led_cmd();
-                    break;
-                }
-
-                case SET_DIY2_CMD_ID:
-                {
-                    parse_diy2_led_cmd();
-                    break;
-                }
-
-                case SET_LEDS_CMD_ID:
-                {
-                    parse_ctrl_leds_cmd();
-                    break;
-                }
-#if 1
-                case SET_TRAY_LEDS_CMD_ID:
-                {
-                    parse_ctrl_tray_leds_cmd();
-                    break;
-                }
-#endif
-                case RESET_SENSOR_CMD_ID:
-                {
-                    parse_reset_sensor_cmd();
-                    break;
-                }
-
-                case RESET_USBHUB_CMD_ID:
-                {
-                    parse_reset_usbhub_cmd();
-                    break;
-                }
-                case RESET_SWITCH_CMD_ID:
-                {
-                    parse_reset_sw_cmd();
-                    break;
-                }
-                case RESET_ANDRIOD_CMD_ID:
-                {
-                    parse_reset_andriod();
-                    break;
-                }
-                case RESET_ACC_CMD_ID:
-                {
-                    parse_reset_acc_cmd();
-                    break;
-                }
-                case GET_UID_CMD_ID:
-                {
-                    parse_get_uid_cmd();
-                    break;
-                }
-
-                default:
-                {
-                    break;
-                }
                 }
             }
             // xTaskResumeAll();
@@ -2559,36 +2611,6 @@ void parse_update_abort_msg(void)
         xorData[1] = 0xFF;
         updateFWFlag = 0;
         // usart_interrupt_enable( USART1, USART_RDBF_INT, TRUE );
-    }
-}
-
-void parse_sync_sub_fw_msg(void)
-{
-    if ((ctrl_buff[5] > 0) && (ctrl_buff[5] < 5))
-    {
-        if (ctrl_buff[5] == TRAY_F1)
-        {
-            canSyncFw[0].standard_id = SYNC_F1_FW_ID;
-        }
-        else if (ctrl_buff[5] == TRAY_F2)
-        {
-            canSyncFw[1].standard_id = SYNC_F2_FW_ID;
-        }
-        else if (ctrl_buff[5] == TRAY_F3)
-        {
-            canSyncFw[2].standard_id = SYNC_F3_FW_ID;
-        }
-        else if (ctrl_buff[5] == TRAY_F4)
-        {
-            canSyncFw[3].standard_id = SYNC_F4_FW_ID;
-        }
-        target_sync_fw_can_data(ctrl_buff[5] - 1, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9], ctrl_buff[10], ctrl_buff[11], ctrl_buff[12], ctrl_buff[13]);
-        sendCanStr.sync_fw[ctrl_buff[5] - 1] = 1;
-    }
-    else
-    {
-        uart2SendTypeFlag.fw_info.sync_sub_fw_valid = 0;
-        uart2SendTypeFlag.fw_info.sync_sub_fw = ctrl_buff[5];
     }
 }
 

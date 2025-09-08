@@ -9,7 +9,12 @@ volatile uint8_t newF2StsMsgFlag = 0;
 volatile uint8_t newF3StsMsgFlag = 0;
 volatile uint8_t newF4StsMsgFlag = 0;
 
+volatile uint8_t fbCtrlGateMsgFlag[2] = {0};
+volatile uint8_t gateStsMsgFlag[2] = {0};
+
 can_rx_message_type rx_message_struct_g, rx_message_struct_s[4];
+can_rx_message_type rx_fb_ctrl_gate_struct[2];
+can_rx_message_type rx_gate_sts_struct[2];
 
 struct can_alive_counter canAliveCounter = {0};
 
@@ -713,6 +718,56 @@ void parse_distance_msg1(uint8_t index)
     }
 }
 
+void parse_gate_sts(uint8_t index)
+{
+    switch (index)
+    {
+    case 0:
+    {
+        gateSts[0][0] = rx_gate_sts_struct[0].data[0];
+        gateSts[0][1] = rx_gate_sts_struct[0].data[1];
+        gateSts[0][2] = rx_gate_sts_struct[0].data[2];
+        gateSts[0][3] = rx_gate_sts_struct[0].data[3];
+        canAliveCounter.canNowCounter[0] = rx_gate_sts_struct[0].data[6];
+        break;
+    }
+    case 1:
+    {
+        gateSts[1][0] = rx_gate_sts_struct[1].data[0];
+        gateSts[1][1] = rx_gate_sts_struct[1].data[1];
+        gateSts[1][2] = rx_gate_sts_struct[1].data[2];
+        gateSts[1][3] = rx_gate_sts_struct[1].data[3];
+        canAliveCounter.canNowCounter[0] = rx_gate_sts_struct[1].data[6];
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+}
+
+void parse_fb_gate_msg(uint8_t index)
+{
+    switch (index)
+    {
+    case 0:
+    {
+        gateCtrlFbValid[0] = rx_fb_ctrl_gate_struct[0].data[6];
+        break;
+    }
+    case 1:
+    {
+        gateCtrlFbValid[1] = rx_fb_ctrl_gate_struct[1].data[6];
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+}
+
 void send_ws2812b_msg(void)
 {
     if (sendCanStr.setTrayWs2812b == 1)
@@ -754,37 +809,6 @@ void send_ws2812b_msg(void)
     }
 }
 
-void send_reset_sensor_msg(void)
-{
-    if (sendCanStr.resetSensor[0] == 1)
-    {
-        can_transmit_ctrl_data(&canResetSensor[0]);
-        sendCanStr.resetSensor[0] = 0;
-        vTaskDelay(SEND_CAN_MSG_TMVAL);
-    }
-
-    if (sendCanStr.resetSensor[1] == 1)
-    {
-        can_transmit_ctrl_data(&canResetSensor[1]);
-        sendCanStr.resetSensor[1] = 0;
-        vTaskDelay(SEND_CAN_MSG_TMVAL);
-    }
-
-    if (sendCanStr.resetSensor[2] == 1)
-    {
-        can_transmit_ctrl_data(&canResetSensor[2]);
-        sendCanStr.resetSensor[2] = 0;
-        vTaskDelay(SEND_CAN_MSG_TMVAL);
-    }
-
-    if (sendCanStr.resetSensor[3] == 1)
-    {
-        can_transmit_ctrl_data(&canResetSensor[3]);
-        sendCanStr.resetSensor[3] = 0;
-        vTaskDelay(SEND_CAN_MSG_TMVAL);
-    }
-}
-
 void send_reset_board_msg(void)
 {
     if (sendCanStr.resetBoard[0] == 1)
@@ -816,15 +840,24 @@ void send_reset_board_msg(void)
     }
 }
 
+void send_gate_ctrl_msg(void)
+{
+    if (ctrlGateData.ctrlGateValid == 1)
+    {
+        can_transmit_ctrl_data(&gateCtrlCan);
+        ctrlGateData.ctrlGateValid = 0;
+        vTaskDelay(SEND_CAN_MSG_TMVAL);
+    }
+}
 void can_tx_task_function(void *pvParameters)
 {
     //	uint8_t CounterTm = 0;
 
     while (1)
     {
-        send_ws2812b_msg();
-        send_reset_sensor_msg();
-        send_reset_board_msg();
+        // send_ws2812b_msg();
+        // send_reset_board_msg();
+        send_gate_ctrl_msg();
         vTaskDelay(50);
         taskAliveBits |= TASK_CAN_TX_BIT_4;
     }
@@ -834,26 +867,49 @@ void can_rx_task_function(void *pvParameters)
     uint8_t j;
     while (1)
     {
-        if (newF1StsMsgFlag == VALID)
+#if 0
+        if(newF1StsMsgFlag == VALID)
         {
             parse_distance_msg1(0);
             newF1StsMsgFlag = INVALID;
         }
-        if (newF2StsMsgFlag == VALID)
+        if(newF2StsMsgFlag == VALID)
         {
             parse_distance_msg1(1);
             newF2StsMsgFlag = INVALID;
         }
-        if (newF3StsMsgFlag == VALID)
+        if(newF3StsMsgFlag == VALID)
         {
             parse_distance_msg1(2);
             newF3StsMsgFlag = INVALID;
         }
-        if (newF4StsMsgFlag == VALID)
+        if(newF4StsMsgFlag == VALID)
         {
             parse_distance_msg1(3);
             newF4StsMsgFlag = INVALID;
         }
+#endif
+        if (gateStsMsgFlag[0] == VALID)
+        {
+            parse_gate_sts(0);
+            gateStsMsgFlag[0] = INVALID;
+        }
+        if (gateStsMsgFlag[1] == VALID)
+        {
+            parse_gate_sts(1);
+            gateStsMsgFlag[1] = INVALID;
+        }
+        if (fbCtrlGateMsgFlag[0] == VALID)
+        {
+            parse_fb_gate_msg(0);
+            fbCtrlGateMsgFlag[0] = INVALID;
+        }
+        if (fbCtrlGateMsgFlag[1] == VALID)
+        {
+            parse_fb_gate_msg(1);
+            fbCtrlGateMsgFlag[1] = INVALID;
+        }
+
         if (newOtherMsgFlag == VALID)
         {
             switch (rx_message_struct_g.standard_id)
@@ -998,30 +1054,62 @@ void CAN1_RX0_IRQHandler(void)
 
         if ((rx_message_struct.standard_id >= 0x100) && (rx_message_struct.standard_id <= 0x7FF))
         {
-            if (rx_message_struct.standard_id == RECV_F1_DISTANCE_ID)
+            switch (rx_message_struct.standard_id)
+            {
+            case RECV_F1_DISTANCE_ID:
             {
                 memcpy((void *)&rx_message_struct_s[0], (void *)&rx_message_struct, sizeof(rx_message_struct));
                 newF1StsMsgFlag = VALID;
+                break;
             }
-            else if (rx_message_struct.standard_id == RECV_F2_DISTANCE_ID)
+            case RECV_F2_DISTANCE_ID:
             {
                 memcpy((void *)&rx_message_struct_s[1], (void *)&rx_message_struct, sizeof(rx_message_struct));
                 newF2StsMsgFlag = VALID;
+                break;
             }
-            else if (rx_message_struct.standard_id == RECV_F3_DISTANCE_ID)
+            case RECV_F3_DISTANCE_ID:
             {
                 memcpy((void *)&rx_message_struct_s[2], (void *)&rx_message_struct, sizeof(rx_message_struct));
                 newF3StsMsgFlag = VALID;
+                break;
             }
-            else if (rx_message_struct.standard_id == RECV_F4_DISTANCE_ID)
+            case RECV_F4_DISTANCE_ID:
             {
                 memcpy((void *)&rx_message_struct_s[3], (void *)&rx_message_struct, sizeof(rx_message_struct));
                 newF4StsMsgFlag = VALID;
+                break;
             }
-            else
+            case GATE_L_STS_ID:
+            {
+                memcpy((void *)&rx_gate_sts_struct[0], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                gateStsMsgFlag[0] = VALID;
+                break;
+            }
+            case GATE_H_STS_ID:
+            {
+                memcpy((void *)&rx_gate_sts_struct[1], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                gateStsMsgFlag[1] = VALID;
+                break;
+            }
+            case FB_CTRL_GATE_L_ID:
+            {
+                memcpy((void *)&rx_fb_ctrl_gate_struct[0], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                fbCtrlGateMsgFlag[0] = VALID;
+                break;
+            }
+            case FB_CTRL_GATE_H_ID:
+            {
+                memcpy((void *)&rx_fb_ctrl_gate_struct[1], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                fbCtrlGateMsgFlag[1] = VALID;
+                break;
+            }
+            default:
             {
                 memcpy((void *)&rx_message_struct_g, (void *)&rx_message_struct, sizeof(rx_message_struct));
                 newOtherMsgFlag = VALID;
+                break;
+            }
             }
         }
     }

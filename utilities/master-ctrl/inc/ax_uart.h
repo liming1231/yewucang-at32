@@ -30,27 +30,27 @@
 
 #define REBOOT_CMD_ID (0x101)
 #define GET_VERSION_CMD_ID (0x102)
-#define SET_LEDS_CMD_ID (0x103)
-#define RESET_SENSOR_CMD_ID (0x104)
+// #define SET_LEDS_CMD_ID         (0x103)
+// #define RESET_SENSOR_CMD_ID     (0x104)
 #define RESET_USBHUB_CMD_ID (0x105)
 #define RESET_SWITCH_CMD_ID (0x106)
 #define RESET_ANDRIOD_CMD_ID (0x107)
 #define RESET_ACC_CMD_ID (0x108)
-#define GET_UID_CMD_ID (0x109)
-#define SET_TRAY_LEDS_CMD_ID (0x10A)
+// #define GET_UID_CMD_ID          (0x109)
+// #define SET_TRAY_LEDS_CMD_ID    (0x10A)
 
 #define SET_IHAWK_CMD_ID (0x10B)
 #define GET_IHAWK_STS_ID (0x10C)
 
-#define SYNC_SUB_FW_INFO_ID (0x10D)
-#define SUB_UPDATING_APP_ID (0x10F)
-#define SET_DIY_CMD_ID (0x110)
-#define SET_DIY2_CMD_ID (0x111)
+// #define SYNC_SUB_FW_INFO_ID     (0x10D)
+// #define SUB_UPDATING_APP_ID     (0x10F)
+// #define SET_DIY_CMD_ID          (0x110)
+// #define SET_DIY2_CMD_ID         (0x111)
 
 #define FB_REBOOT_CMD_ID (0x201)
 #define FB_GET_VERSION_CMD_ID (0x202)
-#define FB_SET_LEDS_CMD_ID (0x203)
-#define FB_RESET_SENSOR_CMD_ID (0x204)
+// #define FB_SET_LEDS_CMD_ID      (0x203)
+// #define FB_RESET_SENSOR_CMD_ID  (0x204)
 #define FB_RESET_USBHUB_CMD_ID (0x205)
 #define FB_RESET_SWITCH_CMD_ID (0x206)
 #define FB_RESET_ANDRIOD_CMD_ID (0x207)
@@ -61,8 +61,8 @@
 #define FB_SET_IHAWK_CMD_ID (0x20B)
 #define FB_GET_IHAWK_STS_ID (0x20C)
 
-#define FB_SYNC_SUB_FW_INFO_ID (0x20D)
-#define FB_SUB_UPDATING_APP_ID (0x20F)
+// #define FB_SYNC_SUB_FW_INFO_ID  (0x20D)
+// #define FB_SUB_UPDATING_APP_ID  (0x20F)
 #define FB_SET_DIY_CMD_ID (0x210)
 #define FB_SET_DIY2_CMD_ID (0x211)
 
@@ -114,6 +114,11 @@ extern struct uart_data uart1_data, uart2_data;
 extern uint8_t ctrl_buff[32];
 extern uint8_t ctrl_buff2[256];
 extern uint8_t update_buff[16][128];
+
+extern TimerHandle_t xTimer;
+extern uint32_t timerCnt;
+
+void vTimerCallback(xTimerHandle pxTimer);
 
 /**
  * @brief       设备控制引脚初始化

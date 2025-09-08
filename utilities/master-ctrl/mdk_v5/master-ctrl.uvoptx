@@ -200,6 +200,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>uart1_data</ItemText>
         </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>versionSub[1]</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
