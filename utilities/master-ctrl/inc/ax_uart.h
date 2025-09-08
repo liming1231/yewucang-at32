@@ -47,6 +47,11 @@
 #define SET_DIY_CMD_ID (0x110)
 #define SET_DIY2_CMD_ID (0x111)
 
+#define QUERY_INTEGRATED_PWR_ID (0x112)
+#define FB_QUERY_INTEGRATED_PWR_ID (0x113)
+#define SET_INTEGRATED_PWR_ID (0x114)
+#define FB_SET_INTEGRATED_PWR_ID (0x115)
+
 #define FB_REBOOT_CMD_ID (0x201)
 #define FB_GET_VERSION_CMD_ID (0x202)
 #define FB_SET_LEDS_CMD_ID (0x203)
@@ -111,6 +116,8 @@ extern uint8_t update_buff[16][128];
  * @return      null
  */
 void device_ctrl_pins_init(void);
+
+void parse_integrated_pwr_fb(integrated_cmd_struct *intergratedBuf);
 
 /**
  * @brief       USBHUB控制接口

@@ -11,11 +11,11 @@
 // #define VERSION (0x313136)
 
 // #define DEBUG
-#define CAN_DAUL
+// #define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31323036)
+#define VERSION (0x31323131)
 #else
-#define VERSION (0x31323037)
+#define VERSION (0x31323130)
 #endif
 #define IHAWK_CTRL
 
@@ -118,6 +118,57 @@ enum CTRL_USB_CS
     DUAL_USB = 0x03
 };
 
+enum INTERGRATD_GROUP_TYPE
+{
+    GROUP_NULL = 0x00,
+    GROUP_REBOOT = 0x01,
+    GROUP_CTRL_USB = 0x02,
+    GROUP_CTRL_ANDRIOD = 0x03,
+    GROUP_CTRL_ACC = 0x04
+};
+
+// ��Դ����ָ��
+enum PowerActionType
+{
+    ACTION_OFF = 0,  // ��
+    ACTION_ON = 1,   // ��
+    ACTION_RESET = 2 // ���ã��ȹ��ٿ���
+};
+
+typedef struct _dev_index
+{
+    uint16_t devList;
+    uint16_t ind_1 : 1;  // bit 0
+    uint16_t ind_2 : 1;  // bit 1
+    uint16_t ind_3 : 1;  // bit 2
+    uint16_t ind_4 : 1;  // bit 3
+    uint16_t ind_5 : 1;  // bit 4
+    uint16_t ind_6 : 1;  // bit 5
+    uint16_t ind_7 : 1;  // bit 6
+    uint16_t ind_8 : 1;  // bit 7
+    uint16_t ind_9 : 1;  // bit 8
+    uint16_t ind_10 : 1; // bit 9
+    uint16_t ind_11 : 1; // bit 10
+    uint16_t ind_12 : 1; // bit 11
+    uint16_t ind_13 : 1; // bit 12
+    uint16_t ind_14 : 1; // bit 13
+    uint16_t ind_15 : 1; // bit 14
+    uint16_t ind_16 : 1; // bit 15
+
+} dev_index;
+
+#pragma pack(1)
+typedef struct _integrated_cmd_struct
+{
+    uint8_t group;
+    dev_index devIndex;
+    uint16_t cmdIndex;
+    uint8_t actionType;
+    uint8_t holdTm;
+    uint8_t fbIntegratedCmdBuffer[128];
+    uint8_t fbIntegratedCmdBufferLen;
+} integrated_cmd_struct;
+
 typedef struct _can_fw_info
 {
     uint8_t sync_sub_fw;
@@ -189,6 +240,7 @@ struct _ihawk_power_sts
     uint8_t ihawk_sts_1;
     uint8_t ihawk_sts_2;
 };
+#pragma pack()
 
 extern EventBits_t taskAliveBits;
 extern volatile uint16_t distance[4][6];
@@ -198,6 +250,8 @@ extern struct can_alive_counter canAliveCounter;
 extern struct _send_can_str sendCanStr;
 
 extern struct _ihawk_power_sts ihawk_power_sts;
+
+extern integrated_cmd_struct integratedCmdStruct;
 
 extern can_tx_message_type canResetSensor[4];
 extern can_tx_message_type canSetLeds[4];

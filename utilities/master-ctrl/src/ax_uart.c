@@ -115,6 +115,15 @@ void car_acc_ctrl(uint8_t sts)
         gpio_bits_reset(CAR_CMPUTER_ACC_PORT, CAR_CMPUTER_ACC_PIN);
     }
 }
+void car_acc_ctrl_tm(uint8_t delayTm)
+{
+    car_acc_ctrl(0);
+    vTaskDelay(delayTm * 100);
+    car_acc_ctrl(1);
+    uart2SendTypeFlag.reset_acc_valid = 0x01;
+
+    uart2SendTypeFlag.reset_acc = 0x01;
+}
 
 void parse_ctrl_andriod(uint8_t mode)
 {
@@ -129,19 +138,13 @@ void parse_ctrl_andriod(uint8_t mode)
     }
     uart2SendTypeFlag.reset_andriod = 0x01;
 }
-void parse_ctrl_andriod_tm(uint8_t mode, uint8_t delayTm)
+void parse_ctrl_andriod_tm(uint8_t delayTm)
 {
-    if (mode == 0x03)
-    {
-        andriod_pwr_ctrl(0);
-        vTaskDelay(delayTm * 100);
-        andriod_pwr_ctrl(1);
-        uart2SendTypeFlag.reset_andriod_valid = 0x01;
-    }
-    else
-    {
-        uart2SendTypeFlag.reset_andriod_valid = 0x00;
-    }
+    andriod_pwr_ctrl(0);
+    vTaskDelay(delayTm * 100);
+    andriod_pwr_ctrl(1);
+    uart2SendTypeFlag.reset_andriod_valid = 0x01;
+
     uart2SendTypeFlag.reset_andriod = 0x01;
 }
 
@@ -660,6 +663,241 @@ void send_reboot2_fb(uint8_t cmdType)
     uart2_data.usart_tx_counter = 0;
     vTaskDelay(1000);
     nvic_system_reset();
+}
+
+void update_common_msg(integrated_cmd_struct *intergratedBuf)
+{
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[3] = (uint8_t)(((intergratedBuf->cmdIndex) >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[4] = (uint8_t)(((intergratedBuf->cmdIndex + 1) >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer[2] = intergratedBuf->fbIntegratedCmdBufferLen + 1;
+    uart1_data.usart_tx_buffer[5] = intergratedBuf->group;
+    uart1_data.usart_tx_buffer[6] = (intergratedBuf->devIndex.devList >> 8) & 0xFF;
+    uart1_data.usart_tx_buffer[7] = (intergratedBuf->devIndex.devList >> 0) & 0xFF;
+    uart1_data.usart_tx_buffer[8] = intergratedBuf->actionType;
+    uart1_data.usart_tx_buffer[9] = intergratedBuf->holdTm;
+}
+
+void parse_integrated_query_fb(integrated_cmd_struct *intergratedBuf)
+{
+    uint16_t getCrc;
+    uint16_t pwrSts = 0;
+
+    intergratedBuf->group = intergratedBuf->fbIntegratedCmdBuffer[5];
+    intergratedBuf->cmdIndex = ((intergratedBuf->fbIntegratedCmdBuffer[3] << 8) | (intergratedBuf->fbIntegratedCmdBuffer[4])) & 0xFFFF;
+    intergratedBuf->devIndex.devList = ((intergratedBuf->fbIntegratedCmdBuffer[6] << 8) | (intergratedBuf->fbIntegratedCmdBuffer[7])) & 0xFFFF;
+    intergratedBuf->actionType = intergratedBuf->fbIntegratedCmdBuffer[8];
+    intergratedBuf->holdTm = intergratedBuf->fbIntegratedCmdBuffer[9];
+
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+    memcpy(uart1_data.usart_tx_buffer, intergratedBuf->fbIntegratedCmdBuffer, intergratedBuf->fbIntegratedCmdBufferLen);
+
+    switch (intergratedBuf->group)
+    {
+    case GROUP_CTRL_USB:
+    {
+        update_common_msg(intergratedBuf);
+        pwrSts = ((ihawk_power_sts.ihawk_sts_2 << 1) | (ihawk_power_sts.ihawk_sts_1)) & 0xFFFF;
+        uart1_data.usart_tx_buffer[6] = (pwrSts >> 8) & 0xFF;
+        uart1_data.usart_tx_buffer[7] = (pwrSts >> 0) & 0xFF;
+        uart1_data.usart_tx_buffer[8] = 0x00;
+        uart1_data.usart_tx_buffer[9] = 0x00;
+        uart1_data.usart_tx_buffer[10] = 0x01;
+        uart1_data.usart_tx_buffer_size = intergratedBuf->fbIntegratedCmdBufferLen + 6;
+
+        break;
+    }
+    case GROUP_NULL:
+    case GROUP_REBOOT:
+    case GROUP_CTRL_ANDRIOD:
+    case GROUP_CTRL_ACC:
+    default:
+        break;
+    }
+
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[uart1_data.usart_tx_buffer[2] + 3] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[uart1_data.usart_tx_buffer[2] + 4] = (uint8_t)((getCrc >> 0) & 0xFF);
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+
+    if (intergratedBuf->group == GROUP_REBOOT)
+    {
+        vTaskDelay(1000);
+        nvic_system_reset();
+    }
+}
+
+void parse_integrated_pwr_fb(integrated_cmd_struct *intergratedBuf)
+{
+    uint16_t getCrc;
+
+    intergratedBuf->group = intergratedBuf->fbIntegratedCmdBuffer[5];
+    intergratedBuf->cmdIndex = ((intergratedBuf->fbIntegratedCmdBuffer[3] << 8) | (intergratedBuf->fbIntegratedCmdBuffer[4])) & 0xFFFF;
+    intergratedBuf->devIndex.devList = ((intergratedBuf->fbIntegratedCmdBuffer[6] << 8) | (intergratedBuf->fbIntegratedCmdBuffer[7])) & 0xFFFF;
+    intergratedBuf->actionType = intergratedBuf->fbIntegratedCmdBuffer[8];
+    intergratedBuf->holdTm = intergratedBuf->fbIntegratedCmdBuffer[9];
+
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+    memcpy(uart1_data.usart_tx_buffer, intergratedBuf->fbIntegratedCmdBuffer, intergratedBuf->fbIntegratedCmdBufferLen);
+
+    switch (intergratedBuf->group)
+    {
+    case GROUP_NULL:
+    {
+        break;
+    }
+    case GROUP_REBOOT:
+    {
+        update_common_msg(intergratedBuf);
+        if ((intergratedBuf->devIndex.devList == 0) && (intergratedBuf->actionType == 1))
+        {
+            uart1_data.usart_tx_buffer[10] = 0x01;
+        }
+        else
+        {
+            uart1_data.usart_tx_buffer[10] = 0x00;
+        }
+        uart1_data.usart_tx_buffer_size = intergratedBuf->fbIntegratedCmdBufferLen + 6;
+        break;
+    }
+
+    case GROUP_CTRL_USB:
+    {
+        update_common_msg(intergratedBuf);
+        if ((intergratedBuf->devIndex.devList > 0) && (intergratedBuf->devIndex.devList <= 3))
+        {
+            if (intergratedBuf->actionType < 2)
+            {
+                if (intergratedBuf->devIndex.ind_1 == 1)
+                {
+                    ihawk_ctrl(LOWER_USB, intergratedBuf->actionType);
+                }
+                if (intergratedBuf->devIndex.ind_2 == 1)
+                {
+                    ihawk_ctrl(UPPER_USB, intergratedBuf->actionType);
+                }
+                uart1_data.usart_tx_buffer[10] = 0x01;
+            }
+            else if (intergratedBuf->actionType == 2)
+            {
+                if ((intergratedBuf->devIndex.ind_1 == 1) && (intergratedBuf->devIndex.ind_2 == 1))
+                {
+                    ihawk_ctrl_tm(DUAL_USB, intergratedBuf->actionType, intergratedBuf->holdTm);
+                }
+                if (intergratedBuf->devIndex.ind_1 == 1)
+                {
+                    ihawk_ctrl_tm(LOWER_USB, intergratedBuf->actionType, intergratedBuf->holdTm);
+                }
+                if (intergratedBuf->devIndex.ind_2 == 1)
+                {
+                    ihawk_ctrl_tm(UPPER_USB, intergratedBuf->actionType, intergratedBuf->holdTm);
+                }
+                uart1_data.usart_tx_buffer[10] = 0x01;
+            }
+            else
+            {
+                uart1_data.usart_tx_buffer[10] = 0x00;
+            }
+        }
+        else
+        {
+            uart1_data.usart_tx_buffer[10] = 0x00;
+        }
+        uart1_data.usart_tx_buffer_size = intergratedBuf->fbIntegratedCmdBufferLen + 6;
+
+        break;
+    }
+    case GROUP_CTRL_ANDRIOD:
+    {
+        update_common_msg(intergratedBuf);
+        if (intergratedBuf->devIndex.devList == 0)
+        {
+            if (intergratedBuf->actionType < 2)
+            {
+                parse_ctrl_andriod(intergratedBuf->actionType);
+                uart1_data.usart_tx_buffer[10] = 0x01;
+            }
+            else if (intergratedBuf->actionType == 2)
+            {
+                parse_ctrl_andriod_tm(intergratedBuf->holdTm);
+                uart1_data.usart_tx_buffer[10] = 0x01;
+            }
+            else
+            {
+                uart1_data.usart_tx_buffer[10] = 0x00;
+            }
+        }
+        else
+        {
+            uart1_data.usart_tx_buffer[10] = 0x00;
+        }
+        uart1_data.usart_tx_buffer_size = intergratedBuf->fbIntegratedCmdBufferLen + 6;
+
+        break;
+    }
+    case GROUP_CTRL_ACC:
+    {
+        update_common_msg(intergratedBuf);
+        if (intergratedBuf->devIndex.devList == 0)
+        {
+            if (intergratedBuf->actionType < 2)
+            {
+                car_acc_ctrl(intergratedBuf->actionType);
+                uart1_data.usart_tx_buffer[10] = 0x01;
+            }
+            else if (intergratedBuf->actionType == 2)
+            {
+                car_acc_ctrl_tm(intergratedBuf->holdTm);
+                uart1_data.usart_tx_buffer[10] = 0x01;
+            }
+            else
+            {
+                uart1_data.usart_tx_buffer[10] = 0x00;
+            }
+        }
+        else
+        {
+            uart1_data.usart_tx_buffer[10] = 0x00;
+        }
+        uart1_data.usart_tx_buffer_size = intergratedBuf->fbIntegratedCmdBufferLen + 6;
+
+        break;
+    }
+    default:
+        break;
+    }
+
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[uart1_data.usart_tx_buffer[2] + 3] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[uart1_data.usart_tx_buffer[2] + 4] = (uint8_t)((getCrc >> 0) & 0xFF);
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+
+    if (intergratedBuf->group == GROUP_REBOOT)
+    {
+        vTaskDelay(1000);
+        nvic_system_reset();
+    }
 }
 
 void send_distance(void)
@@ -2381,6 +2619,22 @@ void usart2_rx_task_function(void *pvParameters)
                     }
                     break;
                 }
+                case QUERY_INTEGRATED_PWR_ID:
+                {
+                    memset(integratedCmdStruct.fbIntegratedCmdBuffer, 0, sizeof(integratedCmdStruct.fbIntegratedCmdBuffer));
+                    memcpy(integratedCmdStruct.fbIntegratedCmdBuffer, ctrl_buff2, ctrl_buff2[2] + 5);
+                    integratedCmdStruct.fbIntegratedCmdBufferLen = ctrl_buff2[2] + 5;
+                    parse_integrated_query_fb(&integratedCmdStruct);
+                    break;
+                }
+                case SET_INTEGRATED_PWR_ID:
+                {
+                    memset(integratedCmdStruct.fbIntegratedCmdBuffer, 0, sizeof(integratedCmdStruct.fbIntegratedCmdBuffer));
+                    memcpy(integratedCmdStruct.fbIntegratedCmdBuffer, ctrl_buff2, ctrl_buff2[2] + 5);
+                    integratedCmdStruct.fbIntegratedCmdBufferLen = ctrl_buff2[2] + 5;
+                    parse_integrated_pwr_fb(&integratedCmdStruct);
+                    break;
+                }
                 case GET_VERSION_CMD_ID:
                 {
                     if (ctrl_buff2[5] == TRAY_MASTER)
@@ -2451,7 +2705,7 @@ void usart2_rx_task_function(void *pvParameters)
                         else if ((ctrl_buff2[7] >= 0x81) && (ctrl_buff2[7] <= 0x94))
                         {
                             send_andriod_fb(ctrl_buff2[7], 1);
-                            parse_ctrl_andriod_tm(3, ctrl_buff2[7] & 0x7F);
+                            parse_ctrl_andriod_tm(ctrl_buff2[7] & 0x7F);
                         }
                         else
                         {

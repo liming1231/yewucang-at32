@@ -11,6 +11,7 @@ struct _send_can_str sendCanStr = {0};
 
 struct _ihawk_power_sts ihawk_power_sts = {0};
 
+integrated_cmd_struct integratedCmdStruct = {0};
 can_tx_message_type canResetSensor[4] = {0};
 can_tx_message_type canSetLeds[4] = {0};
 can_tx_message_type canSetTrayLeds;
