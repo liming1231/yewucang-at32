@@ -106,11 +106,13 @@ void car_acc_ctrl(uint8_t sts)
 {
     if (sts == TURN_ON)
     {
-        gpio_bits_reset(CAR_CMPUTER_ACC_PORT, CAR_CMPUTER_ACC_PIN);
+        // gpio_bits_reset(CAR_CMPUTER_ACC_PORT, CAR_CMPUTER_ACC_PIN);
+        gpio_bits_set(CAR_CMPUTER_ACC_PORT, CAR_CMPUTER_ACC_PIN);
     }
     else
     {
-        gpio_bits_set(CAR_CMPUTER_ACC_PORT, CAR_CMPUTER_ACC_PIN);
+        // gpio_bits_set(CAR_CMPUTER_ACC_PORT, CAR_CMPUTER_ACC_PIN);
+        gpio_bits_reset(CAR_CMPUTER_ACC_PORT, CAR_CMPUTER_ACC_PIN);
     }
 }
 
