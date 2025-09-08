@@ -21,7 +21,6 @@
 #define WTDG_STK_SIZE (128)
 #define WS2812B_STK_SIZE (512)
 #define UART2_RX_STK_SIZE (128)
-#define UART1_CMD_STK_SIZE (128)
 
 #define LED2_TASK_PRIO (2)
 #define UART1_RX_TASK_PRIO (2)
@@ -31,7 +30,6 @@
 #define WTDG_TASK_PRIO (6)
 #define WS2812B_TASK_PRIO (5)
 #define UART2_RX_TASK_PRIO (2)
-#define UART1_CMD_TASK_PRIO (3)
 
 /** @addtogroup FreeRTOS_demo
  * @{
@@ -45,7 +43,6 @@ TaskHandle_t can_rx_handler;
 TaskHandle_t ws2812_handler;
 TaskHandle_t wtdg_handler;
 TaskHandle_t usart2_rx_handler;
-TaskHandle_t usart1_cmd_parse_handler;
 // EventGroupHandle_t xCreatedEventGroup;//�����¼���
 
 /* led2 task */
@@ -230,21 +227,6 @@ int main(void)
     else
     {
         //        printf( "uart2 rx was created successfully.\r\n" );
-    }
-
-    if (xTaskCreate((TaskFunction_t)usart1_cmd_parse_task_function,
-                    (const char *)"usart1 cmd parse task",
-                    (uint16_t)UART2_RX_STK_SIZE,
-                    (void *)NULL,
-                    (UBaseType_t)UART2_RX_TASK_PRIO,
-                    (TaskHandle_t *)&usart1_cmd_parse_handler) != pdPASS)
-    {
-        //        printf( "uart1 cmd parse task could not be created as there was insufficient heap memory remaining.\r\n" );
-    }
-
-    else
-    {
-        //        printf( "uart1 cmd parse was created successfully.\r\n" );
     }
 
     /* exit critical */

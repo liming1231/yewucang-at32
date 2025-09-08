@@ -11,11 +11,11 @@
 // #define VERSION (0x313136)
 
 // #define DEBUG
-#define CAN_DAUL
+// #define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31313636)
+#define VERSION (0x31323030)
 #else
-#define VERSION (0x31313637)
+#define VERSION (0x31323031)
 #endif
 #define IHAWK_CTRL
 
@@ -157,8 +157,6 @@ struct uart_send_flag
     uint8_t reset_andriod_valid;
     uint8_t reset_acc;
     uint8_t reset_acc_valid;
-    uint8_t ctrl_gate;
-    uint8_t ctrl_gate_valid;
     can_fw_info fw_info;
     uint8_t uid_own;
     uint8_t uid_own_valid;
@@ -184,7 +182,6 @@ struct _send_can_str
     uint8_t resetBoard[4];
     uint8_t sync_fw[4];
     uint8_t setTrayWs2812b;
-    uint8_t setGateFlag;
 };
 
 struct _ihawk_power_sts
@@ -208,8 +205,6 @@ extern can_tx_message_type canSetTrayLeds;
 extern can_tx_message_type canResetBoard[4];
 extern can_tx_message_type canSyncFw[4];
 
-extern can_tx_message_type canSetGate;
-
 extern uint8_t versionSub[4][6];
 extern uint8_t uidBuf[5][12];
 
@@ -217,27 +212,6 @@ extern uint8_t updateFwData[16];
 extern volatile uint8_t msglen2;
 extern volatile uint8_t updateFWFlag;
 extern volatile uint8_t xorData[2];
-
-typedef struct _ctrl_cmd_flag
-{
-    uint8_t ctrlUsbhubBufFlag;
-    uint8_t ctrlLedBufFlag;
-    uint8_t rebootBufFlag;
-    uint8_t getVersionBufFlag;
-    uint16_t ctrlAccBufFlag;
-    uint16_t ctrlgateBuf23Flag;
-    uint16_t ctrlgateBuf24Flag;
-
-} ctrl_cmd_flag;
-
-extern volatile uint8_t ctrlRebootBuf[4];
-extern volatile uint8_t ctrlUsbhubBuf[4];
-extern volatile uint8_t ctrlLedBuf[10];
-extern volatile uint8_t getVersionBuf[4];
-extern volatile uint8_t ctrlAccBuf[4];
-extern volatile uint8_t ctrlgateBuf23[4];
-extern volatile uint8_t ctrlgateBuf24[4];
-extern ctrl_cmd_flag ctrlCmdFlag;
 
 /**
  * @brief       计算CRC16校验

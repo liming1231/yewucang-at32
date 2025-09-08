@@ -89,6 +89,16 @@
 
 #define CTRL_OWNER_FLAG (0x0F)
 
+#define AT32_CTRL_USBHUB_CMD_ID (0x0006)
+#define AT32_CTRL_WS2812B_CMD_ID (0x0011)
+#define AT32_CTRL_ACC_CMD_ID (0x0021)
+#define AT32_GET_VERSION_CMD_ID (0x0022)
+#define AT32_CTRL_GATE_23_CMD_ID (0x0023)
+#define AT32_CTRL_GATE_24_CMD_ID (0x0024)
+#define AT32_RESET_SWITCH_CMD_ID (0x0025)
+#define AT32_RESET_ANDRIOD_CMD_ID (0x0026)
+#define AT32_REBOOT_CMD_ID (0x0027)
+
 struct uart_data
 {
     uint8_t usart_tx_buffer[USART_1_2_TX_BUFFER_SIZE];
@@ -182,8 +192,6 @@ void toggle_led_stat(void);
  * @return      null
  */
 void usart1_tx_task_function(void *pvParameters);
-
-void usart1_cmd_parse_task_function(void *pvParameters);
 
 /**
  * @brief       uart接收任务
