@@ -1289,6 +1289,38 @@ void send_ctrl_gate_fb(uint8_t sts)
     vTaskDelay(5);
 }
 
+void send_ctrl_motor_stop_mode_fb(uint8_t sts)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = ctrlMotorStopModeData.index;
+    uart1_data.usart_tx_buffer[5] = 0x28;
+    uart1_data.usart_tx_buffer[6] = ctrlMotorStopModeData.mode;
+    uart1_data.usart_tx_buffer[7] = 0x00;
+    uart1_data.usart_tx_buffer[8] = 0x00;
+    uart1_data.usart_tx_buffer[9] = 0x00;
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
 void vTimerCallback(xTimerHandle pxTimer)
 {
     configASSERT(pxTimer);
@@ -1336,6 +1368,13 @@ void usart1_tx_task_function(void *pvParameters)
             send_ctrl_gate_fb(uart1SendTypeFlag.ctrl_gate_valid);
             uart1SendTypeFlag.ctrl_gate = 0;
         }
+
+        if (uart1SendTypeFlag.ctrl_motor_stop_mode == 1)
+        {
+            send_ctrl_motor_stop_mode_fb(uart1SendTypeFlag.ctrl_motor_stop_mode_valid);
+            uart1SendTypeFlag.ctrl_motor_stop_mode = 0;
+        }
+
         if (uart1SendTypeFlag.ctrl_leds == 1)
         {
             send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_leds_valid);
@@ -2161,6 +2200,40 @@ void parse_at32_ctrl_gate_24_cmd(ctrl_gate_data *cgd)
     can_transmit_ctrl_data(&gateCtrlCan);
 }
 
+void parse_at32_set_motor_stop_mode_cmd(void)
+{
+    if ((ctrl_buff[4] != 0x01) && (ctrl_buff[4] != 0x02))
+    {
+        uart1SendTypeFlag.ctrl_motor_stop_mode_valid = 0x02;
+        uart1SendTypeFlag.ctrl_motor_stop_mode = 0x01;
+        return;
+    }
+    else
+    {
+        uart1SendTypeFlag.ctrl_motor_stop_mode_valid = 0x01;
+        uart1SendTypeFlag.ctrl_motor_stop_mode = 0x01;
+        if (ctrlMotorStopModeData.index == LOWER_MOTOR)
+        {
+            ctrlData2Can.standard_id = SET_LOWER_MOTOR_STOP_MODE_ID;
+        }
+        else if (ctrlMotorStopModeData.index == UPPER_MOTOR)
+        {
+            ctrlData2Can.standard_id = SET_UPPER_MOTOR_STOP_MODE_ID;
+        }
+        //        else if( ctrl_buff[4] == 0x03 )
+        //        {
+        //            ctrlMotorStopModeData.mode_h = ctrl_buff[6];
+        //            ctrlData2Can.standard_id = SET_UPPER_MOTOR_STOP_MODE_ID;
+        //        }
+
+        ctrlData2Can.data[0] = ctrlMotorStopModeData.mode;
+        ctrlData2Can.data[1] = 0x00;
+        ctrlData2Can.data[2] = 0x00;
+        ctrlData2Can.data[3] = 0x00;
+        can_transmit_ctrl_data(&ctrlData2Can);
+    }
+}
+
 void usart1_rx_task_function(void *pvParameters)
 {
     uint16_t getCrc;
@@ -2286,6 +2359,21 @@ void usart1_rx_task_function(void *pvParameters)
                             uart1SendTypeFlag.ctrl_gate = 1;
                             ctrlGateData.ctrlGateValid = 1;
                             parse_at32_ctrl_gate_24_cmd(&ctrlGateData);
+                        }
+                        break;
+                    }
+                    case AT32_SET_MOTOR_STOP_MODE_CMD_ID:
+                    {
+                        ctrlMotorStopModeData.index = ctrl_buff[4];
+                        ctrlMotorStopModeData.mode = ctrl_buff[6];
+                        if ((ctrl_buff[4] != 0x01) && (ctrl_buff[4] != 0x02))
+                        {
+                            uart1SendTypeFlag.ctrl_motor_stop_mode = 1;
+                            uart1SendTypeFlag.ctrl_motor_stop_mode_valid = 2;
+                        }
+                        else
+                        {
+                            parse_at32_set_motor_stop_mode_cmd();
                         }
                         break;
                     }

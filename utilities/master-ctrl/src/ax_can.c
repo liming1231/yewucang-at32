@@ -12,9 +12,13 @@ volatile uint8_t newF4StsMsgFlag = 0;
 volatile uint8_t fbCtrlGateMsgFlag[2] = {0};
 volatile uint8_t gateStsMsgFlag[2] = {0};
 
+volatile uint8_t fbSetMotorStopModeMsgFlag[2] = {0};
+
 can_rx_message_type rx_message_struct_g, rx_message_struct_s[4];
 can_rx_message_type rx_fb_ctrl_gate_struct[2];
 can_rx_message_type rx_gate_sts_struct[2];
+
+can_rx_message_type rx_fb_set_motor_stop_mode_struct[2];
 
 struct can_alive_counter canAliveCounter = {0};
 
@@ -768,6 +772,27 @@ void parse_fb_gate_msg(uint8_t index)
     }
 }
 
+void parse_fb_set_motor_stop_mode_msg(uint8_t index)
+{
+    switch (index)
+    {
+    case 1:
+    {
+        motorStopModeCtrlFbValid[0] = rx_fb_ctrl_gate_struct[0].data[1];
+        break;
+    }
+    case 2:
+    {
+        motorStopModeCtrlFbValid[1] = rx_fb_ctrl_gate_struct[1].data[1];
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+}
+
 void send_ws2812b_msg(void)
 {
     if (sendCanStr.setTrayWs2812b == 1)
@@ -908,6 +933,12 @@ void can_rx_task_function(void *pvParameters)
         {
             parse_fb_gate_msg(1);
             fbCtrlGateMsgFlag[1] = INVALID;
+        }
+
+        if (fbSetMotorStopModeMsgFlag[0] == VALID)
+        {
+            parse_fb_set_motor_stop_mode_msg(1);
+            fbSetMotorStopModeMsgFlag[0] = INVALID;
         }
 
         if (newOtherMsgFlag == VALID)
@@ -1104,6 +1135,21 @@ void CAN1_RX0_IRQHandler(void)
                 fbCtrlGateMsgFlag[1] = VALID;
                 break;
             }
+
+            case FB_SET_UPPER_MOTOR_STOP_MODE_ID:
+            {
+                memcpy((void *)&rx_fb_set_motor_stop_mode_struct[1], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                fbSetMotorStopModeMsgFlag[1] = VALID;
+                break;
+            }
+
+            case FB_SET_LOWER_MOTOR_STOP_MODE_ID:
+            {
+                memcpy((void *)&rx_fb_set_motor_stop_mode_struct[0], (void *)&rx_message_struct, sizeof(rx_message_struct));
+                fbSetMotorStopModeMsgFlag[0] = VALID;
+                break;
+            }
+
             default:
             {
                 memcpy((void *)&rx_message_struct_g, (void *)&rx_message_struct, sizeof(rx_message_struct));

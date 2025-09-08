@@ -98,6 +98,7 @@
 #define AT32_RESET_SWITCH_CMD_ID (0x0025)
 #define AT32_RESET_ANDRIOD_CMD_ID (0x0026)
 #define AT32_REBOOT_CMD_ID (0x0027)
+#define AT32_SET_MOTOR_STOP_MODE_CMD_ID (0x0028)
 
 struct uart_data
 {

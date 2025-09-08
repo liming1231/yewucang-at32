@@ -22,6 +22,11 @@
 #define GATE_L_STS_ID (0x303)
 #define GATE_H_STS_ID (0x304)
 
+#define SET_LOWER_MOTOR_STOP_MODE_ID (0x202)
+#define FB_SET_LOWER_MOTOR_STOP_MODE_ID (0x282)
+#define SET_UPPER_MOTOR_STOP_MODE_ID (0x203)
+#define FB_SET_UPPER_MOTOR_STOP_MODE_ID (0x283)
+
 #define GET_HEARDBEAT_ID (0x600)
 
 #define FB_F1_HEARDBEAT_ID (0x680)
@@ -107,6 +112,7 @@
 extern can_rx_message_type rx_message_struct_g;
 extern can_rx_message_type rx_fb_ctrl_gate_struct[2];
 extern can_rx_message_type rx_gate_sts_struct[2];
+extern can_rx_message_type rx_fb_set_motor_stop_mode_struct[2];
 extern volatile uint8_t newOtherMsgFlag;
 
 /**

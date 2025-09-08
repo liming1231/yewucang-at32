@@ -13,9 +13,9 @@
 // #define DEBUG
 #define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31323130)
+#define VERSION (0x31323132)
 #else
-#define VERSION (0x31323131)
+#define VERSION (0x31323133)
 #endif
 #define IHAWK_CTRL
 
@@ -118,6 +118,12 @@ enum CTRL_USB_CS
     DUAL_USB = 0x03
 };
 
+enum MOTOR_INDEX
+{
+    LOWER_MOTOR = 0x01,
+    UPPER_MOTOR = 0x02
+};
+
 typedef struct _can_fw_info
 {
     uint8_t sync_sub_fw;
@@ -174,6 +180,8 @@ struct uart_send_flag
     uint8_t uid_f4;
     uint8_t ctrl_gate;
     uint8_t ctrl_gate_valid;
+    uint8_t ctrl_motor_stop_mode;
+    uint8_t ctrl_motor_stop_mode_valid;
 };
 
 struct can_alive_counter
@@ -210,10 +218,18 @@ typedef struct _ctrl_gate_data
 } ctrl_gate_data;
 extern ctrl_gate_data ctrlGateData;
 
+typedef struct _ctrl_motor_stop_mode_data
+{
+    uint8_t index;
+    uint8_t mode;
+} ctrl_motor_stop_mode_data;
+extern ctrl_motor_stop_mode_data ctrlMotorStopModeData;
+
 extern EventBits_t taskAliveBits;
 extern volatile uint16_t distance[4][6];
 extern volatile uint8_t gateSts[2][4];
 extern volatile uint8_t gateCtrlFbValid[2];
+extern volatile uint8_t motorStopModeCtrlFbValid[2];
 extern struct uart_send_flag uart1SendTypeFlag;
 extern struct uart_send_flag uart2SendTypeFlag;
 extern struct can_alive_counter canAliveCounter;

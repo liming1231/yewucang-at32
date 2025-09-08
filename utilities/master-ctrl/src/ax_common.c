@@ -7,6 +7,8 @@ volatile uint16_t distance[4][6] = {0};
 volatile uint8_t gateSts[2][4] = {0};
 volatile uint8_t gateCtrlFbValid[2] = {0};
 
+volatile uint8_t motorStopModeCtrlFbValid[2] = {0};
+
 uint8_t versionSub[4][6] = {0};
 uint8_t uidBuf[5][12] = {0};
 struct uart_send_flag uart1SendTypeFlag = {0};
@@ -14,6 +16,7 @@ struct uart_send_flag uart2SendTypeFlag = {0};
 struct _send_can_str sendCanStr = {0};
 
 ctrl_gate_data ctrlGateData = {0};
+ctrl_motor_stop_mode_data ctrlMotorStopModeData = {0};
 
 struct _ihawk_power_sts ihawk_power_sts = {0};
 

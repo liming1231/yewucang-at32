@@ -139,11 +139,6 @@
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-          <Name>d</Name>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>CMSIS_AGDI</Key>
           <Name>-X"AT-Link-EZ-CMSIS-DAP" -U7B5D45000040366813177D02 -O206 -S0 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD20000000 -FC1000 -FN1 -FF0AT32F415_256.FLM -FS08000000 -FL040000 -FP0($$Device:-AT32F415RCT7$Flash\AT32F415_256.FLM)</Name>
         </SetRegEntry>
@@ -157,34 +152,34 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>57</LineNumber>
+          <LineNumber>2589</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134236466</Address>
+          <Address>134247352</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\src\at32f415_int.c</Filename>
+          <Filename>..\src\ax_uart.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\master_ctrl\../src/at32f415_int.c\57</Expression>
+          <Expression>\\master_ctrl\../src/ax_uart.c\2589</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>2501</LineNumber>
+          <LineNumber>57</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>134236530</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>..\src\ax_uart.c</Filename>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\yewucang-master-1.2.1.1\src\at32f415_int.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\master_ctrl\../src/at32f415_int.c\57</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -415,7 +410,7 @@
       <GroupNumber>1</GroupNumber>
       <FileNumber>9</FileNumber>
       <FileType>1</FileType>
-      <tvExp>1</tvExp>
+      <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\src\ax_flash.c</PathWithFileName>
