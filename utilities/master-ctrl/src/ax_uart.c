@@ -101,7 +101,7 @@ void andriod_pwr_ctrl(uint8_t sts)
     {
         gpio_bits_set(ANDRIOD_PWR_PORT, ANDRIOD_PWR_PIN);
     }
-    else
+    else if (sts == TURN_OFF)
     {
         gpio_bits_reset(ANDRIOD_PWR_PORT, ANDRIOD_PWR_PIN);
     }
@@ -119,6 +119,35 @@ void car_acc_ctrl(uint8_t sts)
         // gpio_bits_set(CAR_CMPUTER_ACC_PORT, CAR_CMPUTER_ACC_PIN);
         gpio_bits_reset(CAR_CMPUTER_ACC_PORT, CAR_CMPUTER_ACC_PIN);
     }
+}
+
+void parse_ctrl_andriod(uint8_t mode)
+{
+    if (mode < 0x02)
+    {
+        andriod_pwr_ctrl(mode);
+        uart2SendTypeFlag.reset_andriod_valid = 0x01;
+    }
+    else
+    {
+        uart2SendTypeFlag.reset_andriod_valid = 0x00;
+    }
+    uart2SendTypeFlag.reset_andriod = 0x01;
+}
+void parse_ctrl_andriod_tm(uint8_t mode, uint8_t delayTm)
+{
+    if (mode == 0x03)
+    {
+        andriod_pwr_ctrl(0);
+        vTaskDelay(delayTm * 100);
+        andriod_pwr_ctrl(1);
+        uart2SendTypeFlag.reset_andriod_valid = 0x01;
+    }
+    else
+    {
+        uart2SendTypeFlag.reset_andriod_valid = 0x00;
+    }
+    uart2SendTypeFlag.reset_andriod = 0x01;
 }
 
 void ihawk_lower_ctrl(uint8_t sts)
@@ -450,6 +479,51 @@ void send_ctrl_ihawk_fb(uint8_t index, uint8_t sts, uint8_t valid_sts)
     uart2_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_IHAWK_CMD_ID >> 0) & 0xFF); // 0x01;
     uart2_data.usart_tx_buffer[5] = 0x00;
     uart2_data.usart_tx_buffer[6] = index;
+    uart2_data.usart_tx_buffer[7] = sts;
+    uart2_data.usart_tx_buffer[8] = valid_sts;
+    getCrc = crc16_modbus(&uart2_data.usart_tx_buffer[3], uart2_data.usart_tx_buffer[2]);
+    uart2_data.usart_tx_buffer[9] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart2_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart2_data.usart_tx_buffer_size = 11;
+
+    while (uart2_data.usart_tx_counter < uart2_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART2, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART2, uart2_data.usart_tx_buffer[uart2_data.usart_tx_counter++]);
+    }
+
+    uart2_data.usart_tx_counter = 0;
+    sendingUart2 = 0;
+    vTaskDelay(5);
+}
+
+void send_andriod_fb(uint8_t sts, uint8_t valid_sts)
+{
+    uint16_t tmCnt = 0;
+    uint16_t getCrc;
+
+    while (sendingUart2 == 1)
+    {
+        vTaskDelay(2);
+        tmCnt++;
+        if (tmCnt >= 50)
+        {
+            break;
+        }
+    }
+    sendingUart2 = 1;
+
+    memset(uart2_data.usart_tx_buffer, 0, sizeof(uart2_data.usart_tx_buffer));
+
+    uart2_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart2_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart2_data.usart_tx_buffer[2] = 0x06;
+    uart2_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_ANDRIOD_CMD_ID >> 8) & 0xFF); // 0x02;
+    uart2_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_ANDRIOD_CMD_ID >> 0) & 0xFF); // 0x01;
+    uart2_data.usart_tx_buffer[5] = 0x00;
+    uart2_data.usart_tx_buffer[6] = 0x00;
     uart2_data.usart_tx_buffer[7] = sts;
     uart2_data.usart_tx_buffer[8] = valid_sts;
     getCrc = crc16_modbus(&uart2_data.usart_tx_buffer[3], uart2_data.usart_tx_buffer[2]);
@@ -2654,7 +2728,7 @@ void usart2_rx_task_function(void *pvParameters)
                     }
                     break;
                 }
-#ifdef IHAWK_CTRL // USB电源控制开关量
+#ifdef IHAWK_CTRL // Ӳ�������ݲ�֧��
                 case SET_IHAWK_CMD_ID:
                 {
                     if (ctrl_buff2[5] == TRAY_MASTER)
@@ -2698,6 +2772,33 @@ void usart2_rx_task_function(void *pvParameters)
                     {
                         send_ihawk_sts_fb(0);
                     }
+                    break;
+                }
+                case RESET_ANDRIOD_CMD_ID:
+                {
+                    if (ctrl_buff2[5] == TRAY_MASTER)
+                    {
+                        if (ctrl_buff2[7] < 2)
+                        {
+                            send_andriod_fb(ctrl_buff2[7], 1);
+                            parse_ctrl_andriod(ctrl_buff2[7]);
+                        }
+                        else if ((ctrl_buff2[7] >= 0x81) && (ctrl_buff2[7] <= 0x94))
+                        {
+                            send_andriod_fb(ctrl_buff2[7], 1);
+                            parse_ctrl_andriod_tm(3, ctrl_buff2[7] & 0x7F);
+                        }
+                        else
+                        {
+                            send_andriod_fb(ctrl_buff2[7], 0);
+                        }
+                    }
+                    else
+                    {
+                        send_andriod_fb(ctrl_buff2[7], 0);
+                    }
+                    parse_reset_andriod();
+
                     break;
                 }
 #endif
