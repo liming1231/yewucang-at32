@@ -119,6 +119,11 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
+          <Key>DLGUARM</Key>
+          <Name>?</Name>
+        </SetRegEntry>
+        <SetRegEntry>
+          <Number>0</Number>
           <Key>JL2CM3</Key>
           <Name>-U788529389 -O78 -S2 -ZTIFSpeedSel5000 -A0 -C0 -JU1 -JI127.0.0.1 -JP0 -RST0 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO18 -TC10000000 -TP21 -TDS8004 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -TB1 -TFE0 -FO7 -FD20000000 -FC1000 -FN1 -FF0AT32F415_256.FLM -FS08000000 -FL040000 -FP0($$Device:-AT32F415RCT7$Flash\AT32F415_256.FLM)</Name>
         </SetRegEntry>
@@ -139,11 +144,6 @@
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-          <Name></Name>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>CMSIS_AGDI</Key>
           <Name>-X"AT-Link-EZ-CMSIS-DAP" -U7B5D45000040366813177D02 -O206 -S0 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD20000000 -FC1000 -FN1 -FF0AT32F415_256.FLM -FS08000000 -FL040000 -FP0($$Device:-AT32F415RCT7$Flash\AT32F415_256.FLM)</Name>
         </SetRegEntry>
@@ -157,82 +157,18 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>2351</LineNumber>
+          <LineNumber>65</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134245642</Address>
+          <Address>134243126</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
+          <Filename>..\src\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\master_ctrl\../src/ax_uart.c\2351</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>2358</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134245670</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\master_ctrl\../src/ax_uart.c\2358</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>2370</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134246124</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\master_ctrl\../src/ax_uart.c\2370</Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
-          <LineNumber>2407</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134246328</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\master_ctrl\../src/ax_uart.c\2407</Expression>
-        </Bp>
-        <Bp>
-          <Number>4</Number>
-          <Type>0</Type>
-          <LineNumber>2376</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134246152</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\workspace\ax_board\AT32F415\BSP\AT32F415_Firmware_Library_V2.0.7\utilities\src\ax_uart.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\master_ctrl\../src/ax_uart.c\2376</Expression>
+          <Expression>\\master_ctrl\../src/main.c\65</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
