@@ -8,6 +8,7 @@ uint8_t uidBuf[5][12] = {0};
 struct uart_send_flag uart1SendTypeFlag = {0};
 struct uart_send_flag uart2SendTypeFlag = {0};
 struct _send_can_str sendCanStr = {0};
+struct UartRawData uartStsData_str = {0};
 
 struct _ihawk_power_sts ihawk_power_sts = {0};
 

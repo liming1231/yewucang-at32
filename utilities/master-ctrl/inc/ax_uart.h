@@ -101,6 +101,11 @@ struct uart_data
 
 extern struct uart_data uart1_data, uart2_data;
 
+// TODO ���ڴ�������ȫ��ʹ�ö���buf��
+
+extern uint8_t fb_ctrl_buf[32];
+extern uint8_t ws2812b_ctrl_buf[32];
+
 extern uint8_t ctrl_buff[32];
 extern uint8_t ctrl_buff2[256];
 extern uint8_t update_buff[16][128];

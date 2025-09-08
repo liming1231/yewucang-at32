@@ -11,6 +11,9 @@ struct uart_data uart1_data, uart2_data;
 
 static uint8_t diyShowDataSts = 1;
 
+uint8_t fb_ctrl_buf[32] = {0};
+uint8_t ws2812b_ctrl_buf[32] = {0};
+
 uint8_t ctrl_buff[32] = {0};
 uint8_t ctrl_buff2[256] = {0};
 uint8_t update_buff[16][128] = {0};
@@ -720,6 +723,49 @@ void send_distance(void)
     uart1_data.usart_tx_counter = 0;
     vTaskDelay(50);
 }
+
+void send_sts_loop(void)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+    uartStsData_str.header[0] = 0x55;
+    uartStsData_str.header[1] = 0xAA;
+    uartStsData_str.dataLen = 0x11;
+    uartStsData_str.type = 0x10;
+    uartStsData_str.touchPadSts = 0x00;
+    uartStsData_str.LockSts_L = 0x00;
+    uartStsData_str.LockSts_H = 0x00;
+    uartStsData_str.LockSts_Food = 0x00;
+    uartStsData_str.Motor_L[0] = 0x00;
+    uartStsData_str.Motor_L[1] = 0x00;
+    uartStsData_str.Motor_L[2] = 0x00;
+    uartStsData_str.Motor_L[3] = 0x00;
+    uartStsData_str.Motor_H[0] = 0x00;
+    uartStsData_str.Motor_H[1] = 0x00;
+    uartStsData_str.Motor_H[2] = 0x00;
+    uartStsData_str.Motor_H[3] = 0x00;
+    uartStsData_str.ws2812Mode.mode = ledMode;
+    uartStsData_str.ws2812Mode.r = color_grb.r;
+    uartStsData_str.ws2812Mode.g = color_grb.g;
+    uartStsData_str.ws2812Mode.b = color_grb.b;
+    memcpy(uart1_data.usart_tx_buffer, (void *)&uartStsData_str, sizeof(uartStsData_str));
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[20] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[21] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 22;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(50);
+}
+
 void send_version(uint8_t index)
 {
     uint16_t getCrc;
@@ -744,6 +790,39 @@ void send_version(uint8_t index)
     uart1_data.usart_tx_buffer[14] = (uint8_t)((getCrc >> 8) & 0xFF);
     uart1_data.usart_tx_buffer[15] = (uint8_t)((getCrc >> 0) & 0xFF);
     uart1_data.usart_tx_buffer_size = 16;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
+void send_own_version_old()
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = 0x01;
+    uart1_data.usart_tx_buffer[4] = fb_ctrl_buf[4];
+    uart1_data.usart_tx_buffer[5] = fb_ctrl_buf[5];
+
+    uart1_data.usart_tx_buffer[6] = (uint8_t)((VERSION >> 24) & 0xFF);
+    uart1_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 16) & 0xFF);
+    uart1_data.usart_tx_buffer[8] = (uint8_t)((VERSION >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 0) & 0xFF);
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -843,22 +922,22 @@ void send_own2_version(bool sts)
     vTaskDelay(5);
 }
 
-void send_ctrl_leds_fb(uint8_t index)
+void send_ctrl_leds_fb(uint8_t sts)
 {
     uint16_t getCrc;
     memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_LEDS_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_LEDS_CMD_ID >> 0) & 0xFF); // 0x03;
-    uart1_data.usart_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_leds_valid;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = fb_ctrl_buf[4];
+    uart1_data.usart_tx_buffer[5] = fb_ctrl_buf[5];
+    uart1_data.usart_tx_buffer[6] = fb_ctrl_buf[6];
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -988,22 +1067,25 @@ void send_reset_sensor_fb(uint8_t index)
     vTaskDelay(5);
 }
 
-void send_ctrl_usbhub_fb(uint8_t index)
+void send_ctrl_usbhub_fb(uint8_t sts)
 {
     uint16_t getCrc;
     memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
 
     uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
     uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
-    uart1_data.usart_tx_buffer[2] = 0x04;
-    uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_RESET_USBHUB_CMD_ID >> 8) & 0xFF); // 0x02;
-    uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_RESET_USBHUB_CMD_ID >> 0) & 0xFF); // 0x05;
-    uart1_data.usart_tx_buffer[5] = 0x00;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.reset_usbhub_valid;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = sts;
+    uart1_data.usart_tx_buffer[4] = fb_ctrl_buf[4];
+    uart1_data.usart_tx_buffer[5] = fb_ctrl_buf[5];
+    uart1_data.usart_tx_buffer[6] = sts;
+    uart1_data.usart_tx_buffer[7] = fb_ctrl_buf[7];
+    uart1_data.usart_tx_buffer[8] = fb_ctrl_buf[8];
+    uart1_data.usart_tx_buffer[9] = fb_ctrl_buf[9];
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
-    uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
-    uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
-    uart1_data.usart_tx_buffer_size = 9;
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
 
     while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
     {
@@ -1104,6 +1186,38 @@ void send_ctrl_acc_fb(uint8_t index)
     vTaskDelay(5);
 }
 
+void send_ctrl_acc_old_fb(uint8_t sts)
+{
+    uint16_t getCrc;
+    memset(uart1_data.usart_tx_buffer, 0, sizeof(uart1_data.usart_tx_buffer));
+
+    uart1_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart1_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart1_data.usart_tx_buffer[2] = 0x07;
+    uart1_data.usart_tx_buffer[3] = 0x01;
+    uart1_data.usart_tx_buffer[4] = fb_ctrl_buf[4];
+    uart1_data.usart_tx_buffer[5] = fb_ctrl_buf[5];
+    uart1_data.usart_tx_buffer[6] = fb_ctrl_buf[6];
+    uart1_data.usart_tx_buffer[7] = sts;
+    uart1_data.usart_tx_buffer[8] = fb_ctrl_buf[8];
+    uart1_data.usart_tx_buffer[9] = fb_ctrl_buf[9];
+    getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
+    uart1_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart1_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart1_data.usart_tx_buffer_size = 12;
+
+    while (uart1_data.usart_tx_counter < uart1_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART1, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART1, uart1_data.usart_tx_buffer[uart1_data.usart_tx_counter++]);
+    }
+
+    uart1_data.usart_tx_counter = 0;
+    vTaskDelay(5);
+}
+
 void send_uid(uint8_t index)
 {
     uint16_t getCrc;
@@ -1147,35 +1261,7 @@ void send_uid(uint8_t index)
 
 void check_version(void)
 {
-    if (uart1SendTypeFlag.version_own == 1)
-    {
-        send_own_version();
-        uart1SendTypeFlag.version_own = 0;
-    }
-
-    if (uart1SendTypeFlag.version_f1 == 1)
-    {
-        send_version(VERSION_INDEX_F1);
-        uart1SendTypeFlag.version_f1 = 0;
-    }
-
-    if (uart1SendTypeFlag.version_f2 == 1)
-    {
-        send_version(VERSION_INDEX_F2);
-        uart1SendTypeFlag.version_f2 = 0;
-    }
-
-    if (uart1SendTypeFlag.version_f3 == 1)
-    {
-        send_version(VERSION_INDEX_F3);
-        uart1SendTypeFlag.version_f3 = 0;
-    }
-
-    if (uart1SendTypeFlag.version_f4 == 1)
-    {
-        send_version(VERSION_INDEX_F4);
-        uart1SendTypeFlag.version_f4 = 0;
-    }
+    send_own_version_old();
 }
 
 void check_uid(void)
@@ -1237,50 +1323,8 @@ void usart1_tx_task_function(void *pvParameters)
     {
         if (updateFWFlag == 0)
         {
-            send_distance();
+            send_sts_loop();
         }
-
-        if (uart1SendTypeFlag.need_reboot != 0)
-        {
-            send_reboot_fb(uart1SendTypeFlag.need_reboot);
-            uart1SendTypeFlag.need_reboot = 0;
-        }
-
-        if (uart1SendTypeFlag.ctrl_diy_leds != 0x00)
-        {
-            send_ctrl_diy_leds_fb(uart1SendTypeFlag.ctrl_diy_leds);
-            uart1SendTypeFlag.ctrl_diy_leds = 0;
-        }
-
-        if (uart1SendTypeFlag.ctrl_diy2_leds != 0x00)
-        {
-            send_ctrl_diy2_leds_fb(uart1SendTypeFlag.ctrl_diy2_leds);
-            uart1SendTypeFlag.ctrl_diy2_leds = 0;
-        }
-
-        if (uart1SendTypeFlag.ctrl_leds != 0)
-        {
-            send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_leds);
-            uart1SendTypeFlag.ctrl_leds = 0;
-        }
-
-        if (uart1SendTypeFlag.ctrl_tray_leds != 0)
-        {
-            send_ctrl_tray_leds_fb(uart1SendTypeFlag.ctrl_tray_leds);
-            uart1SendTypeFlag.ctrl_tray_leds = 0;
-        }
-
-        if (uart1SendTypeFlag.reset_sensor != 0)
-        {
-            send_reset_sensor_fb(uart1SendTypeFlag.reset_sensor);
-            uart1SendTypeFlag.reset_sensor = 0;
-        }
-
-        check_version();
-
-        check_uid();
-
-        check_ctrl_sw_cmd();
 
         taskAliveBits |= TASK_UART_TX_BIT_3;
     }
@@ -1448,41 +1492,9 @@ void parse_reboot_cmd(uint8_t index)
 
 void parse_get_ver_cmd(uint8_t index)
 {
-    if (index > TRAY_SUM)
+    if (index == 0)
     {
-        // ����Ӧ��
-        uart1SendTypeFlag.version_own_valid = 0;
-        uart1SendTypeFlag.version_own = 1;
-    }
-
-    else if (index == TRAY_MASTER)
-    {
-        uart1SendTypeFlag.version_own_valid = 1;
-        uart1SendTypeFlag.version_own = 1;
-    }
-    else
-    {
-        if (index == TRAY_F1)
-        {
-            ctrlData2Can.standard_id = GET_F1_VERSION_ID;
-        }
-
-        else if (index == TRAY_F2)
-        {
-            ctrlData2Can.standard_id = GET_F2_VERSION_ID;
-        }
-
-        else if (index == TRAY_F3)
-        {
-            ctrlData2Can.standard_id = GET_F3_VERSION_ID;
-        }
-        else if (index == TRAY_F4)
-        {
-            ctrlData2Can.standard_id = GET_F4_VERSION_ID;
-        }
-
-        target_ver_uid_can_data();
-        can_transmit_ctrl_data(&ctrlData2Can);
+        send_own_version_old();
     }
 }
 
@@ -1524,6 +1536,36 @@ void parse_diy_led_cmd(void)
     }
 }
 
+void parse_diy_led_old_cmd(void)
+{
+    uint8_t i;
+    uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
+    for (i = 0; i < 4; i++)
+    {
+
+        if ((ctrl_buff[7 + i * 2] + ctrl_buff[8 + i * 2] > LED_SUM) || (ctrl_buff[15] > 7))
+        {
+            uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
+            diyShowDataSts = 0;
+            break;
+        }
+    }
+    if (diyShowDataSts == 1)
+    {
+        diyArr[0][0] = ctrl_buff[7];
+        diyArr[0][1] = ctrl_buff[8];
+        diyArr[1][0] = ctrl_buff[9];
+        diyArr[1][1] = ctrl_buff[10];
+        diyArr[2][0] = ctrl_buff[11];
+        diyArr[2][1] = ctrl_buff[12];
+        diyArr[3][0] = ctrl_buff[13];
+        diyArr[3][1] = ctrl_buff[14];
+        diyColor = ctrl_buff[15];
+        ledMode = DIY_SHOW;
+    }
+    send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_diy_leds_valid);
+}
+
 void parse_diy2_led_cmd(void)
 {
     if (ctrl_buff[2] != 0x0C)
@@ -1559,6 +1601,81 @@ void parse_diy2_led_cmd(void)
             diyColor = ctrl_buff[14];
             ledMode = DIY2_SHOW;
         }
+    }
+}
+
+void parse_diy2_led_old_cmd(void)
+{
+    uint8_t i;
+    uart1SendTypeFlag.ctrl_diy2_leds_valid = 1;
+    for (i = 0; i < 4; i++)
+    {
+        if ((ctrl_buff[7 + i * 2] + ctrl_buff[8 + i * 2] > LED_SUM) || (ctrl_buff[15] > 7))
+        {
+            uart1SendTypeFlag.ctrl_diy2_leds_valid = 0;
+            diyShowDataSts = 0;
+            break;
+        }
+    }
+    if (diyShowDataSts == 1)
+    {
+        diyArr[0][0] = ctrl_buff[7];
+        diyArr[0][1] = ctrl_buff[8];
+        diyArr[1][0] = ctrl_buff[9];
+        diyArr[1][1] = ctrl_buff[10];
+        diyArr[2][0] = ctrl_buff[11];
+        diyArr[2][1] = ctrl_buff[12];
+        diyArr[3][0] = ctrl_buff[13];
+        diyArr[3][1] = ctrl_buff[14];
+        diyColor = ctrl_buff[15];
+        ledMode = DIY2_SHOW;
+    }
+    send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_diy2_leds_valid);
+}
+
+void parse_ctrl_serv_les_cmd(void)
+{
+    if ((ws2812b_ctrl_buf[7] > MAX_BRIGHTNESS) || (ws2812b_ctrl_buf[8] > MAX_BRIGHTNESS) || (ws2812b_ctrl_buf[9] > MAX_BRIGHTNESS))
+    {
+        uart1SendTypeFlag.ctrl_leds_valid = 0;
+    }
+    else if ((ws2812b_ctrl_buf[6] == RAINBOW) && (ws2812b_ctrl_buf[7] > 0x64))
+    {
+        uart1SendTypeFlag.ctrl_leds_valid = 0;
+    }
+    else
+    {
+        if ((ws2812b_ctrl_buf[6] == RAINBOW) && (ws2812b_ctrl_buf[7] <= 0x64))
+        {
+            rainbow_percent = ws2812b_ctrl_buf[7];
+        }
+        else
+        {
+            color_grb.r = ws2812b_ctrl_buf[7];
+            color_grb.g = ws2812b_ctrl_buf[8];
+            color_grb.b = ws2812b_ctrl_buf[9];
+        }
+        ledMode = ws2812b_ctrl_buf[6];
+        uart1SendTypeFlag.ctrl_leds_valid = 1;
+    }
+    send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_leds_valid);
+}
+
+void parse_ctrl_ws2812_cmd(void)
+{
+    if (ws2812b_ctrl_buf[6] <= 4)
+    {
+        parse_ctrl_serv_les_cmd();
+    }
+    else if (ws2812b_ctrl_buf[6] == 0x05)
+    {
+        parse_diy_led_old_cmd();
+        diyShowDataSts = 1;
+    }
+    else if (ws2812b_ctrl_buf[6] == 0x06)
+    {
+        parse_diy2_led_old_cmd();
+        diyShowDataSts = 1;
     }
 }
 
@@ -1718,6 +1835,48 @@ void parse_reset_usbhub_cmd(void)
     }
 }
 
+void parse_ctrl_usbhub_cmd(uint8_t ctrlType)
+{
+    uint32_t delatCounter;
+    switch (ctrlType)
+    {
+    case 0x00:
+    {
+        usbhub_ctrl(0);
+        uart1SendTypeFlag.reset_usbhub_valid = 1;
+        break;
+    }
+
+    case 0x01:
+    {
+        usbhub_ctrl(1);
+        uart1SendTypeFlag.reset_usbhub_valid = 1;
+        break;
+    }
+
+    case 0x02:
+    {
+        usbhub_ctrl(0);
+        delatCounter = 20000;
+        while (delatCounter--)
+        {
+            __NOP();
+        }
+
+        usbhub_ctrl(1);
+        uart1SendTypeFlag.reset_usbhub_valid = 1;
+        break;
+    }
+
+    default:
+    {
+        uart1SendTypeFlag.reset_usbhub_valid = 0;
+        break;
+    }
+    }
+    send_ctrl_usbhub_fb(uart1SendTypeFlag.reset_usbhub_valid);
+}
+
 void parse_reset_sw_cmd(void)
 {
     if (ctrl_buff[5] != 0x00)
@@ -1799,6 +1958,46 @@ void parse_reset_acc_cmd(void)
     }
 }
 
+void parse_ctrl_acc_cmd(uint8_t ctrlType)
+{
+    uint32_t delatCounter;
+    switch (ctrlType)
+    {
+    case 0x00:
+    {
+        car_acc_ctrl(0);
+        uart1SendTypeFlag.reset_acc_valid = 0x01;
+        break;
+    }
+    case 0x01:
+    {
+        car_acc_ctrl(1);
+        uart1SendTypeFlag.reset_acc_valid = 0x01;
+
+        break;
+    }
+    case 0x02:
+    {
+        car_acc_ctrl(0);
+        delatCounter = 10000;
+
+        while (delatCounter--)
+        {
+            __NOP();
+        }
+        car_acc_ctrl(1);
+        uart1SendTypeFlag.reset_acc_valid = 0x01;
+        break;
+    }
+    default:
+    {
+        uart1SendTypeFlag.reset_acc_valid = 0x00;
+        break;
+    }
+    }
+    send_ctrl_acc_old_fb(uart1SendTypeFlag.reset_acc_valid);
+}
+
 void parse_get_uid_cmd(void)
 {
     if (ctrl_buff[5] > TRAY_SUM)
@@ -1841,6 +2040,7 @@ void parse_get_uid_cmd(void)
 
 void usart1_rx_task_function(void *pvParameters)
 {
+    uint8_t loopFlashCnt = 0;
     uint16_t getCrc;
 
     init_can_msg();
@@ -1853,82 +2053,128 @@ void usart1_rx_task_function(void *pvParameters)
             getCrc = crc16_modbus(&ctrl_buff[3], ctrl_buff[2]);
             if (getCrc == (((ctrl_buff[ctrl_buff[2] + 3] << 8) | ctrl_buff[ctrl_buff[2] + 4]) & 0xFFFF))
             {
-                cmdId = ((ctrl_buff[3] << 8) | ctrl_buff[4]) & 0xFFFF;
 
-                switch (cmdId)
-                {
-                case REBOOT_CMD_ID:
-                {
-                    parse_reboot_cmd(ctrl_buff[5]);
-                    break;
-                }
+#if 0
+                cmdId = ( ( ctrl_buff[3]<<8 )|ctrl_buff[4] )&0xFFFF;
 
-                case GET_VERSION_CMD_ID:
+                switch( cmdId )
                 {
-                    parse_get_ver_cmd(ctrl_buff[5]);
-                    break;
-                }
+                    case REBOOT_CMD_ID:
+                    {
+                        parse_reboot_cmd(ctrl_buff[5]);
+                        break;
+                    }
 
-                case SET_DIY_CMD_ID:
-                {
-                    parse_diy_led_cmd();
-                    break;
-                }
+                    case GET_VERSION_CMD_ID:
+                    {
+                        parse_get_ver_cmd(ctrl_buff[5]);
+                        break;
+                    }
 
-                case SET_DIY2_CMD_ID:
-                {
-                    parse_diy2_led_cmd();
-                    break;
-                }
+                    case SET_DIY_CMD_ID:
+                    {
+                    	parse_diy_led_cmd();
+                        break;
+                    }
 
-                case SET_LEDS_CMD_ID:
-                {
-                    parse_ctrl_leds_cmd();
-                    break;
-                }
+                    case SET_DIY2_CMD_ID:
+                    {
+                    	parse_diy2_led_cmd();
+                        break;
+                    }
+
+                    case SET_LEDS_CMD_ID:
+                    {
+                        parse_ctrl_leds_cmd();
+                        break;
+                    }
 #if 1
-                case SET_TRAY_LEDS_CMD_ID:
-                {
-                    parse_ctrl_tray_leds_cmd();
-                    break;
+                    case SET_TRAY_LEDS_CMD_ID:
+                    {
+                        parse_ctrl_tray_leds_cmd();
+                        break;
+                    }
+#endif
+                    case RESET_SENSOR_CMD_ID:
+                    {
+                        parse_reset_sensor_cmd();
+                        break;
+                    }
+
+                    case RESET_USBHUB_CMD_ID:
+                    {
+                        parse_reset_usbhub_cmd();
+                        break;
+                    }
+                    case RESET_SWITCH_CMD_ID:
+                    {
+                        parse_reset_sw_cmd();
+                        break;
+                    }
+                    case RESET_ANDRIOD_CMD_ID:
+                    {
+                        parse_reset_andriod();
+                        break;
+                    }
+                    case RESET_ACC_CMD_ID:
+                    {
+                        parse_reset_acc_cmd();
+                        break;
+                    }
+                    case GET_UID_CMD_ID:
+                    {
+                        parse_get_uid_cmd();
+                        break;
+                    }
+
+                    default:
+                    {
+                        break;
+                    }
                 }
 #endif
-                case RESET_SENSOR_CMD_ID:
-                {
-                    parse_reset_sensor_cmd();
-                    break;
-                }
 
-                case RESET_USBHUB_CMD_ID:
+                // uart�Լ�
+                if ((ctrl_buff[2] == 0x11) && (ctrl_buff[3] == 0x10))
                 {
-                    parse_reset_usbhub_cmd();
-                    break;
+                    while (loopFlashCnt < 5)
+                    {
+                        toggle_led_stat();
+                        loopFlashCnt++;
+                        vTaskDelay(50);
+                    }
+                    loopFlashCnt = 0;
                 }
-                case RESET_SWITCH_CMD_ID:
+                else if (ctrl_buff[4] == 0x00) // master board
                 {
-                    parse_reset_sw_cmd();
-                    break;
-                }
-                case RESET_ANDRIOD_CMD_ID:
-                {
-                    parse_reset_andriod();
-                    break;
-                }
-                case RESET_ACC_CMD_ID:
-                {
-                    parse_reset_acc_cmd();
-                    break;
-                }
-                case GET_UID_CMD_ID:
-                {
-                    parse_get_uid_cmd();
-                    break;
-                }
+                    if (ctrl_buff[5] == 0x22) // version
+                    {
+                        memset(fb_ctrl_buf, 0, sizeof(fb_ctrl_buf));
+                        memcpy(fb_ctrl_buf, ctrl_buff, sizeof(fb_ctrl_buf));
+                        parse_get_ver_cmd(0);
+                    }
+                    else if (ctrl_buff[5] == 0x21) // acc
+                    {
+                        memset(fb_ctrl_buf, 0, sizeof(fb_ctrl_buf));
+                        memcpy(fb_ctrl_buf, ctrl_buff, sizeof(fb_ctrl_buf));
+                        parse_ctrl_acc_cmd(ctrl_buff[6]);
+                    }
 
-                default:
-                {
-                    break;
-                }
+                    else if (ctrl_buff[5] == 0x06) // usbhub
+                    {
+                        memset(fb_ctrl_buf, 0, sizeof(fb_ctrl_buf));
+                        memcpy(fb_ctrl_buf, ctrl_buff, sizeof(fb_ctrl_buf));
+                        parse_ctrl_usbhub_cmd(ctrl_buff[6]);
+                    }
+
+                    else if (ctrl_buff[5] == 0x11) // leds
+                    {
+                        memset(fb_ctrl_buf, 0, sizeof(fb_ctrl_buf));
+                        memcpy(fb_ctrl_buf, ctrl_buff, sizeof(fb_ctrl_buf));
+                        memset(ws2812b_ctrl_buf, 0, sizeof(fb_ctrl_buf));
+                        memcpy(ws2812b_ctrl_buf, ctrl_buff, sizeof(fb_ctrl_buf));
+                        parse_ctrl_ws2812_cmd();
+                    }
                 }
             }
             // xTaskResumeAll();
@@ -2129,12 +2375,12 @@ void parse_send_fw_info_msg(void)
 
             if ((updateFw.fileSize % 128) == 0)
             {
-                updateFw.fwMsgSumConform = (uint16_t)(updateFw.fileSize / 128);
+                updateFw.fwMsgSumConform = (uint8_t)(updateFw.fileSize / 128);
             }
 
             else
             {
-                updateFw.fwMsgSumConform = (uint16_t)(updateFw.fileSize / 128 + 1);
+                updateFw.fwMsgSumConform = (uint8_t)(updateFw.fileSize / 128 + 1);
             }
 
             if ((updateFw.fileSize > APP_FW_MAX_LEN) || (updateFw.fwMsgSum != updateFw.fwMsgSumConform))

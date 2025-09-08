@@ -11,11 +11,11 @@
 // #define VERSION (0x313136)
 
 // #define DEBUG
-#define CAN_DAUL
+// #define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31323036)
+#define VERSION (0x31323034)
 #else
-#define VERSION (0x31323037)
+#define VERSION (0x23041414)
 #endif
 #define IHAWK_CTRL
 
@@ -189,6 +189,38 @@ struct _ihawk_power_sts
     uint8_t ihawk_sts_1;
     uint8_t ihawk_sts_2;
 };
+
+#pragma pack(1)
+struct WS2812BSTS
+{
+    uint8_t mode;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
+struct UartRawData
+{
+    // WARNING: This struct must be manually memory aligned
+
+    uint8_t header[2];
+    uint8_t dataLen; // excluding itself. start from the next field
+    uint8_t type;
+
+    uint8_t touchPadSts;
+    uint8_t LockSts_L;
+    uint8_t LockSts_H;
+    uint8_t LockSts_Food; // unused
+
+    uint8_t Motor_L[4];
+    uint8_t Motor_H[4];
+
+    struct WS2812BSTS ws2812Mode;
+
+    uint8_t tail[2]; // 0xee
+};
+#pragma pack()
+
+extern struct UartRawData uartStsData_str;
 
 extern EventBits_t taskAliveBits;
 extern volatile uint16_t distance[4][6];
