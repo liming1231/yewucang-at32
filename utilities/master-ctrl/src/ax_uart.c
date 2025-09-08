@@ -258,9 +258,14 @@ void ihawk_ctrl_tm(uint8_t index, uint8_t sts, uint8_t delayTm)
 
 void open_device_pwr(void)
 {
+    uint64_t ii = 0;
     usbhub_ctrl(TURN_ON);
     switch_pwr_ctrl(TURN_ON);
     andriod_pwr_ctrl(TURN_ON);
+    for (ii = 0; ii < 2000000; ii++)
+    {
+        __NOP();
+    }
     car_acc_ctrl(TURN_ON);
     ihawk_ctrl(LOWER_USB, TURN_ON);
     ihawk_ctrl(UPPER_USB, TURN_ON);
@@ -1881,6 +1886,14 @@ void USART1_IRQHandler(void)
                 {
                     revFlag = UART_GET_HEADER_2;
                 }
+                else if (usart_data_receive(USART1) == UART_MSG_HEADER_1)
+                {
+                    revFlag = UART_GET_HEADER_1;
+                }
+                else
+                {
+                    revFlag = UART_DATA_INIT;
+                }
             }
 
             else if (revFlag == UART_GET_HEADER_2)
@@ -1893,6 +1906,10 @@ void USART1_IRQHandler(void)
                 {
                     uart1_data.usart_rx_counter = 3;
                     revFlag = UART_GET_MSG_DATA_LEN;
+                }
+                else
+                {
+                    revFlag = UART_DATA_INIT;
                 }
             }
 
@@ -2428,6 +2445,14 @@ void USART2_IRQHandler(void)
                 {
                     revFlag2 = UART_GET_HEADER_2;
                 }
+                else if (usart_data_receive(USART2) == UART_MSG_HEADER_1)
+                {
+                    revFlag2 = UART_GET_HEADER_1;
+                }
+                else
+                {
+                    revFlag2 = UART_DATA_INIT;
+                }
             }
 
             else if (revFlag2 == UART_GET_HEADER_2)
@@ -2441,9 +2466,9 @@ void USART2_IRQHandler(void)
                     uart2_data.usart_rx_counter = 3;
                     revFlag2 = UART_GET_MSG_DATA_LEN;
                 }
-                if (uart2_data.usart_rx_buffer[2] == UART_MSG_DATA_LEN_MAX)
+                else
                 {
-                    uart2_data.usart_rx_buffer[2] = UART_MSG_DATA_LEN_MAX;
+                    revFlag2 = UART_DATA_INIT;
                 }
             }
 

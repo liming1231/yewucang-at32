@@ -557,11 +557,6 @@
           <GroupName>cmsis</GroupName>
           <Files>
             <File>
-              <FileName>system_at32f415.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\libraries\cmsis\cm4\device_support\system_at32f415.c</FilePath>
-            </File>
-            <File>
               <FileName>startup_at32f415.s</FileName>
               <FileType>2</FileType>
               <FilePath>..\..\..\libraries\cmsis\cm4\device_support\startup\mdk\startup_at32f415.s</FilePath>
@@ -571,6 +566,11 @@
         <Group>
           <GroupName>freertos</GroupName>
           <Files>
+            <File>
+              <FileName>system_at32f415.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\libraries\cmsis\cm4\device_support\system_at32f415.c</FilePath>
+            </File>
             <File>
               <FileName>croutine.c</FileName>
               <FileType>1</FileType>
