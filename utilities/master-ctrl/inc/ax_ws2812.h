@@ -6,9 +6,9 @@
 // 每个LED的字节数
 #define ONE_LED_TYPES (24)
 // LED数量
-#define LED_SUM (56)
+#define LED_SUM (40)
 // 一个LED数组的字节数
-#define LED_ARR (ONE_LED_TYPES * LED_SUM) // 60*24
+#define LED_ARR (ONE_LED_TYPES * LED_SUM) // 40*24
 
 #define WS2812_BIT_0 (0xC0)
 #define WS2812_BIT_1 (0xFC)

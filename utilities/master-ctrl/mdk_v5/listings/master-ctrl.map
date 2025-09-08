@@ -84,14 +84,18 @@ Section Cross References
     ax_uart.o(i.check_uid) refers to ax_common.o(.bss) for uart1SendTypeFlag
     ax_uart.o(i.check_version) refers to ax_uart.o(i.send_own_version_old) for send_own_version_old
     ax_uart.o(i.device_ctrl_pins_init) refers to at32f415_crm.o(i.crm_periph_clock_enable) for crm_periph_clock_enable
+    ax_uart.o(i.device_ctrl_pins_init) refers to at32f415_gpio.o(i.gpio_pin_remap_config) for gpio_pin_remap_config
     ax_uart.o(i.device_ctrl_pins_init) refers to at32f415_gpio.o(i.gpio_default_para_init) for gpio_default_para_init
     ax_uart.o(i.device_ctrl_pins_init) refers to at32f415_gpio.o(i.gpio_init) for gpio_init
+    ax_uart.o(i.device_ctrl_pins_init) refers to at32f415_gpio.o(i.gpio_bits_reset) for gpio_bits_reset
     ax_uart.o(i.ihawk_ctrl) refers to ax_uart.o(i.ihawk_lower_ctrl) for ihawk_lower_ctrl
     ax_uart.o(i.ihawk_ctrl) refers to tasks.o(i.vTaskDelay) for vTaskDelay
     ax_uart.o(i.ihawk_ctrl) refers to ax_uart.o(i.ihawk_upper_ctrl) for ihawk_upper_ctrl
+    ax_uart.o(i.ihawk_ctrl) refers to ax_uart.o(i.usb3_ctrl) for usb3_ctrl
     ax_uart.o(i.ihawk_ctrl_tm) refers to ax_uart.o(i.ihawk_lower_ctrl) for ihawk_lower_ctrl
     ax_uart.o(i.ihawk_ctrl_tm) refers to tasks.o(i.vTaskDelay) for vTaskDelay
     ax_uart.o(i.ihawk_ctrl_tm) refers to ax_uart.o(i.ihawk_upper_ctrl) for ihawk_upper_ctrl
+    ax_uart.o(i.ihawk_ctrl_tm) refers to ax_uart.o(i.usb3_ctrl) for usb3_ctrl
     ax_uart.o(i.ihawk_lower_ctrl) refers to at32f415_gpio.o(i.gpio_bits_reset) for gpio_bits_reset
     ax_uart.o(i.ihawk_lower_ctrl) refers to at32f415_gpio.o(i.gpio_bits_set) for gpio_bits_set
     ax_uart.o(i.ihawk_lower_ctrl) refers to ax_common.o(.data) for ihawk_power_sts
@@ -379,6 +383,14 @@ Section Cross References
     ax_uart.o(i.send_uid) refers to tasks.o(i.vTaskDelay) for vTaskDelay
     ax_uart.o(i.send_uid) refers to ax_uart.o(.bss) for uart1_data
     ax_uart.o(i.send_uid) refers to ax_common.o(.bss) for uidBuf
+    ax_uart.o(i.send_usb_sts_fb) refers to tasks.o(i.vTaskDelay) for vTaskDelay
+    ax_uart.o(i.send_usb_sts_fb) refers to rt_memclr_w.o(.text) for __aeabi_memclr4
+    ax_uart.o(i.send_usb_sts_fb) refers to ax_common.o(i.crc16_modbus) for crc16_modbus
+    ax_uart.o(i.send_usb_sts_fb) refers to at32f415_usart.o(i.usart_flag_get) for usart_flag_get
+    ax_uart.o(i.send_usb_sts_fb) refers to at32f415_usart.o(i.usart_data_transmit) for usart_data_transmit
+    ax_uart.o(i.send_usb_sts_fb) refers to ax_uart.o(.data) for sendingUart2
+    ax_uart.o(i.send_usb_sts_fb) refers to ax_uart.o(.bss) for uart2_data
+    ax_uart.o(i.send_usb_sts_fb) refers to ax_common.o(.data) for ihawk_power_sts
     ax_uart.o(i.send_version) refers to rt_memclr_w.o(.text) for __aeabi_memclr4
     ax_uart.o(i.send_version) refers to ax_common.o(i.crc16_modbus) for crc16_modbus
     ax_uart.o(i.send_version) refers to at32f415_usart.o(i.usart_flag_get) for usart_flag_get
@@ -415,6 +427,7 @@ Section Cross References
     ax_uart.o(i.usart2_rx_task_function) refers to ax_uart.o(i.ihawk_ctrl) for ihawk_ctrl
     ax_uart.o(i.usart2_rx_task_function) refers to ax_uart.o(i.ihawk_ctrl_tm) for ihawk_ctrl_tm
     ax_uart.o(i.usart2_rx_task_function) refers to ax_uart.o(i.send_ihawk_sts_fb) for send_ihawk_sts_fb
+    ax_uart.o(i.usart2_rx_task_function) refers to ax_uart.o(i.send_usb_sts_fb) for send_usb_sts_fb
     ax_uart.o(i.usart2_rx_task_function) refers to ax_uart.o(i.send_andriod_fb) for send_andriod_fb
     ax_uart.o(i.usart2_rx_task_function) refers to ax_uart.o(i.parse_ctrl_andriod) for parse_ctrl_andriod
     ax_uart.o(i.usart2_rx_task_function) refers to ax_uart.o(i.parse_ctrl_andriod_tm) for parse_ctrl_andriod_tm
@@ -447,6 +460,9 @@ Section Cross References
     ax_uart.o(i.usart_int_configuration) refers to at32f415_usart.o(i.usart_receiver_enable) for usart_receiver_enable
     ax_uart.o(i.usart_int_configuration) refers to at32f415_usart.o(i.usart_interrupt_enable) for usart_interrupt_enable
     ax_uart.o(i.usart_int_configuration) refers to at32f415_usart.o(i.usart_enable) for usart_enable
+    ax_uart.o(i.usb3_ctrl) refers to at32f415_gpio.o(i.gpio_bits_reset) for gpio_bits_reset
+    ax_uart.o(i.usb3_ctrl) refers to at32f415_gpio.o(i.gpio_bits_set) for gpio_bits_set
+    ax_uart.o(i.usb3_ctrl) refers to ax_common.o(.data) for ihawk_power_sts
     ax_uart.o(i.usbhub_ctrl) refers to at32f415_gpio.o(i.gpio_bits_set) for gpio_bits_set
     ax_uart.o(i.usbhub_ctrl) refers to at32f415_gpio.o(i.gpio_bits_reset) for gpio_bits_reset
     ax_uart.o(.data) refers to ax_uart.o(.conststring) for .conststring
@@ -2051,61 +2067,61 @@ Image Symbol Table
 
     Symbol Name                              Value     Ov Type        Size  Object(Section)
 
-    ../clib/angel/boardlib.s                 0x00000000   Number         0  boardinit2.o ABSOLUTE
     ../clib/angel/boardlib.s                 0x00000000   Number         0  boardinit3.o ABSOLUTE
     ../clib/angel/boardlib.s                 0x00000000   Number         0  boardshut.o ABSOLUTE
+    ../clib/angel/boardlib.s                 0x00000000   Number         0  boardinit2.o ABSOLUTE
     ../clib/angel/boardlib.s                 0x00000000   Number         0  boardinit1.o ABSOLUTE
     ../clib/angel/dczerorl2.s                0x00000000   Number         0  __dczerorl2.o ABSOLUTE
     ../clib/angel/handlers.s                 0x00000000   Number         0  __scatter_zi.o ABSOLUTE
+    ../clib/angel/kernel.s                   0x00000000   Number         0  __rtentry2.o ABSOLUTE
     ../clib/angel/kernel.s                   0x00000000   Number         0  rtexit2.o ABSOLUTE
     ../clib/angel/kernel.s                   0x00000000   Number         0  rtexit.o ABSOLUTE
-    ../clib/angel/kernel.s                   0x00000000   Number         0  __rtentry2.o ABSOLUTE
-    ../clib/angel/kernel.s                   0x00000000   Number         0  __rtentry4.o ABSOLUTE
     ../clib/angel/kernel.s                   0x00000000   Number         0  __rtentry.o ABSOLUTE
+    ../clib/angel/kernel.s                   0x00000000   Number         0  __rtentry4.o ABSOLUTE
+    ../clib/angel/rt.s                       0x00000000   Number         0  aeabi_ldiv0.o ABSOLUTE
     ../clib/angel/rt.s                       0x00000000   Number         0  rt_div0.o ABSOLUTE
     ../clib/angel/rt.s                       0x00000000   Number         0  aeabi_ldiv0_sigfpe.o ABSOLUTE
-    ../clib/angel/rt.s                       0x00000000   Number         0  aeabi_ldiv0.o ABSOLUTE
     ../clib/angel/rt.s                       0x00000000   Number         0  rt_raise.o ABSOLUTE
     ../clib/angel/scatter.s                  0x00000000   Number         0  __scatter.o ABSOLUTE
     ../clib/angel/startup.s                  0x00000000   Number         0  __main.o ABSOLUTE
-    ../clib/angel/sys.s                      0x00000000   Number         0  use_no_semi_2.o ABSOLUTE
-    ../clib/angel/sys.s                      0x00000000   Number         0  indicate_semi.o ABSOLUTE
-    ../clib/angel/sys.s                      0x00000000   Number         0  sys_stackheap_outer.o ABSOLUTE
     ../clib/angel/sys.s                      0x00000000   Number         0  libspace.o ABSOLUTE
     ../clib/angel/sys.s                      0x00000000   Number         0  use_no_semi.o ABSOLUTE
+    ../clib/angel/sys.s                      0x00000000   Number         0  use_no_semi_2.o ABSOLUTE
+    ../clib/angel/sys.s                      0x00000000   Number         0  sys_stackheap_outer.o ABSOLUTE
+    ../clib/angel/sys.s                      0x00000000   Number         0  indicate_semi.o ABSOLUTE
     ../clib/angel/sysapp.c                   0x00000000   Number         0  sys_command.o ABSOLUTE
-    ../clib/armsys.c                         0x00000000   Number         0  no_argv.o ABSOLUTE
     ../clib/armsys.c                         0x00000000   Number         0  _get_argv_nomalloc.o ABSOLUTE
     ../clib/armsys.c                         0x00000000   Number         0  argv_veneer.o ABSOLUTE
     ../clib/armsys.c                         0x00000000   Number         0  argv_veneer.o ABSOLUTE
+    ../clib/armsys.c                         0x00000000   Number         0  no_argv.o ABSOLUTE
     ../clib/heapalloc.c                      0x00000000   Number         0  hrguard.o ABSOLUTE
     ../clib/heapaux.c                        0x00000000   Number         0  heapauxi.o ABSOLUTE
+    ../clib/libinit.s                        0x00000000   Number         0  libinit2.o ABSOLUTE
     ../clib/libinit.s                        0x00000000   Number         0  libshutdown.o ABSOLUTE
     ../clib/libinit.s                        0x00000000   Number         0  libshutdown2.o ABSOLUTE
-    ../clib/libinit.s                        0x00000000   Number         0  libinit2.o ABSOLUTE
     ../clib/libinit.s                        0x00000000   Number         0  libinit.o ABSOLUTE
     ../clib/longlong.s                       0x00000000   Number         0  lludivv7m.o ABSOLUTE
-    ../clib/memcpset.s                       0x00000000   Number         0  rt_memclr_w.o ABSOLUTE
-    ../clib/memcpset.s                       0x00000000   Number         0  rt_memcpy_w.o ABSOLUTE
-    ../clib/memcpset.s                       0x00000000   Number         0  rt_memcpy_v6.o ABSOLUTE
     ../clib/memcpset.s                       0x00000000   Number         0  rt_memclr.o ABSOLUTE
+    ../clib/memcpset.s                       0x00000000   Number         0  rt_memcpy_v6.o ABSOLUTE
+    ../clib/memcpset.s                       0x00000000   Number         0  rt_memclr_w.o ABSOLUTE
     ../clib/memcpset.s                       0x00000000   Number         0  memset.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_abrt_inner.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_general.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  __raise.o ABSOLUTE
+    ../clib/memcpset.s                       0x00000000   Number         0  rt_memcpy_w.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_exit.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_formal.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_outer.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_cppl_inner.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_inner.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_general.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  __raise.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_rtmem_outer.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_rtred_inner.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_other.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_segv_inner.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_cppl_inner.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_pvfn_inner.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_stak_inner.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_rtmem_formal.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_rtmem_outer.o ABSOLUTE
     ../clib/signal.c                         0x00000000   Number         0  defsig_rtmem_inner.o ABSOLUTE
-    ../clib/signal.c                         0x00000000   Number         0  defsig_rtred_inner.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_abrt_inner.o ABSOLUTE
+    ../clib/signal.c                         0x00000000   Number         0  defsig_fpe_inner.o ABSOLUTE
     ../clib/signal.s                         0x00000000   Number         0  defsig.o ABSOLUTE
     ../clib/stdlib.c                         0x00000000   Number         0  exit.o ABSOLUTE
     ../clib/string.c                         0x00000000   Number         0  strlen.o ABSOLUTE
@@ -2309,190 +2325,192 @@ Image Symbol Table
     i.crm_sysclk_switch                      0x08005bac   Section        0  at32f415_crm.o(i.crm_sysclk_switch)
     i.crm_sysclk_switch_status_get           0x08005bc0   Section        0  at32f415_crm.o(i.crm_sysclk_switch_status_get)
     i.device_ctrl_pins_init                  0x08005bd0   Section        0  ax_uart.o(i.device_ctrl_pins_init)
-    i.flash_flag_clear                       0x08005c98   Section        0  at32f415_flash.o(i.flash_flag_clear)
-    i.flash_halfword_program                 0x08005ca4   Section        0  at32f415_flash.o(i.flash_halfword_program)
-    i.flash_lock                             0x08005cdc   Section        0  at32f415_flash.o(i.flash_lock)
-    i.flash_operation_status_get             0x08005cf0   Section        0  at32f415_flash.o(i.flash_operation_status_get)
-    i.flash_operation_wait_for               0x08005d24   Section        0  at32f415_flash.o(i.flash_operation_wait_for)
-    i.flash_read_u8                          0x08005d48   Section        0  ax_flash.o(i.flash_read_u8)
-    i.flash_sector_erase                     0x08005d60   Section        0  at32f415_flash.o(i.flash_sector_erase)
-    i.flash_unlock                           0x08005da0   Section        0  at32f415_flash.o(i.flash_unlock)
-    i.getDiyLED                              0x08005db8   Section        0  ax_ws2812.o(i.getDiyLED)
-    i.gpio_bits_reset                        0x08005e20   Section        0  at32f415_gpio.o(i.gpio_bits_reset)
-    i.gpio_bits_set                          0x08005e24   Section        0  at32f415_gpio.o(i.gpio_bits_set)
-    i.gpio_default_para_init                 0x08005e28   Section        0  at32f415_gpio.o(i.gpio_default_para_init)
-    i.gpio_init                              0x08005e3e   Section        0  at32f415_gpio.o(i.gpio_init)
-    i.gpio_pin_remap_config                  0x08005ee8   Section        0  at32f415_gpio.o(i.gpio_pin_remap_config)
-    i.ihawk_ctrl                             0x08005f34   Section        0  ax_uart.o(i.ihawk_ctrl)
-    i.ihawk_ctrl_tm                          0x08005fc4   Section        0  ax_uart.o(i.ihawk_ctrl_tm)
-    i.ihawk_lower_ctrl                       0x08006064   Section        0  ax_uart.o(i.ihawk_lower_ctrl)
-    i.ihawk_upper_ctrl                       0x08006094   Section        0  ax_uart.o(i.ihawk_upper_ctrl)
-    i.initColor                              0x080060c4   Section        0  ax_ws2812.o(i.initColor)
-    i.init_can_msg                           0x080060e0   Section        0  ax_uart.o(i.init_can_msg)
-    i.init_uart_data                         0x080061d4   Section        0  ax_uart.o(i.init_uart_data)
-    i.iwdg_Config                            0x08006250   Section        0  main.o(i.iwdg_Config)
-    i.led2_task_function                     0x08006284   Section        0  main.o(i.led2_task_function)
-    i.ledUpdate                              0x080062a4   Section        0  ax_ws2812.o(i.ledUpdate)
-    i.main                                   0x0800632c   Section        0  main.o(i.main)
-    i.nvic_irq_enable                        0x08006520   Section        0  at32f415_misc.o(i.nvic_irq_enable)
-    i.nvic_priority_group_config             0x080065e8   Section        0  at32f415_misc.o(i.nvic_priority_group_config)
-    i.nvic_system_reset                      0x08006610   Section        0  at32f415_misc.o(i.nvic_system_reset)
-    i.nvic_vector_table_set                  0x0800663c   Section        0  at32f415_misc.o(i.nvic_vector_table_set)
-    i.open_device_pwr                        0x08006650   Section        0  ax_uart.o(i.open_device_pwr)
-    i.packageUpdateFwMsg                     0x0800669c   Section        0  ax_uart.o(i.packageUpdateFwMsg)
-    i.packageUpdateFwMsg1                    0x080066dc   Section        0  ax_uart.o(i.packageUpdateFwMsg1)
-    i.parse_ctrl_acc_cmd                     0x08006724   Section        0  ax_uart.o(i.parse_ctrl_acc_cmd)
-    i.parse_ctrl_andriod                     0x0800678c   Section        0  ax_uart.o(i.parse_ctrl_andriod)
-    i.parse_ctrl_andriod_tm                  0x080067b4   Section        0  ax_uart.o(i.parse_ctrl_andriod_tm)
-    i.parse_ctrl_serv_les_cmd                0x080067f0   Section        0  ax_uart.o(i.parse_ctrl_serv_les_cmd)
-    i.parse_ctrl_usbhub_cmd                  0x08006884   Section        0  ax_uart.o(i.parse_ctrl_usbhub_cmd)
-    i.parse_ctrl_ws2812_cmd                  0x080068ec   Section        0  ax_uart.o(i.parse_ctrl_ws2812_cmd)
-    i.parse_distance_msg1                    0x0800692c   Section        0  ax_can.o(i.parse_distance_msg1)
-    i.parse_diy2_led_old_cmd                 0x080069e8   Section        0  ax_uart.o(i.parse_diy2_led_old_cmd)
-    i.parse_diy_led_old_cmd                  0x08006aa0   Section        0  ax_uart.o(i.parse_diy_led_old_cmd)
-    i.parse_fw_data_msg                      0x08006b58   Section        0  ax_uart.o(i.parse_fw_data_msg)
-    i.parse_get_app_flag_msg                 0x08006cc8   Section        0  ax_uart.o(i.parse_get_app_flag_msg)
-    i.parse_get_ver_cmd                      0x08006d54   Section        0  ax_uart.o(i.parse_get_ver_cmd)
-    i.parse_heartbeat_fb_msg                 0x08006d60   Section        0  ax_can.o(i.parse_heartbeat_fb_msg)
-    i.parse_reboot_fb_msg                    0x08006d90   Section        0  ax_can.o(i.parse_reboot_fb_msg)
-    i.parse_reset_andriod                    0x08006e28   Section        0  ax_uart.o(i.parse_reset_andriod)
-    i.parse_reset_sensor_fb_msg              0x08006e7c   Section        0  ax_can.o(i.parse_reset_sensor_fb_msg)
-    i.parse_send_fw_info_msg                 0x08006ed0   Section        0  ax_uart.o(i.parse_send_fw_info_msg)
-    i.parse_send_start_update_signal         0x08006fe8   Section        0  ax_uart.o(i.parse_send_start_update_signal)
-    i.parse_set_tray_ws2812_fb_msg           0x08007104   Section        0  ax_can.o(i.parse_set_tray_ws2812_fb_msg)
-    i.parse_set_ws2812_fb_msg                0x080071e8   Section        0  ax_can.o(i.parse_set_ws2812_fb_msg)
-    i.parse_sync_fw_fb_msg                   0x08007248   Section        0  ax_can.o(i.parse_sync_fw_fb_msg)
-    i.parse_uid_fb_msg                       0x08007308   Section        0  ax_can.o(i.parse_uid_fb_msg)
-    i.parse_update_abort_msg                 0x0800749c   Section        0  ax_uart.o(i.parse_update_abort_msg)
-    i.parse_update_end_msg                   0x08007518   Section        0  ax_uart.o(i.parse_update_end_msg)
-    i.parse_version_fb_msg                   0x080075e8   Section        0  ax_can.o(i.parse_version_fb_msg)
-    i.prvAddCurrentTaskToDelayedList         0x08007690   Section        0  tasks.o(i.prvAddCurrentTaskToDelayedList)
-    prvAddCurrentTaskToDelayedList           0x08007691   Thumb Code   124  tasks.o(i.prvAddCurrentTaskToDelayedList)
-    i.prvAddNewTaskToReadyList               0x08007728   Section        0  tasks.o(i.prvAddNewTaskToReadyList)
-    prvAddNewTaskToReadyList                 0x08007729   Thumb Code   150  tasks.o(i.prvAddNewTaskToReadyList)
-    i.prvCheckTasksWaitingTermination        0x080077dc   Section        0  tasks.o(i.prvCheckTasksWaitingTermination)
-    prvCheckTasksWaitingTermination          0x080077dd   Thumb Code    60  tasks.o(i.prvCheckTasksWaitingTermination)
-    i.prvDeleteTCB                           0x08007824   Section        0  tasks.o(i.prvDeleteTCB)
-    prvDeleteTCB                             0x08007825   Thumb Code    18  tasks.o(i.prvDeleteTCB)
-    i.prvHeapInit                            0x08007838   Section        0  heap_4.o(i.prvHeapInit)
-    prvHeapInit                              0x08007839   Thumb Code    98  heap_4.o(i.prvHeapInit)
-    i.prvIdleTask                            0x080078b4   Section        0  tasks.o(i.prvIdleTask)
-    prvIdleTask                              0x080078b5   Thumb Code    32  tasks.o(i.prvIdleTask)
-    i.prvInitialiseNewTask                   0x080078dc   Section        0  tasks.o(i.prvInitialiseNewTask)
-    prvInitialiseNewTask                     0x080078dd   Thumb Code   174  tasks.o(i.prvInitialiseNewTask)
-    i.prvInitialiseTaskLists                 0x0800798c   Section        0  tasks.o(i.prvInitialiseTaskLists)
-    prvInitialiseTaskLists                   0x0800798d   Thumb Code    70  tasks.o(i.prvInitialiseTaskLists)
-    i.prvInsertBlockIntoFreeList             0x080079f4   Section        0  heap_4.o(i.prvInsertBlockIntoFreeList)
-    prvInsertBlockIntoFreeList               0x080079f5   Thumb Code    96  heap_4.o(i.prvInsertBlockIntoFreeList)
-    i.prvResetNextTaskUnblockTime            0x08007a5c   Section        0  tasks.o(i.prvResetNextTaskUnblockTime)
-    prvResetNextTaskUnblockTime              0x08007a5d   Thumb Code    40  tasks.o(i.prvResetNextTaskUnblockTime)
-    i.prvTaskExitError                       0x08007a8c   Section        0  port.o(i.prvTaskExitError)
-    prvTaskExitError                         0x08007a8d   Thumb Code    60  port.o(i.prvTaskExitError)
-    i.pvPortMalloc                           0x08007acc   Section        0  heap_4.o(i.pvPortMalloc)
-    i.pxPortInitialiseStack                  0x08007c38   Section        0  port.o(i.pxPortInitialiseStack)
-    i.rainbowCycle                           0x08007c5c   Section        0  ax_ws2812.o(i.rainbowCycle)
-    i.rgb_SetColor                           0x08007cbc   Section        0  ax_ws2812.o(i.rgb_SetColor)
-    i.sendLED                                0x08007d58   Section        0  ax_ws2812.o(i.sendLED)
-    i.send_2_uart2                           0x08007dd8   Section        0  ax_uart.o(i.send_2_uart2)
-    i.send_andriod_fb                        0x08007e78   Section        0  ax_uart.o(i.send_andriod_fb)
-    i.send_ctrl_acc_old_fb                   0x08007f44   Section        0  ax_uart.o(i.send_ctrl_acc_old_fb)
-    i.send_ctrl_ihawk_fb                     0x08007ff8   Section        0  ax_uart.o(i.send_ctrl_ihawk_fb)
-    i.send_ctrl_leds_fb                      0x080080b8   Section        0  ax_uart.o(i.send_ctrl_leds_fb)
-    i.send_ctrl_usbhub_fb                    0x0800815c   Section        0  ax_uart.o(i.send_ctrl_usbhub_fb)
-    i.send_ihawk_sts_fb                      0x08008210   Section        0  ax_uart.o(i.send_ihawk_sts_fb)
-    i.send_own2_version                      0x080082e8   Section        0  ax_uart.o(i.send_own2_version)
-    i.send_own_version_old                   0x080083b4   Section        0  ax_uart.o(i.send_own_version_old)
-    i.send_reboot2_fb                        0x0800845c   Section        0  ax_uart.o(i.send_reboot2_fb)
-    i.send_reset_board_msg                   0x080084f8   Section        0  ax_can.o(i.send_reset_board_msg)
-    i.send_reset_sensor_msg                  0x08008574   Section        0  ax_can.o(i.send_reset_sensor_msg)
-    i.send_sts_loop                          0x080085f0   Section        0  ax_uart.o(i.send_sts_loop)
-    i.send_ws2812b_msg                       0x080086d8   Section        0  ax_can.o(i.send_ws2812b_msg)
-    i.setBreath_2s                           0x08008774   Section        0  ax_ws2812.o(i.setBreath_2s)
-    i.setBreath_4s                           0x08008844   Section        0  ax_ws2812.o(i.setBreath_4s)
-    i.setDiy2Show                            0x08008914   Section        0  ax_ws2812.o(i.setDiy2Show)
-    i.setDiyShow                             0x08008c10   Section        0  ax_ws2812.o(i.setDiyShow)
-    i.setDoubleFlashMode                     0x08008d38   Section        0  ax_ws2812.o(i.setDoubleFlashMode)
-    i.setDoubleFlash_1Hz_Mode                0x08008d68   Section        0  ax_ws2812.o(i.setDoubleFlash_1Hz_Mode)
-    i.setDoubleFlash_2Hz_Mode                0x08008d98   Section        0  ax_ws2812.o(i.setDoubleFlash_2Hz_Mode)
-    i.setNormalMode                          0x08008ddc   Section        0  ax_ws2812.o(i.setNormalMode)
-    i.setNormalRedMode                       0x08008e0c   Section        0  ax_ws2812.o(i.setNormalRedMode)
-    i.setOffMode                             0x08008e50   Section        0  ax_ws2812.o(i.setOffMode)
-    i.spi2_config                            0x08008e90   Section        0  ax_spi.o(i.spi2_config)
-    i.spi2_gpio_cfg                          0x08008ed8   Section        0  ax_spi.o(i.spi2_gpio_cfg)
-    i.spi2_send_byte                         0x08008f18   Section        0  ax_spi.o(i.spi2_send_byte)
-    i.spi2_send_bytes                        0x08008f38   Section        0  ax_spi.o(i.spi2_send_bytes)
-    i.spi_default_para_init                  0x08008f52   Section        0  at32f415_spi.o(i.spi_default_para_init)
-    i.spi_enable                             0x08008f68   Section        0  at32f415_spi.o(i.spi_enable)
-    i.spi_i2s_data_transmit                  0x08008f72   Section        0  at32f415_spi.o(i.spi_i2s_data_transmit)
-    i.spi_i2s_flag_get                       0x08008f76   Section        0  at32f415_spi.o(i.spi_i2s_flag_get)
-    i.spi_init                               0x08008f86   Section        0  at32f415_spi.o(i.spi_init)
-    i.switch_pwr_ctrl                        0x080090ac   Section        0  ax_uart.o(i.switch_pwr_ctrl)
-    i.system_clock_config                    0x080090cc   Section        0  at32f415_clock.o(i.system_clock_config)
-    i.system_core_clock_update               0x08009134   Section        0  system_at32f415.o(i.system_core_clock_update)
-    i.toggle_led_stat                        0x08009288   Section        0  ax_uart.o(i.toggle_led_stat)
-    i.usart1_rx_task_function                0x0800929c   Section        0  ax_uart.o(i.usart1_rx_task_function)
-    i.usart1_tx_task_function                0x080093cc   Section        0  ax_uart.o(i.usart1_tx_task_function)
-    i.usart2_rx_task_function                0x080093f0   Section        0  ax_uart.o(i.usart2_rx_task_function)
-    i.usart_data_receive                     0x0800960c   Section        0  at32f415_usart.o(i.usart_data_receive)
-    i.usart_data_transmit                    0x08009614   Section        0  at32f415_usart.o(i.usart_data_transmit)
-    i.usart_enable                           0x0800961c   Section        0  at32f415_usart.o(i.usart_enable)
-    i.usart_flag_clear                       0x08009626   Section        0  at32f415_usart.o(i.usart_flag_clear)
-    i.usart_flag_get                         0x08009638   Section        0  at32f415_usart.o(i.usart_flag_get)
-    i.usart_init                             0x08009648   Section        0  at32f415_usart.o(i.usart_init)
-    i.usart_int_configuration                0x080096b4   Section        0  ax_uart.o(i.usart_int_configuration)
-    i.usart_interrupt_enable                 0x08009848   Section        0  at32f415_usart.o(i.usart_interrupt_enable)
-    i.usart_receiver_enable                  0x0800987e   Section        0  at32f415_usart.o(i.usart_receiver_enable)
-    i.usart_transmitter_enable               0x08009888   Section        0  at32f415_usart.o(i.usart_transmitter_enable)
-    i.usbhub_ctrl                            0x08009894   Section        0  ax_uart.o(i.usbhub_ctrl)
-    i.uxListRemove                           0x080098b4   Section        0  list.o(i.uxListRemove)
-    i.vListInitialise                        0x080098dc   Section        0  list.o(i.vListInitialise)
-    i.vListInitialiseItem                    0x080098f6   Section        0  list.o(i.vListInitialiseItem)
-    i.vListInsert                            0x080098fc   Section        0  list.o(i.vListInsert)
-    i.vListInsertEnd                         0x08009930   Section        0  list.o(i.vListInsertEnd)
-    i.vPortEnterCritical                     0x08009948   Section        0  port.o(i.vPortEnterCritical)
-    i.vPortExitCritical                      0x0800999c   Section        0  port.o(i.vPortExitCritical)
-    i.vPortFree                              0x080099d8   Section        0  heap_4.o(i.vPortFree)
-    i.vPortSetupTimerInterrupt               0x08009a7c   Section        0  port.o(i.vPortSetupTimerInterrupt)
-    i.vTaskDelay                             0x08009aa4   Section        0  tasks.o(i.vTaskDelay)
-    i.vTaskStartScheduler                    0x08009b00   Section        0  tasks.o(i.vTaskStartScheduler)
-    i.vTaskSuspendAll                        0x08009b90   Section        0  tasks.o(i.vTaskSuspendAll)
-    i.vTaskSwitchContext                     0x08009ba0   Section        0  tasks.o(i.vTaskSwitchContext)
-    i.wdt_counter_reload                     0x08009c2c   Section        0  at32f415_wdt.o(i.wdt_counter_reload)
-    i.wdt_divider_set                        0x08009c3c   Section        0  at32f415_wdt.o(i.wdt_divider_set)
-    i.wdt_enable                             0x08009c50   Section        0  at32f415_wdt.o(i.wdt_enable)
-    i.wdt_register_write_enable              0x08009c60   Section        0  at32f415_wdt.o(i.wdt_register_write_enable)
-    i.wdt_reload_value_set                   0x08009c78   Section        0  at32f415_wdt.o(i.wdt_reload_value_set)
-    i.write2flash                            0x08009c84   Section        0  ax_flash.o(i.write2flash)
-    i.ws2812Init                             0x08009d00   Section        0  ax_ws2812.o(i.ws2812Init)
-    i.ws2812_task_function                   0x08009d10   Section        0  ax_ws2812.o(i.ws2812_task_function)
-    i.wtdg_task_function                     0x08009d38   Section        0  main.o(i.wtdg_task_function)
-    i.xPortStartScheduler                    0x08009d60   Section        0  port.o(i.xPortStartScheduler)
-    i.xTaskCreate                            0x08009e58   Section        0  tasks.o(i.xTaskCreate)
-    i.xTaskIncrementTick                     0x08009eb8   Section        0  tasks.o(i.xTaskIncrementTick)
-    i.xTaskResumeAll                         0x0800a000   Section        0  tasks.o(i.xTaskResumeAll)
-    x$fpl$ddiv                               0x0800a104   Section      688  ddiv.o(x$fpl$ddiv)
-    ddiv_entry                               0x0800a10b   Thumb Code     0  ddiv.o(x$fpl$ddiv)
-    x$fpl$dfixu                              0x0800a3b4   Section       90  dfixu.o(x$fpl$dfixu)
-    x$fpl$dflt                               0x0800a40e   Section       46  dflt_clz.o(x$fpl$dflt)
-    x$fpl$dfltu                              0x0800a43c   Section       38  dflt_clz.o(x$fpl$dfltu)
-    x$fpl$dmul                               0x0800a464   Section      340  dmul.o(x$fpl$dmul)
-    x$fpl$dnaninf                            0x0800a5b8   Section      156  dnaninf.o(x$fpl$dnaninf)
-    x$fpl$dretinf                            0x0800a654   Section       12  dretinf.o(x$fpl$dretinf)
-    x$fpl$ffixu                              0x0800a660   Section       62  ffixu.o(x$fpl$ffixu)
-    x$fpl$ffltu                              0x0800a6a0   Section       38  fflt_clz.o(x$fpl$ffltu)
-    x$fpl$fmul                               0x0800a6c8   Section      258  fmul.o(x$fpl$fmul)
-    x$fpl$fnaninf                            0x0800a7ca   Section      140  fnaninf.o(x$fpl$fnaninf)
-    x$fpl$fretinf                            0x0800a856   Section       10  fretinf.o(x$fpl$fretinf)
-    .constdata                               0x0800a860   Section      816  ax_ws2812.o(.constdata)
-    x$fpl$usenofp                            0x0800a860   Section        0  usenofp.o(x$fpl$usenofp)
-    .constdata                               0x0800ab90   Section       40  at32f415_crm.o(.constdata)
-    sclk_ahb_div_table                       0x0800ab90   Data          16  at32f415_crm.o(.constdata)
-    ahb_apb1_div_table                       0x0800aba0   Data           8  at32f415_crm.o(.constdata)
-    ahb_apb2_div_table                       0x0800aba8   Data           8  at32f415_crm.o(.constdata)
-    adc_div_table                            0x0800abb0   Data           8  at32f415_crm.o(.constdata)
-    .constdata                               0x0800abb8   Section       16  system_at32f415.o(.constdata)
-    sys_ahb_div_table                        0x0800abb8   Data          16  system_at32f415.o(.constdata)
-    .conststring                             0x0800abc8   Section       37  ax_uart.o(.conststring)
+    i.flash_flag_clear                       0x08005cdc   Section        0  at32f415_flash.o(i.flash_flag_clear)
+    i.flash_halfword_program                 0x08005ce8   Section        0  at32f415_flash.o(i.flash_halfword_program)
+    i.flash_lock                             0x08005d20   Section        0  at32f415_flash.o(i.flash_lock)
+    i.flash_operation_status_get             0x08005d34   Section        0  at32f415_flash.o(i.flash_operation_status_get)
+    i.flash_operation_wait_for               0x08005d68   Section        0  at32f415_flash.o(i.flash_operation_wait_for)
+    i.flash_read_u8                          0x08005d8c   Section        0  ax_flash.o(i.flash_read_u8)
+    i.flash_sector_erase                     0x08005da4   Section        0  at32f415_flash.o(i.flash_sector_erase)
+    i.flash_unlock                           0x08005de4   Section        0  at32f415_flash.o(i.flash_unlock)
+    i.getDiyLED                              0x08005dfc   Section        0  ax_ws2812.o(i.getDiyLED)
+    i.gpio_bits_reset                        0x08005e64   Section        0  at32f415_gpio.o(i.gpio_bits_reset)
+    i.gpio_bits_set                          0x08005e68   Section        0  at32f415_gpio.o(i.gpio_bits_set)
+    i.gpio_default_para_init                 0x08005e6c   Section        0  at32f415_gpio.o(i.gpio_default_para_init)
+    i.gpio_init                              0x08005e82   Section        0  at32f415_gpio.o(i.gpio_init)
+    i.gpio_pin_remap_config                  0x08005f2c   Section        0  at32f415_gpio.o(i.gpio_pin_remap_config)
+    i.ihawk_ctrl                             0x08005f78   Section        0  ax_uart.o(i.ihawk_ctrl)
+    i.ihawk_ctrl_tm                          0x08006070   Section        0  ax_uart.o(i.ihawk_ctrl_tm)
+    i.ihawk_lower_ctrl                       0x08006180   Section        0  ax_uart.o(i.ihawk_lower_ctrl)
+    i.ihawk_upper_ctrl                       0x080061b0   Section        0  ax_uart.o(i.ihawk_upper_ctrl)
+    i.initColor                              0x080061e0   Section        0  ax_ws2812.o(i.initColor)
+    i.init_can_msg                           0x080061fc   Section        0  ax_uart.o(i.init_can_msg)
+    i.init_uart_data                         0x080062f0   Section        0  ax_uart.o(i.init_uart_data)
+    i.iwdg_Config                            0x0800636c   Section        0  main.o(i.iwdg_Config)
+    i.led2_task_function                     0x080063a0   Section        0  main.o(i.led2_task_function)
+    i.ledUpdate                              0x080063c0   Section        0  ax_ws2812.o(i.ledUpdate)
+    i.main                                   0x08006448   Section        0  main.o(i.main)
+    i.nvic_irq_enable                        0x0800663c   Section        0  at32f415_misc.o(i.nvic_irq_enable)
+    i.nvic_priority_group_config             0x08006704   Section        0  at32f415_misc.o(i.nvic_priority_group_config)
+    i.nvic_system_reset                      0x0800672c   Section        0  at32f415_misc.o(i.nvic_system_reset)
+    i.nvic_vector_table_set                  0x08006758   Section        0  at32f415_misc.o(i.nvic_vector_table_set)
+    i.open_device_pwr                        0x0800676c   Section        0  ax_uart.o(i.open_device_pwr)
+    i.packageUpdateFwMsg                     0x080067c0   Section        0  ax_uart.o(i.packageUpdateFwMsg)
+    i.packageUpdateFwMsg1                    0x08006800   Section        0  ax_uart.o(i.packageUpdateFwMsg1)
+    i.parse_ctrl_acc_cmd                     0x08006848   Section        0  ax_uart.o(i.parse_ctrl_acc_cmd)
+    i.parse_ctrl_andriod                     0x080068b0   Section        0  ax_uart.o(i.parse_ctrl_andriod)
+    i.parse_ctrl_andriod_tm                  0x080068d8   Section        0  ax_uart.o(i.parse_ctrl_andriod_tm)
+    i.parse_ctrl_serv_les_cmd                0x08006914   Section        0  ax_uart.o(i.parse_ctrl_serv_les_cmd)
+    i.parse_ctrl_usbhub_cmd                  0x080069a8   Section        0  ax_uart.o(i.parse_ctrl_usbhub_cmd)
+    i.parse_ctrl_ws2812_cmd                  0x08006a10   Section        0  ax_uart.o(i.parse_ctrl_ws2812_cmd)
+    i.parse_distance_msg1                    0x08006a50   Section        0  ax_can.o(i.parse_distance_msg1)
+    i.parse_diy2_led_old_cmd                 0x08006b0c   Section        0  ax_uart.o(i.parse_diy2_led_old_cmd)
+    i.parse_diy_led_old_cmd                  0x08006bc4   Section        0  ax_uart.o(i.parse_diy_led_old_cmd)
+    i.parse_fw_data_msg                      0x08006c7c   Section        0  ax_uart.o(i.parse_fw_data_msg)
+    i.parse_get_app_flag_msg                 0x08006dec   Section        0  ax_uart.o(i.parse_get_app_flag_msg)
+    i.parse_get_ver_cmd                      0x08006e78   Section        0  ax_uart.o(i.parse_get_ver_cmd)
+    i.parse_heartbeat_fb_msg                 0x08006e84   Section        0  ax_can.o(i.parse_heartbeat_fb_msg)
+    i.parse_reboot_fb_msg                    0x08006eb4   Section        0  ax_can.o(i.parse_reboot_fb_msg)
+    i.parse_reset_andriod                    0x08006f4c   Section        0  ax_uart.o(i.parse_reset_andriod)
+    i.parse_reset_sensor_fb_msg              0x08006fa0   Section        0  ax_can.o(i.parse_reset_sensor_fb_msg)
+    i.parse_send_fw_info_msg                 0x08006ff4   Section        0  ax_uart.o(i.parse_send_fw_info_msg)
+    i.parse_send_start_update_signal         0x0800710c   Section        0  ax_uart.o(i.parse_send_start_update_signal)
+    i.parse_set_tray_ws2812_fb_msg           0x08007228   Section        0  ax_can.o(i.parse_set_tray_ws2812_fb_msg)
+    i.parse_set_ws2812_fb_msg                0x0800730c   Section        0  ax_can.o(i.parse_set_ws2812_fb_msg)
+    i.parse_sync_fw_fb_msg                   0x0800736c   Section        0  ax_can.o(i.parse_sync_fw_fb_msg)
+    i.parse_uid_fb_msg                       0x0800742c   Section        0  ax_can.o(i.parse_uid_fb_msg)
+    i.parse_update_abort_msg                 0x080075c0   Section        0  ax_uart.o(i.parse_update_abort_msg)
+    i.parse_update_end_msg                   0x0800763c   Section        0  ax_uart.o(i.parse_update_end_msg)
+    i.parse_version_fb_msg                   0x0800770c   Section        0  ax_can.o(i.parse_version_fb_msg)
+    i.prvAddCurrentTaskToDelayedList         0x080077b4   Section        0  tasks.o(i.prvAddCurrentTaskToDelayedList)
+    prvAddCurrentTaskToDelayedList           0x080077b5   Thumb Code   124  tasks.o(i.prvAddCurrentTaskToDelayedList)
+    i.prvAddNewTaskToReadyList               0x0800784c   Section        0  tasks.o(i.prvAddNewTaskToReadyList)
+    prvAddNewTaskToReadyList                 0x0800784d   Thumb Code   150  tasks.o(i.prvAddNewTaskToReadyList)
+    i.prvCheckTasksWaitingTermination        0x08007900   Section        0  tasks.o(i.prvCheckTasksWaitingTermination)
+    prvCheckTasksWaitingTermination          0x08007901   Thumb Code    60  tasks.o(i.prvCheckTasksWaitingTermination)
+    i.prvDeleteTCB                           0x08007948   Section        0  tasks.o(i.prvDeleteTCB)
+    prvDeleteTCB                             0x08007949   Thumb Code    18  tasks.o(i.prvDeleteTCB)
+    i.prvHeapInit                            0x0800795c   Section        0  heap_4.o(i.prvHeapInit)
+    prvHeapInit                              0x0800795d   Thumb Code    98  heap_4.o(i.prvHeapInit)
+    i.prvIdleTask                            0x080079d8   Section        0  tasks.o(i.prvIdleTask)
+    prvIdleTask                              0x080079d9   Thumb Code    32  tasks.o(i.prvIdleTask)
+    i.prvInitialiseNewTask                   0x08007a00   Section        0  tasks.o(i.prvInitialiseNewTask)
+    prvInitialiseNewTask                     0x08007a01   Thumb Code   174  tasks.o(i.prvInitialiseNewTask)
+    i.prvInitialiseTaskLists                 0x08007ab0   Section        0  tasks.o(i.prvInitialiseTaskLists)
+    prvInitialiseTaskLists                   0x08007ab1   Thumb Code    70  tasks.o(i.prvInitialiseTaskLists)
+    i.prvInsertBlockIntoFreeList             0x08007b18   Section        0  heap_4.o(i.prvInsertBlockIntoFreeList)
+    prvInsertBlockIntoFreeList               0x08007b19   Thumb Code    96  heap_4.o(i.prvInsertBlockIntoFreeList)
+    i.prvResetNextTaskUnblockTime            0x08007b80   Section        0  tasks.o(i.prvResetNextTaskUnblockTime)
+    prvResetNextTaskUnblockTime              0x08007b81   Thumb Code    40  tasks.o(i.prvResetNextTaskUnblockTime)
+    i.prvTaskExitError                       0x08007bb0   Section        0  port.o(i.prvTaskExitError)
+    prvTaskExitError                         0x08007bb1   Thumb Code    60  port.o(i.prvTaskExitError)
+    i.pvPortMalloc                           0x08007bf0   Section        0  heap_4.o(i.pvPortMalloc)
+    i.pxPortInitialiseStack                  0x08007d5c   Section        0  port.o(i.pxPortInitialiseStack)
+    i.rainbowCycle                           0x08007d80   Section        0  ax_ws2812.o(i.rainbowCycle)
+    i.rgb_SetColor                           0x08007de0   Section        0  ax_ws2812.o(i.rgb_SetColor)
+    i.sendLED                                0x08007e7c   Section        0  ax_ws2812.o(i.sendLED)
+    i.send_2_uart2                           0x08007efc   Section        0  ax_uart.o(i.send_2_uart2)
+    i.send_andriod_fb                        0x08007f9c   Section        0  ax_uart.o(i.send_andriod_fb)
+    i.send_ctrl_acc_old_fb                   0x08008068   Section        0  ax_uart.o(i.send_ctrl_acc_old_fb)
+    i.send_ctrl_ihawk_fb                     0x0800811c   Section        0  ax_uart.o(i.send_ctrl_ihawk_fb)
+    i.send_ctrl_leds_fb                      0x080081dc   Section        0  ax_uart.o(i.send_ctrl_leds_fb)
+    i.send_ctrl_usbhub_fb                    0x08008280   Section        0  ax_uart.o(i.send_ctrl_usbhub_fb)
+    i.send_ihawk_sts_fb                      0x08008334   Section        0  ax_uart.o(i.send_ihawk_sts_fb)
+    i.send_own2_version                      0x0800840c   Section        0  ax_uart.o(i.send_own2_version)
+    i.send_own_version_old                   0x080084d8   Section        0  ax_uart.o(i.send_own_version_old)
+    i.send_reboot2_fb                        0x08008584   Section        0  ax_uart.o(i.send_reboot2_fb)
+    i.send_reset_board_msg                   0x08008620   Section        0  ax_can.o(i.send_reset_board_msg)
+    i.send_reset_sensor_msg                  0x0800869c   Section        0  ax_can.o(i.send_reset_sensor_msg)
+    i.send_sts_loop                          0x08008718   Section        0  ax_uart.o(i.send_sts_loop)
+    i.send_usb_sts_fb                        0x08008800   Section        0  ax_uart.o(i.send_usb_sts_fb)
+    i.send_ws2812b_msg                       0x080088e0   Section        0  ax_can.o(i.send_ws2812b_msg)
+    i.setBreath_2s                           0x0800897c   Section        0  ax_ws2812.o(i.setBreath_2s)
+    i.setBreath_4s                           0x08008a4c   Section        0  ax_ws2812.o(i.setBreath_4s)
+    i.setDiy2Show                            0x08008b1c   Section        0  ax_ws2812.o(i.setDiy2Show)
+    i.setDiyShow                             0x08008e18   Section        0  ax_ws2812.o(i.setDiyShow)
+    i.setDoubleFlashMode                     0x08008f40   Section        0  ax_ws2812.o(i.setDoubleFlashMode)
+    i.setDoubleFlash_1Hz_Mode                0x08008f70   Section        0  ax_ws2812.o(i.setDoubleFlash_1Hz_Mode)
+    i.setDoubleFlash_2Hz_Mode                0x08008fa0   Section        0  ax_ws2812.o(i.setDoubleFlash_2Hz_Mode)
+    i.setNormalMode                          0x08008fe4   Section        0  ax_ws2812.o(i.setNormalMode)
+    i.setNormalRedMode                       0x08009014   Section        0  ax_ws2812.o(i.setNormalRedMode)
+    i.setOffMode                             0x08009058   Section        0  ax_ws2812.o(i.setOffMode)
+    i.spi2_config                            0x08009098   Section        0  ax_spi.o(i.spi2_config)
+    i.spi2_gpio_cfg                          0x080090e0   Section        0  ax_spi.o(i.spi2_gpio_cfg)
+    i.spi2_send_byte                         0x08009120   Section        0  ax_spi.o(i.spi2_send_byte)
+    i.spi2_send_bytes                        0x08009140   Section        0  ax_spi.o(i.spi2_send_bytes)
+    i.spi_default_para_init                  0x0800915a   Section        0  at32f415_spi.o(i.spi_default_para_init)
+    i.spi_enable                             0x08009170   Section        0  at32f415_spi.o(i.spi_enable)
+    i.spi_i2s_data_transmit                  0x0800917a   Section        0  at32f415_spi.o(i.spi_i2s_data_transmit)
+    i.spi_i2s_flag_get                       0x0800917e   Section        0  at32f415_spi.o(i.spi_i2s_flag_get)
+    i.spi_init                               0x0800918e   Section        0  at32f415_spi.o(i.spi_init)
+    i.switch_pwr_ctrl                        0x080092b4   Section        0  ax_uart.o(i.switch_pwr_ctrl)
+    i.system_clock_config                    0x080092d4   Section        0  at32f415_clock.o(i.system_clock_config)
+    i.system_core_clock_update               0x0800933c   Section        0  system_at32f415.o(i.system_core_clock_update)
+    i.toggle_led_stat                        0x08009490   Section        0  ax_uart.o(i.toggle_led_stat)
+    i.usart1_rx_task_function                0x080094a4   Section        0  ax_uart.o(i.usart1_rx_task_function)
+    i.usart1_tx_task_function                0x080095d4   Section        0  ax_uart.o(i.usart1_tx_task_function)
+    i.usart2_rx_task_function                0x080095f8   Section        0  ax_uart.o(i.usart2_rx_task_function)
+    i.usart_data_receive                     0x08009824   Section        0  at32f415_usart.o(i.usart_data_receive)
+    i.usart_data_transmit                    0x0800982c   Section        0  at32f415_usart.o(i.usart_data_transmit)
+    i.usart_enable                           0x08009834   Section        0  at32f415_usart.o(i.usart_enable)
+    i.usart_flag_clear                       0x0800983e   Section        0  at32f415_usart.o(i.usart_flag_clear)
+    i.usart_flag_get                         0x08009850   Section        0  at32f415_usart.o(i.usart_flag_get)
+    i.usart_init                             0x08009860   Section        0  at32f415_usart.o(i.usart_init)
+    i.usart_int_configuration                0x080098cc   Section        0  ax_uart.o(i.usart_int_configuration)
+    i.usart_interrupt_enable                 0x08009a60   Section        0  at32f415_usart.o(i.usart_interrupt_enable)
+    i.usart_receiver_enable                  0x08009a96   Section        0  at32f415_usart.o(i.usart_receiver_enable)
+    i.usart_transmitter_enable               0x08009aa0   Section        0  at32f415_usart.o(i.usart_transmitter_enable)
+    i.usb3_ctrl                              0x08009aac   Section        0  ax_uart.o(i.usb3_ctrl)
+    i.usbhub_ctrl                            0x08009adc   Section        0  ax_uart.o(i.usbhub_ctrl)
+    i.uxListRemove                           0x08009afc   Section        0  list.o(i.uxListRemove)
+    i.vListInitialise                        0x08009b24   Section        0  list.o(i.vListInitialise)
+    i.vListInitialiseItem                    0x08009b3e   Section        0  list.o(i.vListInitialiseItem)
+    i.vListInsert                            0x08009b44   Section        0  list.o(i.vListInsert)
+    i.vListInsertEnd                         0x08009b78   Section        0  list.o(i.vListInsertEnd)
+    i.vPortEnterCritical                     0x08009b90   Section        0  port.o(i.vPortEnterCritical)
+    i.vPortExitCritical                      0x08009be4   Section        0  port.o(i.vPortExitCritical)
+    i.vPortFree                              0x08009c20   Section        0  heap_4.o(i.vPortFree)
+    i.vPortSetupTimerInterrupt               0x08009cc4   Section        0  port.o(i.vPortSetupTimerInterrupt)
+    i.vTaskDelay                             0x08009cec   Section        0  tasks.o(i.vTaskDelay)
+    i.vTaskStartScheduler                    0x08009d48   Section        0  tasks.o(i.vTaskStartScheduler)
+    i.vTaskSuspendAll                        0x08009dd8   Section        0  tasks.o(i.vTaskSuspendAll)
+    i.vTaskSwitchContext                     0x08009de8   Section        0  tasks.o(i.vTaskSwitchContext)
+    i.wdt_counter_reload                     0x08009e74   Section        0  at32f415_wdt.o(i.wdt_counter_reload)
+    i.wdt_divider_set                        0x08009e84   Section        0  at32f415_wdt.o(i.wdt_divider_set)
+    i.wdt_enable                             0x08009e98   Section        0  at32f415_wdt.o(i.wdt_enable)
+    i.wdt_register_write_enable              0x08009ea8   Section        0  at32f415_wdt.o(i.wdt_register_write_enable)
+    i.wdt_reload_value_set                   0x08009ec0   Section        0  at32f415_wdt.o(i.wdt_reload_value_set)
+    i.write2flash                            0x08009ecc   Section        0  ax_flash.o(i.write2flash)
+    i.ws2812Init                             0x08009f48   Section        0  ax_ws2812.o(i.ws2812Init)
+    i.ws2812_task_function                   0x08009f58   Section        0  ax_ws2812.o(i.ws2812_task_function)
+    i.wtdg_task_function                     0x08009f80   Section        0  main.o(i.wtdg_task_function)
+    i.xPortStartScheduler                    0x08009fa8   Section        0  port.o(i.xPortStartScheduler)
+    i.xTaskCreate                            0x0800a0a0   Section        0  tasks.o(i.xTaskCreate)
+    i.xTaskIncrementTick                     0x0800a100   Section        0  tasks.o(i.xTaskIncrementTick)
+    i.xTaskResumeAll                         0x0800a248   Section        0  tasks.o(i.xTaskResumeAll)
+    x$fpl$ddiv                               0x0800a34c   Section      688  ddiv.o(x$fpl$ddiv)
+    ddiv_entry                               0x0800a353   Thumb Code     0  ddiv.o(x$fpl$ddiv)
+    x$fpl$dfixu                              0x0800a5fc   Section       90  dfixu.o(x$fpl$dfixu)
+    x$fpl$dflt                               0x0800a656   Section       46  dflt_clz.o(x$fpl$dflt)
+    x$fpl$dfltu                              0x0800a684   Section       38  dflt_clz.o(x$fpl$dfltu)
+    x$fpl$dmul                               0x0800a6ac   Section      340  dmul.o(x$fpl$dmul)
+    x$fpl$dnaninf                            0x0800a800   Section      156  dnaninf.o(x$fpl$dnaninf)
+    x$fpl$dretinf                            0x0800a89c   Section       12  dretinf.o(x$fpl$dretinf)
+    x$fpl$ffixu                              0x0800a8a8   Section       62  ffixu.o(x$fpl$ffixu)
+    x$fpl$ffltu                              0x0800a8e8   Section       38  fflt_clz.o(x$fpl$ffltu)
+    x$fpl$fmul                               0x0800a910   Section      258  fmul.o(x$fpl$fmul)
+    x$fpl$fnaninf                            0x0800aa12   Section      140  fnaninf.o(x$fpl$fnaninf)
+    x$fpl$fretinf                            0x0800aa9e   Section       10  fretinf.o(x$fpl$fretinf)
+    .constdata                               0x0800aaa8   Section      816  ax_ws2812.o(.constdata)
+    x$fpl$usenofp                            0x0800aaa8   Section        0  usenofp.o(x$fpl$usenofp)
+    .constdata                               0x0800add8   Section       40  at32f415_crm.o(.constdata)
+    sclk_ahb_div_table                       0x0800add8   Data          16  at32f415_crm.o(.constdata)
+    ahb_apb1_div_table                       0x0800ade8   Data           8  at32f415_crm.o(.constdata)
+    ahb_apb2_div_table                       0x0800adf0   Data           8  at32f415_crm.o(.constdata)
+    adc_div_table                            0x0800adf8   Data           8  at32f415_crm.o(.constdata)
+    .constdata                               0x0800ae00   Section       16  system_at32f415.o(.constdata)
+    sys_ahb_div_table                        0x0800ae00   Data          16  system_at32f415.o(.constdata)
+    .conststring                             0x0800ae10   Section       37  ax_uart.o(.conststring)
     .data                                    0x20000000   Section       40  main.o(.data)
     systemcoreclock                          0x20000000   Data           4  main.o(.data)
     .data                                    0x20000028   Section       18  ax_uart.o(.data)
@@ -2506,65 +2524,65 @@ Image Symbol Table
     tray_ws2812b_cmd_valid                   0x20000046   Data           1  ax_can.o(.data)
     .data                                    0x20000048   Section       84  ax_spi.o(.data)
     systemcoreclock                          0x20000048   Data           4  ax_spi.o(.data)
-    .data                                    0x2000009c   Section     1392  ax_ws2812.o(.data)
+    .data                                    0x2000009c   Section     1008  ax_ws2812.o(.data)
     systemcoreclock                          0x2000009c   Data           4  ax_ws2812.o(.data)
     led_sin_4s                               0x200000a3   Data           1  ax_ws2812.o(.data)
     led_sin_2s                               0x200000a4   Data           1  ax_ws2812.o(.data)
-    j                                        0x2000060a   Data           2  ax_ws2812.o(.data)
-    .data                                    0x2000060c   Section       14  ax_common.o(.data)
-    systemcoreclock                          0x2000060c   Data           4  ax_common.o(.data)
-    .data                                    0x2000061c   Section        4  system_at32f415.o(.data)
-    .data                                    0x20000620   Section       68  tasks.o(.data)
-    systemcoreclock                          0x20000620   Data           4  tasks.o(.data)
-    pxDelayedTaskList                        0x20000628   Data           4  tasks.o(.data)
-    pxOverflowDelayedTaskList                0x2000062c   Data           4  tasks.o(.data)
-    uxDeletedTasksWaitingCleanUp             0x20000630   Data           4  tasks.o(.data)
-    uxCurrentNumberOfTasks                   0x20000634   Data           4  tasks.o(.data)
-    xTickCount                               0x20000638   Data           4  tasks.o(.data)
-    uxTopReadyPriority                       0x2000063c   Data           4  tasks.o(.data)
-    xSchedulerRunning                        0x20000640   Data           4  tasks.o(.data)
-    xPendedTicks                             0x20000644   Data           4  tasks.o(.data)
-    xYieldPending                            0x20000648   Data           4  tasks.o(.data)
-    xNumOfOverflows                          0x2000064c   Data           4  tasks.o(.data)
-    uxTaskNumber                             0x20000650   Data           4  tasks.o(.data)
-    xNextTaskUnblockTime                     0x20000654   Data           4  tasks.o(.data)
-    xIdleTaskHandle                          0x20000658   Data           4  tasks.o(.data)
-    uxSchedulerSuspended                     0x20000660   Data           4  tasks.o(.data)
-    .data                                    0x20000664   Section       36  heap_4.o(.data)
-    systemcoreclock                          0x20000664   Data           4  heap_4.o(.data)
-    xStart                                   0x20000668   Data           8  heap_4.o(.data)
-    pxEnd                                    0x20000670   Data           4  heap_4.o(.data)
-    xFreeBytesRemaining                      0x20000674   Data           4  heap_4.o(.data)
-    xMinimumEverFreeBytesRemaining           0x20000678   Data           4  heap_4.o(.data)
-    xNumberOfSuccessfulAllocations           0x2000067c   Data           4  heap_4.o(.data)
-    xNumberOfSuccessfulFrees                 0x20000680   Data           4  heap_4.o(.data)
-    xBlockAllocatedBit                       0x20000684   Data           4  heap_4.o(.data)
-    .data                                    0x20000688   Section       16  port.o(.data)
-    systemcoreclock                          0x20000688   Data           4  port.o(.data)
-    uxCriticalNesting                        0x2000068c   Data           4  port.o(.data)
-    ucMaxSysCallPriority                     0x20000690   Data           1  port.o(.data)
-    ulMaxPRIGROUPValue                       0x20000694   Data           4  port.o(.data)
-    .bss                                     0x20000698   Section     3196  ax_uart.o(.bss)
-    .bss                                     0x20001314   Section      117  ax_can.o(.bss)
-    .bss                                     0x20001389   Section     1344  ax_ws2812.o(.bss)
-    pixelBuffer                              0x20001389   Data        1344  ax_ws2812.o(.bss)
-    .bss                                     0x200018cc   Section      612  ax_common.o(.bss)
-    .bss                                     0x20001b30   Section     2080  ax_flash.o(.bss)
-    .bss                                     0x20002350   Section      200  tasks.o(.bss)
-    pxReadyTasksLists                        0x20002350   Data         100  tasks.o(.bss)
-    xDelayedTaskList1                        0x200023b4   Data          20  tasks.o(.bss)
-    xDelayedTaskList2                        0x200023c8   Data          20  tasks.o(.bss)
-    xPendingReadyList                        0x200023dc   Data          20  tasks.o(.bss)
-    xTasksWaitingTermination                 0x200023f0   Data          20  tasks.o(.bss)
-    xSuspendedTaskList                       0x20002404   Data          20  tasks.o(.bss)
-    .bss                                     0x20002418   Section    20480  heap_4.o(.bss)
-    ucHeap                                   0x20002418   Data       20480  heap_4.o(.bss)
-    .bss                                     0x20007418   Section       96  libspace.o(.bss)
-    HEAP                                     0x20007478   Section      512  startup_at32f415.o(HEAP)
-    Heap_Mem                                 0x20007478   Data         512  startup_at32f415.o(HEAP)
-    STACK                                    0x20007678   Section     1024  startup_at32f415.o(STACK)
-    Stack_Mem                                0x20007678   Data        1024  startup_at32f415.o(STACK)
-    __initial_sp                             0x20007a78   Data           0  startup_at32f415.o(STACK)
+    j                                        0x2000048a   Data           2  ax_ws2812.o(.data)
+    .data                                    0x2000048c   Section       15  ax_common.o(.data)
+    systemcoreclock                          0x2000048c   Data           4  ax_common.o(.data)
+    .data                                    0x2000049c   Section        4  system_at32f415.o(.data)
+    .data                                    0x200004a0   Section       68  tasks.o(.data)
+    systemcoreclock                          0x200004a0   Data           4  tasks.o(.data)
+    pxDelayedTaskList                        0x200004a8   Data           4  tasks.o(.data)
+    pxOverflowDelayedTaskList                0x200004ac   Data           4  tasks.o(.data)
+    uxDeletedTasksWaitingCleanUp             0x200004b0   Data           4  tasks.o(.data)
+    uxCurrentNumberOfTasks                   0x200004b4   Data           4  tasks.o(.data)
+    xTickCount                               0x200004b8   Data           4  tasks.o(.data)
+    uxTopReadyPriority                       0x200004bc   Data           4  tasks.o(.data)
+    xSchedulerRunning                        0x200004c0   Data           4  tasks.o(.data)
+    xPendedTicks                             0x200004c4   Data           4  tasks.o(.data)
+    xYieldPending                            0x200004c8   Data           4  tasks.o(.data)
+    xNumOfOverflows                          0x200004cc   Data           4  tasks.o(.data)
+    uxTaskNumber                             0x200004d0   Data           4  tasks.o(.data)
+    xNextTaskUnblockTime                     0x200004d4   Data           4  tasks.o(.data)
+    xIdleTaskHandle                          0x200004d8   Data           4  tasks.o(.data)
+    uxSchedulerSuspended                     0x200004e0   Data           4  tasks.o(.data)
+    .data                                    0x200004e4   Section       36  heap_4.o(.data)
+    systemcoreclock                          0x200004e4   Data           4  heap_4.o(.data)
+    xStart                                   0x200004e8   Data           8  heap_4.o(.data)
+    pxEnd                                    0x200004f0   Data           4  heap_4.o(.data)
+    xFreeBytesRemaining                      0x200004f4   Data           4  heap_4.o(.data)
+    xMinimumEverFreeBytesRemaining           0x200004f8   Data           4  heap_4.o(.data)
+    xNumberOfSuccessfulAllocations           0x200004fc   Data           4  heap_4.o(.data)
+    xNumberOfSuccessfulFrees                 0x20000500   Data           4  heap_4.o(.data)
+    xBlockAllocatedBit                       0x20000504   Data           4  heap_4.o(.data)
+    .data                                    0x20000508   Section       16  port.o(.data)
+    systemcoreclock                          0x20000508   Data           4  port.o(.data)
+    uxCriticalNesting                        0x2000050c   Data           4  port.o(.data)
+    ucMaxSysCallPriority                     0x20000510   Data           1  port.o(.data)
+    ulMaxPRIGROUPValue                       0x20000514   Data           4  port.o(.data)
+    .bss                                     0x20000518   Section     3196  ax_uart.o(.bss)
+    .bss                                     0x20001194   Section      117  ax_can.o(.bss)
+    .bss                                     0x20001209   Section      960  ax_ws2812.o(.bss)
+    pixelBuffer                              0x20001209   Data         960  ax_ws2812.o(.bss)
+    .bss                                     0x200015cc   Section      612  ax_common.o(.bss)
+    .bss                                     0x20001830   Section     2080  ax_flash.o(.bss)
+    .bss                                     0x20002050   Section      200  tasks.o(.bss)
+    pxReadyTasksLists                        0x20002050   Data         100  tasks.o(.bss)
+    xDelayedTaskList1                        0x200020b4   Data          20  tasks.o(.bss)
+    xDelayedTaskList2                        0x200020c8   Data          20  tasks.o(.bss)
+    xPendingReadyList                        0x200020dc   Data          20  tasks.o(.bss)
+    xTasksWaitingTermination                 0x200020f0   Data          20  tasks.o(.bss)
+    xSuspendedTaskList                       0x20002104   Data          20  tasks.o(.bss)
+    .bss                                     0x20002118   Section    16384  heap_4.o(.bss)
+    ucHeap                                   0x20002118   Data       16384  heap_4.o(.bss)
+    .bss                                     0x20006118   Section       96  libspace.o(.bss)
+    HEAP                                     0x20006178   Section      512  startup_at32f415.o(HEAP)
+    Heap_Mem                                 0x20006178   Data         512  startup_at32f415.o(HEAP)
+    STACK                                    0x20006378   Section     1024  startup_at32f415.o(STACK)
+    Stack_Mem                                0x20006378   Data        1024  startup_at32f415.o(STACK)
+    __initial_sp                             0x20006778   Data           0  startup_at32f415.o(STACK)
 
     Global Symbols
 
@@ -2782,173 +2800,175 @@ Image Symbol Table
     crm_reset                                0x08005b49   Thumb Code    90  at32f415_crm.o(i.crm_reset)
     crm_sysclk_switch                        0x08005bad   Thumb Code    14  at32f415_crm.o(i.crm_sysclk_switch)
     crm_sysclk_switch_status_get             0x08005bc1   Thumb Code    10  at32f415_crm.o(i.crm_sysclk_switch_status_get)
-    device_ctrl_pins_init                    0x08005bd1   Thumb Code   184  ax_uart.o(i.device_ctrl_pins_init)
-    flash_flag_clear                         0x08005c99   Thumb Code     6  at32f415_flash.o(i.flash_flag_clear)
-    flash_halfword_program                   0x08005ca5   Thumb Code    50  at32f415_flash.o(i.flash_halfword_program)
-    flash_lock                               0x08005cdd   Thumb Code    16  at32f415_flash.o(i.flash_lock)
-    flash_operation_status_get               0x08005cf1   Thumb Code    48  at32f415_flash.o(i.flash_operation_status_get)
-    flash_operation_wait_for                 0x08005d25   Thumb Code    36  at32f415_flash.o(i.flash_operation_wait_for)
-    flash_read_u8                            0x08005d49   Thumb Code    24  ax_flash.o(i.flash_read_u8)
-    flash_sector_erase                       0x08005d61   Thumb Code    58  at32f415_flash.o(i.flash_sector_erase)
-    flash_unlock                             0x08005da1   Thumb Code    12  at32f415_flash.o(i.flash_unlock)
-    getDiyLED                                0x08005db9   Thumb Code   100  ax_ws2812.o(i.getDiyLED)
-    gpio_bits_reset                          0x08005e21   Thumb Code     4  at32f415_gpio.o(i.gpio_bits_reset)
-    gpio_bits_set                            0x08005e25   Thumb Code     4  at32f415_gpio.o(i.gpio_bits_set)
-    gpio_default_para_init                   0x08005e29   Thumb Code    22  at32f415_gpio.o(i.gpio_default_para_init)
-    gpio_init                                0x08005e3f   Thumb Code   168  at32f415_gpio.o(i.gpio_init)
-    gpio_pin_remap_config                    0x08005ee9   Thumb Code    70  at32f415_gpio.o(i.gpio_pin_remap_config)
-    ihawk_ctrl                               0x08005f35   Thumb Code   144  ax_uart.o(i.ihawk_ctrl)
-    ihawk_ctrl_tm                            0x08005fc5   Thumb Code   158  ax_uart.o(i.ihawk_ctrl_tm)
-    ihawk_lower_ctrl                         0x08006065   Thumb Code    38  ax_uart.o(i.ihawk_lower_ctrl)
-    ihawk_upper_ctrl                         0x08006095   Thumb Code    38  ax_uart.o(i.ihawk_upper_ctrl)
-    initColor                                0x080060c5   Thumb Code    20  ax_ws2812.o(i.initColor)
-    init_can_msg                             0x080060e1   Thumb Code   222  ax_uart.o(i.init_can_msg)
-    init_uart_data                           0x080061d5   Thumb Code   110  ax_uart.o(i.init_uart_data)
-    iwdg_Config                              0x08006251   Thumb Code    46  main.o(i.iwdg_Config)
-    led2_task_function                       0x08006285   Thumb Code    28  main.o(i.led2_task_function)
-    ledUpdate                                0x080062a5   Thumb Code   126  ax_ws2812.o(i.ledUpdate)
-    main                                     0x0800632d   Thumb Code   302  main.o(i.main)
-    nvic_irq_enable                          0x08006521   Thumb Code   190  at32f415_misc.o(i.nvic_irq_enable)
-    nvic_priority_group_config               0x080065e9   Thumb Code    32  at32f415_misc.o(i.nvic_priority_group_config)
-    nvic_system_reset                        0x08006611   Thumb Code    36  at32f415_misc.o(i.nvic_system_reset)
-    nvic_vector_table_set                    0x0800663d   Thumb Code    12  at32f415_misc.o(i.nvic_vector_table_set)
-    open_device_pwr                          0x08006651   Thumb Code    72  ax_uart.o(i.open_device_pwr)
-    packageUpdateFwMsg                       0x0800669d   Thumb Code    60  ax_uart.o(i.packageUpdateFwMsg)
-    packageUpdateFwMsg1                      0x080066dd   Thumb Code    66  ax_uart.o(i.packageUpdateFwMsg1)
-    parse_ctrl_acc_cmd                       0x08006725   Thumb Code   100  ax_uart.o(i.parse_ctrl_acc_cmd)
-    parse_ctrl_andriod                       0x0800678d   Thumb Code    36  ax_uart.o(i.parse_ctrl_andriod)
-    parse_ctrl_andriod_tm                    0x080067b5   Thumb Code    54  ax_uart.o(i.parse_ctrl_andriod_tm)
-    parse_ctrl_serv_les_cmd                  0x080067f1   Thumb Code   128  ax_uart.o(i.parse_ctrl_serv_les_cmd)
-    parse_ctrl_usbhub_cmd                    0x08006885   Thumb Code   100  ax_uart.o(i.parse_ctrl_usbhub_cmd)
-    parse_ctrl_ws2812_cmd                    0x080068ed   Thumb Code    56  ax_uart.o(i.parse_ctrl_ws2812_cmd)
-    parse_distance_msg1                      0x0800692d   Thumb Code   176  ax_can.o(i.parse_distance_msg1)
-    parse_diy2_led_old_cmd                   0x080069e9   Thumb Code   160  ax_uart.o(i.parse_diy2_led_old_cmd)
-    parse_diy_led_old_cmd                    0x08006aa1   Thumb Code   160  ax_uart.o(i.parse_diy_led_old_cmd)
-    parse_fw_data_msg                        0x08006b59   Thumb Code   344  ax_uart.o(i.parse_fw_data_msg)
-    parse_get_app_flag_msg                   0x08006cc9   Thumb Code   122  ax_uart.o(i.parse_get_app_flag_msg)
-    parse_get_ver_cmd                        0x08006d55   Thumb Code    12  ax_uart.o(i.parse_get_ver_cmd)
-    parse_heartbeat_fb_msg                   0x08006d61   Thumb Code    44  ax_can.o(i.parse_heartbeat_fb_msg)
-    parse_reboot_fb_msg                      0x08006d91   Thumb Code   142  ax_can.o(i.parse_reboot_fb_msg)
-    parse_reset_andriod                      0x08006e29   Thumb Code    74  ax_uart.o(i.parse_reset_andriod)
-    parse_reset_sensor_fb_msg                0x08006e7d   Thumb Code    76  ax_can.o(i.parse_reset_sensor_fb_msg)
-    parse_send_fw_info_msg                   0x08006ed1   Thumb Code   264  ax_uart.o(i.parse_send_fw_info_msg)
-    parse_send_start_update_signal           0x08006fe9   Thumb Code   258  ax_uart.o(i.parse_send_start_update_signal)
-    parse_set_tray_ws2812_fb_msg             0x08007105   Thumb Code   210  ax_can.o(i.parse_set_tray_ws2812_fb_msg)
-    parse_set_ws2812_fb_msg                  0x080071e9   Thumb Code    86  ax_can.o(i.parse_set_ws2812_fb_msg)
-    parse_sync_fw_fb_msg                     0x08007249   Thumb Code   184  ax_can.o(i.parse_sync_fw_fb_msg)
-    parse_uid_fb_msg                         0x08007309   Thumb Code   392  ax_can.o(i.parse_uid_fb_msg)
-    parse_update_abort_msg                   0x0800749d   Thumb Code   100  ax_uart.o(i.parse_update_abort_msg)
-    parse_update_end_msg                     0x08007519   Thumb Code   184  ax_uart.o(i.parse_update_end_msg)
-    parse_version_fb_msg                     0x080075e9   Thumb Code   154  ax_can.o(i.parse_version_fb_msg)
-    pvPortMalloc                             0x08007acd   Thumb Code   338  heap_4.o(i.pvPortMalloc)
-    pxPortInitialiseStack                    0x08007c39   Thumb Code    30  port.o(i.pxPortInitialiseStack)
-    rainbowCycle                             0x08007c5d   Thumb Code    88  ax_ws2812.o(i.rainbowCycle)
-    rgb_SetColor                             0x08007cbd   Thumb Code   152  ax_ws2812.o(i.rgb_SetColor)
-    sendLED                                  0x08007d59   Thumb Code   124  ax_ws2812.o(i.sendLED)
-    send_2_uart2                             0x08007dd9   Thumb Code   146  ax_uart.o(i.send_2_uart2)
-    send_andriod_fb                          0x08007e79   Thumb Code   192  ax_uart.o(i.send_andriod_fb)
-    send_ctrl_acc_old_fb                     0x08007f45   Thumb Code   166  ax_uart.o(i.send_ctrl_acc_old_fb)
-    send_ctrl_ihawk_fb                       0x08007ff9   Thumb Code   180  ax_uart.o(i.send_ctrl_ihawk_fb)
-    send_ctrl_leds_fb                        0x080080b9   Thumb Code   150  ax_uart.o(i.send_ctrl_leds_fb)
-    send_ctrl_usbhub_fb                      0x0800815d   Thumb Code   166  ax_uart.o(i.send_ctrl_usbhub_fb)
-    send_ihawk_sts_fb                        0x08008211   Thumb Code   198  ax_uart.o(i.send_ihawk_sts_fb)
-    send_own2_version                        0x080082e9   Thumb Code   194  ax_uart.o(i.send_own2_version)
-    send_own_version_old                     0x080083b5   Thumb Code   156  ax_uart.o(i.send_own_version_old)
-    send_reboot2_fb                          0x0800845d   Thumb Code   148  ax_uart.o(i.send_reboot2_fb)
-    send_reset_board_msg                     0x080084f9   Thumb Code   114  ax_can.o(i.send_reset_board_msg)
-    send_reset_sensor_msg                    0x08008575   Thumb Code   114  ax_can.o(i.send_reset_sensor_msg)
-    send_sts_loop                            0x080085f1   Thumb Code   210  ax_uart.o(i.send_sts_loop)
-    send_ws2812b_msg                         0x080086d9   Thumb Code   142  ax_can.o(i.send_ws2812b_msg)
-    setBreath_2s                             0x08008775   Thumb Code   190  ax_ws2812.o(i.setBreath_2s)
-    setBreath_4s                             0x08008845   Thumb Code   190  ax_ws2812.o(i.setBreath_4s)
-    setDiy2Show                              0x08008915   Thumb Code   736  ax_ws2812.o(i.setDiy2Show)
-    setDiyShow                               0x08008c11   Thumb Code   268  ax_ws2812.o(i.setDiyShow)
-    setDoubleFlashMode                       0x08008d39   Thumb Code    46  ax_ws2812.o(i.setDoubleFlashMode)
-    setDoubleFlash_1Hz_Mode                  0x08008d69   Thumb Code    40  ax_ws2812.o(i.setDoubleFlash_1Hz_Mode)
-    setDoubleFlash_2Hz_Mode                  0x08008d99   Thumb Code    58  ax_ws2812.o(i.setDoubleFlash_2Hz_Mode)
-    setNormalMode                            0x08008ddd   Thumb Code    44  ax_ws2812.o(i.setNormalMode)
-    setNormalRedMode                         0x08008e0d   Thumb Code    62  ax_ws2812.o(i.setNormalRedMode)
-    setOffMode                               0x08008e51   Thumb Code    58  ax_ws2812.o(i.setOffMode)
-    spi2_config                              0x08008e91   Thumb Code    60  ax_spi.o(i.spi2_config)
-    spi2_gpio_cfg                            0x08008ed9   Thumb Code    54  ax_spi.o(i.spi2_gpio_cfg)
-    spi2_send_byte                           0x08008f19   Thumb Code    28  ax_spi.o(i.spi2_send_byte)
-    spi2_send_bytes                          0x08008f39   Thumb Code    26  ax_spi.o(i.spi2_send_bytes)
-    spi_default_para_init                    0x08008f53   Thumb Code    22  at32f415_spi.o(i.spi_default_para_init)
-    spi_enable                               0x08008f69   Thumb Code    10  at32f415_spi.o(i.spi_enable)
-    spi_i2s_data_transmit                    0x08008f73   Thumb Code     4  at32f415_spi.o(i.spi_i2s_data_transmit)
-    spi_i2s_flag_get                         0x08008f77   Thumb Code    16  at32f415_spi.o(i.spi_i2s_flag_get)
-    spi_init                                 0x08008f87   Thumb Code   292  at32f415_spi.o(i.spi_init)
-    switch_pwr_ctrl                          0x080090ad   Thumb Code    28  ax_uart.o(i.switch_pwr_ctrl)
-    system_clock_config                      0x080090cd   Thumb Code   100  at32f415_clock.o(i.system_clock_config)
-    system_core_clock_update                 0x08009135   Thumb Code   316  system_at32f415.o(i.system_core_clock_update)
-    toggle_led_stat                          0x08009289   Thumb Code    14  ax_uart.o(i.toggle_led_stat)
-    usart1_rx_task_function                  0x0800929d   Thumb Code   284  ax_uart.o(i.usart1_rx_task_function)
-    usart1_tx_task_function                  0x080093cd   Thumb Code    26  ax_uart.o(i.usart1_tx_task_function)
-    usart2_rx_task_function                  0x080093f1   Thumb Code   522  ax_uart.o(i.usart2_rx_task_function)
-    usart_data_receive                       0x0800960d   Thumb Code     8  at32f415_usart.o(i.usart_data_receive)
-    usart_data_transmit                      0x08009615   Thumb Code     8  at32f415_usart.o(i.usart_data_transmit)
-    usart_enable                             0x0800961d   Thumb Code    10  at32f415_usart.o(i.usart_enable)
-    usart_flag_clear                         0x08009627   Thumb Code    18  at32f415_usart.o(i.usart_flag_clear)
-    usart_flag_get                           0x08009639   Thumb Code    16  at32f415_usart.o(i.usart_flag_get)
-    usart_init                               0x08009649   Thumb Code   102  at32f415_usart.o(i.usart_init)
-    usart_int_configuration                  0x080096b5   Thumb Code   370  ax_uart.o(i.usart_int_configuration)
-    usart_interrupt_enable                   0x08009849   Thumb Code    54  at32f415_usart.o(i.usart_interrupt_enable)
-    usart_receiver_enable                    0x0800987f   Thumb Code    10  at32f415_usart.o(i.usart_receiver_enable)
-    usart_transmitter_enable                 0x08009889   Thumb Code    10  at32f415_usart.o(i.usart_transmitter_enable)
-    usbhub_ctrl                              0x08009895   Thumb Code    28  ax_uart.o(i.usbhub_ctrl)
-    uxListRemove                             0x080098b5   Thumb Code    40  list.o(i.uxListRemove)
-    vListInitialise                          0x080098dd   Thumb Code    26  list.o(i.vListInitialise)
-    vListInitialiseItem                      0x080098f7   Thumb Code     6  list.o(i.vListInitialiseItem)
-    vListInsert                              0x080098fd   Thumb Code    52  list.o(i.vListInsert)
-    vListInsertEnd                           0x08009931   Thumb Code    24  list.o(i.vListInsertEnd)
-    vPortEnterCritical                       0x08009949   Thumb Code    76  port.o(i.vPortEnterCritical)
-    vPortExitCritical                        0x0800999d   Thumb Code    56  port.o(i.vPortExitCritical)
-    vPortFree                                0x080099d9   Thumb Code   150  heap_4.o(i.vPortFree)
-    vPortSetupTimerInterrupt                 0x08009a7d   Thumb Code    36  port.o(i.vPortSetupTimerInterrupt)
-    vTaskDelay                               0x08009aa5   Thumb Code    82  tasks.o(i.vTaskDelay)
-    vTaskStartScheduler                      0x08009b01   Thumb Code   112  tasks.o(i.vTaskStartScheduler)
-    vTaskSuspendAll                          0x08009b91   Thumb Code    12  tasks.o(i.vTaskSuspendAll)
-    vTaskSwitchContext                       0x08009ba1   Thumb Code   118  tasks.o(i.vTaskSwitchContext)
-    wdt_counter_reload                       0x08009c2d   Thumb Code    10  at32f415_wdt.o(i.wdt_counter_reload)
-    wdt_divider_set                          0x08009c3d   Thumb Code    14  at32f415_wdt.o(i.wdt_divider_set)
-    wdt_enable                               0x08009c51   Thumb Code    10  at32f415_wdt.o(i.wdt_enable)
-    wdt_register_write_enable                0x08009c61   Thumb Code    20  at32f415_wdt.o(i.wdt_register_write_enable)
-    wdt_reload_value_set                     0x08009c79   Thumb Code     6  at32f415_wdt.o(i.wdt_reload_value_set)
-    write2flash                              0x08009c85   Thumb Code   124  ax_flash.o(i.write2flash)
-    ws2812Init                               0x08009d01   Thumb Code    16  ax_ws2812.o(i.ws2812Init)
-    ws2812_task_function                     0x08009d11   Thumb Code    34  ax_ws2812.o(i.ws2812_task_function)
-    wtdg_task_function                       0x08009d39   Thumb Code    36  main.o(i.wtdg_task_function)
-    xPortStartScheduler                      0x08009d61   Thumb Code   228  port.o(i.xPortStartScheduler)
-    xTaskCreate                              0x08009e59   Thumb Code    96  tasks.o(i.xTaskCreate)
-    xTaskIncrementTick                       0x08009eb9   Thumb Code   282  tasks.o(i.xTaskIncrementTick)
-    xTaskResumeAll                           0x0800a001   Thumb Code   224  tasks.o(i.xTaskResumeAll)
-    __aeabi_ddiv                             0x0800a105   Thumb Code     0  ddiv.o(x$fpl$ddiv)
-    _ddiv                                    0x0800a105   Thumb Code   552  ddiv.o(x$fpl$ddiv)
-    __aeabi_d2uiz                            0x0800a3b5   Thumb Code     0  dfixu.o(x$fpl$dfixu)
-    _dfixu                                   0x0800a3b5   Thumb Code    90  dfixu.o(x$fpl$dfixu)
-    __aeabi_i2d                              0x0800a40f   Thumb Code     0  dflt_clz.o(x$fpl$dflt)
-    _dflt                                    0x0800a40f   Thumb Code    46  dflt_clz.o(x$fpl$dflt)
-    __aeabi_ui2d                             0x0800a43d   Thumb Code     0  dflt_clz.o(x$fpl$dfltu)
-    _dfltu                                   0x0800a43d   Thumb Code    38  dflt_clz.o(x$fpl$dfltu)
-    __aeabi_dmul                             0x0800a465   Thumb Code     0  dmul.o(x$fpl$dmul)
-    _dmul                                    0x0800a465   Thumb Code   332  dmul.o(x$fpl$dmul)
-    __fpl_dnaninf                            0x0800a5b9   Thumb Code   156  dnaninf.o(x$fpl$dnaninf)
-    __fpl_dretinf                            0x0800a655   Thumb Code    12  dretinf.o(x$fpl$dretinf)
-    __aeabi_f2uiz                            0x0800a661   Thumb Code     0  ffixu.o(x$fpl$ffixu)
-    _ffixu                                   0x0800a661   Thumb Code    62  ffixu.o(x$fpl$ffixu)
-    __aeabi_ui2f                             0x0800a6a1   Thumb Code     0  fflt_clz.o(x$fpl$ffltu)
-    _ffltu                                   0x0800a6a1   Thumb Code    38  fflt_clz.o(x$fpl$ffltu)
-    __aeabi_fmul                             0x0800a6c9   Thumb Code     0  fmul.o(x$fpl$fmul)
-    _fmul                                    0x0800a6c9   Thumb Code   258  fmul.o(x$fpl$fmul)
-    __fpl_fnaninf                            0x0800a7cb   Thumb Code   140  fnaninf.o(x$fpl$fnaninf)
-    __fpl_fretinf                            0x0800a857   Thumb Code    10  fretinf.o(x$fpl$fretinf)
-    __I$use$fp                               0x0800a860   Number         0  usenofp.o(x$fpl$usenofp)
-    sinLed                                   0x0800a860   Data         200  ax_ws2812.o(.constdata)
-    sinLed_4s                                0x0800a928   Data         400  ax_ws2812.o(.constdata)
-    OFF_UNIT                                 0x0800aab8   Data          24  ax_ws2812.o(.constdata)
-    DIY_UINT                                 0x0800aad0   Data         192  ax_ws2812.o(.constdata)
-    Region$$Table$$Base                      0x0800abf0   Number         0  anon$$obj.o(Region$$Table)
-    Region$$Table$$Limit                     0x0800ac10   Number         0  anon$$obj.o(Region$$Table)
+    device_ctrl_pins_init                    0x08005bd1   Thumb Code   248  ax_uart.o(i.device_ctrl_pins_init)
+    flash_flag_clear                         0x08005cdd   Thumb Code     6  at32f415_flash.o(i.flash_flag_clear)
+    flash_halfword_program                   0x08005ce9   Thumb Code    50  at32f415_flash.o(i.flash_halfword_program)
+    flash_lock                               0x08005d21   Thumb Code    16  at32f415_flash.o(i.flash_lock)
+    flash_operation_status_get               0x08005d35   Thumb Code    48  at32f415_flash.o(i.flash_operation_status_get)
+    flash_operation_wait_for                 0x08005d69   Thumb Code    36  at32f415_flash.o(i.flash_operation_wait_for)
+    flash_read_u8                            0x08005d8d   Thumb Code    24  ax_flash.o(i.flash_read_u8)
+    flash_sector_erase                       0x08005da5   Thumb Code    58  at32f415_flash.o(i.flash_sector_erase)
+    flash_unlock                             0x08005de5   Thumb Code    12  at32f415_flash.o(i.flash_unlock)
+    getDiyLED                                0x08005dfd   Thumb Code   100  ax_ws2812.o(i.getDiyLED)
+    gpio_bits_reset                          0x08005e65   Thumb Code     4  at32f415_gpio.o(i.gpio_bits_reset)
+    gpio_bits_set                            0x08005e69   Thumb Code     4  at32f415_gpio.o(i.gpio_bits_set)
+    gpio_default_para_init                   0x08005e6d   Thumb Code    22  at32f415_gpio.o(i.gpio_default_para_init)
+    gpio_init                                0x08005e83   Thumb Code   168  at32f415_gpio.o(i.gpio_init)
+    gpio_pin_remap_config                    0x08005f2d   Thumb Code    70  at32f415_gpio.o(i.gpio_pin_remap_config)
+    ihawk_ctrl                               0x08005f79   Thumb Code   248  ax_uart.o(i.ihawk_ctrl)
+    ihawk_ctrl_tm                            0x08006071   Thumb Code   270  ax_uart.o(i.ihawk_ctrl_tm)
+    ihawk_lower_ctrl                         0x08006181   Thumb Code    38  ax_uart.o(i.ihawk_lower_ctrl)
+    ihawk_upper_ctrl                         0x080061b1   Thumb Code    38  ax_uart.o(i.ihawk_upper_ctrl)
+    initColor                                0x080061e1   Thumb Code    20  ax_ws2812.o(i.initColor)
+    init_can_msg                             0x080061fd   Thumb Code   222  ax_uart.o(i.init_can_msg)
+    init_uart_data                           0x080062f1   Thumb Code   110  ax_uart.o(i.init_uart_data)
+    iwdg_Config                              0x0800636d   Thumb Code    46  main.o(i.iwdg_Config)
+    led2_task_function                       0x080063a1   Thumb Code    28  main.o(i.led2_task_function)
+    ledUpdate                                0x080063c1   Thumb Code   126  ax_ws2812.o(i.ledUpdate)
+    main                                     0x08006449   Thumb Code   302  main.o(i.main)
+    nvic_irq_enable                          0x0800663d   Thumb Code   190  at32f415_misc.o(i.nvic_irq_enable)
+    nvic_priority_group_config               0x08006705   Thumb Code    32  at32f415_misc.o(i.nvic_priority_group_config)
+    nvic_system_reset                        0x0800672d   Thumb Code    36  at32f415_misc.o(i.nvic_system_reset)
+    nvic_vector_table_set                    0x08006759   Thumb Code    12  at32f415_misc.o(i.nvic_vector_table_set)
+    open_device_pwr                          0x0800676d   Thumb Code    80  ax_uart.o(i.open_device_pwr)
+    packageUpdateFwMsg                       0x080067c1   Thumb Code    60  ax_uart.o(i.packageUpdateFwMsg)
+    packageUpdateFwMsg1                      0x08006801   Thumb Code    66  ax_uart.o(i.packageUpdateFwMsg1)
+    parse_ctrl_acc_cmd                       0x08006849   Thumb Code   100  ax_uart.o(i.parse_ctrl_acc_cmd)
+    parse_ctrl_andriod                       0x080068b1   Thumb Code    36  ax_uart.o(i.parse_ctrl_andriod)
+    parse_ctrl_andriod_tm                    0x080068d9   Thumb Code    54  ax_uart.o(i.parse_ctrl_andriod_tm)
+    parse_ctrl_serv_les_cmd                  0x08006915   Thumb Code   128  ax_uart.o(i.parse_ctrl_serv_les_cmd)
+    parse_ctrl_usbhub_cmd                    0x080069a9   Thumb Code   100  ax_uart.o(i.parse_ctrl_usbhub_cmd)
+    parse_ctrl_ws2812_cmd                    0x08006a11   Thumb Code    56  ax_uart.o(i.parse_ctrl_ws2812_cmd)
+    parse_distance_msg1                      0x08006a51   Thumb Code   176  ax_can.o(i.parse_distance_msg1)
+    parse_diy2_led_old_cmd                   0x08006b0d   Thumb Code   160  ax_uart.o(i.parse_diy2_led_old_cmd)
+    parse_diy_led_old_cmd                    0x08006bc5   Thumb Code   160  ax_uart.o(i.parse_diy_led_old_cmd)
+    parse_fw_data_msg                        0x08006c7d   Thumb Code   344  ax_uart.o(i.parse_fw_data_msg)
+    parse_get_app_flag_msg                   0x08006ded   Thumb Code   122  ax_uart.o(i.parse_get_app_flag_msg)
+    parse_get_ver_cmd                        0x08006e79   Thumb Code    12  ax_uart.o(i.parse_get_ver_cmd)
+    parse_heartbeat_fb_msg                   0x08006e85   Thumb Code    44  ax_can.o(i.parse_heartbeat_fb_msg)
+    parse_reboot_fb_msg                      0x08006eb5   Thumb Code   142  ax_can.o(i.parse_reboot_fb_msg)
+    parse_reset_andriod                      0x08006f4d   Thumb Code    74  ax_uart.o(i.parse_reset_andriod)
+    parse_reset_sensor_fb_msg                0x08006fa1   Thumb Code    76  ax_can.o(i.parse_reset_sensor_fb_msg)
+    parse_send_fw_info_msg                   0x08006ff5   Thumb Code   264  ax_uart.o(i.parse_send_fw_info_msg)
+    parse_send_start_update_signal           0x0800710d   Thumb Code   258  ax_uart.o(i.parse_send_start_update_signal)
+    parse_set_tray_ws2812_fb_msg             0x08007229   Thumb Code   210  ax_can.o(i.parse_set_tray_ws2812_fb_msg)
+    parse_set_ws2812_fb_msg                  0x0800730d   Thumb Code    86  ax_can.o(i.parse_set_ws2812_fb_msg)
+    parse_sync_fw_fb_msg                     0x0800736d   Thumb Code   184  ax_can.o(i.parse_sync_fw_fb_msg)
+    parse_uid_fb_msg                         0x0800742d   Thumb Code   392  ax_can.o(i.parse_uid_fb_msg)
+    parse_update_abort_msg                   0x080075c1   Thumb Code   100  ax_uart.o(i.parse_update_abort_msg)
+    parse_update_end_msg                     0x0800763d   Thumb Code   184  ax_uart.o(i.parse_update_end_msg)
+    parse_version_fb_msg                     0x0800770d   Thumb Code   154  ax_can.o(i.parse_version_fb_msg)
+    pvPortMalloc                             0x08007bf1   Thumb Code   338  heap_4.o(i.pvPortMalloc)
+    pxPortInitialiseStack                    0x08007d5d   Thumb Code    30  port.o(i.pxPortInitialiseStack)
+    rainbowCycle                             0x08007d81   Thumb Code    88  ax_ws2812.o(i.rainbowCycle)
+    rgb_SetColor                             0x08007de1   Thumb Code   152  ax_ws2812.o(i.rgb_SetColor)
+    sendLED                                  0x08007e7d   Thumb Code   124  ax_ws2812.o(i.sendLED)
+    send_2_uart2                             0x08007efd   Thumb Code   146  ax_uart.o(i.send_2_uart2)
+    send_andriod_fb                          0x08007f9d   Thumb Code   192  ax_uart.o(i.send_andriod_fb)
+    send_ctrl_acc_old_fb                     0x08008069   Thumb Code   166  ax_uart.o(i.send_ctrl_acc_old_fb)
+    send_ctrl_ihawk_fb                       0x0800811d   Thumb Code   180  ax_uart.o(i.send_ctrl_ihawk_fb)
+    send_ctrl_leds_fb                        0x080081dd   Thumb Code   150  ax_uart.o(i.send_ctrl_leds_fb)
+    send_ctrl_usbhub_fb                      0x08008281   Thumb Code   166  ax_uart.o(i.send_ctrl_usbhub_fb)
+    send_ihawk_sts_fb                        0x08008335   Thumb Code   198  ax_uart.o(i.send_ihawk_sts_fb)
+    send_own2_version                        0x0800840d   Thumb Code   194  ax_uart.o(i.send_own2_version)
+    send_own_version_old                     0x080084d9   Thumb Code   158  ax_uart.o(i.send_own_version_old)
+    send_reboot2_fb                          0x08008585   Thumb Code   148  ax_uart.o(i.send_reboot2_fb)
+    send_reset_board_msg                     0x08008621   Thumb Code   114  ax_can.o(i.send_reset_board_msg)
+    send_reset_sensor_msg                    0x0800869d   Thumb Code   114  ax_can.o(i.send_reset_sensor_msg)
+    send_sts_loop                            0x08008719   Thumb Code   210  ax_uart.o(i.send_sts_loop)
+    send_usb_sts_fb                          0x08008801   Thumb Code   206  ax_uart.o(i.send_usb_sts_fb)
+    send_ws2812b_msg                         0x080088e1   Thumb Code   142  ax_can.o(i.send_ws2812b_msg)
+    setBreath_2s                             0x0800897d   Thumb Code   190  ax_ws2812.o(i.setBreath_2s)
+    setBreath_4s                             0x08008a4d   Thumb Code   190  ax_ws2812.o(i.setBreath_4s)
+    setDiy2Show                              0x08008b1d   Thumb Code   736  ax_ws2812.o(i.setDiy2Show)
+    setDiyShow                               0x08008e19   Thumb Code   268  ax_ws2812.o(i.setDiyShow)
+    setDoubleFlashMode                       0x08008f41   Thumb Code    46  ax_ws2812.o(i.setDoubleFlashMode)
+    setDoubleFlash_1Hz_Mode                  0x08008f71   Thumb Code    40  ax_ws2812.o(i.setDoubleFlash_1Hz_Mode)
+    setDoubleFlash_2Hz_Mode                  0x08008fa1   Thumb Code    58  ax_ws2812.o(i.setDoubleFlash_2Hz_Mode)
+    setNormalMode                            0x08008fe5   Thumb Code    44  ax_ws2812.o(i.setNormalMode)
+    setNormalRedMode                         0x08009015   Thumb Code    62  ax_ws2812.o(i.setNormalRedMode)
+    setOffMode                               0x08009059   Thumb Code    58  ax_ws2812.o(i.setOffMode)
+    spi2_config                              0x08009099   Thumb Code    60  ax_spi.o(i.spi2_config)
+    spi2_gpio_cfg                            0x080090e1   Thumb Code    54  ax_spi.o(i.spi2_gpio_cfg)
+    spi2_send_byte                           0x08009121   Thumb Code    28  ax_spi.o(i.spi2_send_byte)
+    spi2_send_bytes                          0x08009141   Thumb Code    26  ax_spi.o(i.spi2_send_bytes)
+    spi_default_para_init                    0x0800915b   Thumb Code    22  at32f415_spi.o(i.spi_default_para_init)
+    spi_enable                               0x08009171   Thumb Code    10  at32f415_spi.o(i.spi_enable)
+    spi_i2s_data_transmit                    0x0800917b   Thumb Code     4  at32f415_spi.o(i.spi_i2s_data_transmit)
+    spi_i2s_flag_get                         0x0800917f   Thumb Code    16  at32f415_spi.o(i.spi_i2s_flag_get)
+    spi_init                                 0x0800918f   Thumb Code   292  at32f415_spi.o(i.spi_init)
+    switch_pwr_ctrl                          0x080092b5   Thumb Code    28  ax_uart.o(i.switch_pwr_ctrl)
+    system_clock_config                      0x080092d5   Thumb Code   100  at32f415_clock.o(i.system_clock_config)
+    system_core_clock_update                 0x0800933d   Thumb Code   316  system_at32f415.o(i.system_core_clock_update)
+    toggle_led_stat                          0x08009491   Thumb Code    14  ax_uart.o(i.toggle_led_stat)
+    usart1_rx_task_function                  0x080094a5   Thumb Code   284  ax_uart.o(i.usart1_rx_task_function)
+    usart1_tx_task_function                  0x080095d5   Thumb Code    26  ax_uart.o(i.usart1_tx_task_function)
+    usart2_rx_task_function                  0x080095f9   Thumb Code   538  ax_uart.o(i.usart2_rx_task_function)
+    usart_data_receive                       0x08009825   Thumb Code     8  at32f415_usart.o(i.usart_data_receive)
+    usart_data_transmit                      0x0800982d   Thumb Code     8  at32f415_usart.o(i.usart_data_transmit)
+    usart_enable                             0x08009835   Thumb Code    10  at32f415_usart.o(i.usart_enable)
+    usart_flag_clear                         0x0800983f   Thumb Code    18  at32f415_usart.o(i.usart_flag_clear)
+    usart_flag_get                           0x08009851   Thumb Code    16  at32f415_usart.o(i.usart_flag_get)
+    usart_init                               0x08009861   Thumb Code   102  at32f415_usart.o(i.usart_init)
+    usart_int_configuration                  0x080098cd   Thumb Code   370  ax_uart.o(i.usart_int_configuration)
+    usart_interrupt_enable                   0x08009a61   Thumb Code    54  at32f415_usart.o(i.usart_interrupt_enable)
+    usart_receiver_enable                    0x08009a97   Thumb Code    10  at32f415_usart.o(i.usart_receiver_enable)
+    usart_transmitter_enable                 0x08009aa1   Thumb Code    10  at32f415_usart.o(i.usart_transmitter_enable)
+    usb3_ctrl                                0x08009aad   Thumb Code    38  ax_uart.o(i.usb3_ctrl)
+    usbhub_ctrl                              0x08009add   Thumb Code    28  ax_uart.o(i.usbhub_ctrl)
+    uxListRemove                             0x08009afd   Thumb Code    40  list.o(i.uxListRemove)
+    vListInitialise                          0x08009b25   Thumb Code    26  list.o(i.vListInitialise)
+    vListInitialiseItem                      0x08009b3f   Thumb Code     6  list.o(i.vListInitialiseItem)
+    vListInsert                              0x08009b45   Thumb Code    52  list.o(i.vListInsert)
+    vListInsertEnd                           0x08009b79   Thumb Code    24  list.o(i.vListInsertEnd)
+    vPortEnterCritical                       0x08009b91   Thumb Code    76  port.o(i.vPortEnterCritical)
+    vPortExitCritical                        0x08009be5   Thumb Code    56  port.o(i.vPortExitCritical)
+    vPortFree                                0x08009c21   Thumb Code   150  heap_4.o(i.vPortFree)
+    vPortSetupTimerInterrupt                 0x08009cc5   Thumb Code    36  port.o(i.vPortSetupTimerInterrupt)
+    vTaskDelay                               0x08009ced   Thumb Code    82  tasks.o(i.vTaskDelay)
+    vTaskStartScheduler                      0x08009d49   Thumb Code   112  tasks.o(i.vTaskStartScheduler)
+    vTaskSuspendAll                          0x08009dd9   Thumb Code    12  tasks.o(i.vTaskSuspendAll)
+    vTaskSwitchContext                       0x08009de9   Thumb Code   118  tasks.o(i.vTaskSwitchContext)
+    wdt_counter_reload                       0x08009e75   Thumb Code    10  at32f415_wdt.o(i.wdt_counter_reload)
+    wdt_divider_set                          0x08009e85   Thumb Code    14  at32f415_wdt.o(i.wdt_divider_set)
+    wdt_enable                               0x08009e99   Thumb Code    10  at32f415_wdt.o(i.wdt_enable)
+    wdt_register_write_enable                0x08009ea9   Thumb Code    20  at32f415_wdt.o(i.wdt_register_write_enable)
+    wdt_reload_value_set                     0x08009ec1   Thumb Code     6  at32f415_wdt.o(i.wdt_reload_value_set)
+    write2flash                              0x08009ecd   Thumb Code   124  ax_flash.o(i.write2flash)
+    ws2812Init                               0x08009f49   Thumb Code    16  ax_ws2812.o(i.ws2812Init)
+    ws2812_task_function                     0x08009f59   Thumb Code    34  ax_ws2812.o(i.ws2812_task_function)
+    wtdg_task_function                       0x08009f81   Thumb Code    36  main.o(i.wtdg_task_function)
+    xPortStartScheduler                      0x08009fa9   Thumb Code   228  port.o(i.xPortStartScheduler)
+    xTaskCreate                              0x0800a0a1   Thumb Code    96  tasks.o(i.xTaskCreate)
+    xTaskIncrementTick                       0x0800a101   Thumb Code   282  tasks.o(i.xTaskIncrementTick)
+    xTaskResumeAll                           0x0800a249   Thumb Code   224  tasks.o(i.xTaskResumeAll)
+    __aeabi_ddiv                             0x0800a34d   Thumb Code     0  ddiv.o(x$fpl$ddiv)
+    _ddiv                                    0x0800a34d   Thumb Code   552  ddiv.o(x$fpl$ddiv)
+    __aeabi_d2uiz                            0x0800a5fd   Thumb Code     0  dfixu.o(x$fpl$dfixu)
+    _dfixu                                   0x0800a5fd   Thumb Code    90  dfixu.o(x$fpl$dfixu)
+    __aeabi_i2d                              0x0800a657   Thumb Code     0  dflt_clz.o(x$fpl$dflt)
+    _dflt                                    0x0800a657   Thumb Code    46  dflt_clz.o(x$fpl$dflt)
+    __aeabi_ui2d                             0x0800a685   Thumb Code     0  dflt_clz.o(x$fpl$dfltu)
+    _dfltu                                   0x0800a685   Thumb Code    38  dflt_clz.o(x$fpl$dfltu)
+    __aeabi_dmul                             0x0800a6ad   Thumb Code     0  dmul.o(x$fpl$dmul)
+    _dmul                                    0x0800a6ad   Thumb Code   332  dmul.o(x$fpl$dmul)
+    __fpl_dnaninf                            0x0800a801   Thumb Code   156  dnaninf.o(x$fpl$dnaninf)
+    __fpl_dretinf                            0x0800a89d   Thumb Code    12  dretinf.o(x$fpl$dretinf)
+    __aeabi_f2uiz                            0x0800a8a9   Thumb Code     0  ffixu.o(x$fpl$ffixu)
+    _ffixu                                   0x0800a8a9   Thumb Code    62  ffixu.o(x$fpl$ffixu)
+    __aeabi_ui2f                             0x0800a8e9   Thumb Code     0  fflt_clz.o(x$fpl$ffltu)
+    _ffltu                                   0x0800a8e9   Thumb Code    38  fflt_clz.o(x$fpl$ffltu)
+    __aeabi_fmul                             0x0800a911   Thumb Code     0  fmul.o(x$fpl$fmul)
+    _fmul                                    0x0800a911   Thumb Code   258  fmul.o(x$fpl$fmul)
+    __fpl_fnaninf                            0x0800aa13   Thumb Code   140  fnaninf.o(x$fpl$fnaninf)
+    __fpl_fretinf                            0x0800aa9f   Thumb Code    10  fretinf.o(x$fpl$fretinf)
+    __I$use$fp                               0x0800aaa8   Number         0  usenofp.o(x$fpl$usenofp)
+    sinLed                                   0x0800aaa8   Data         200  ax_ws2812.o(.constdata)
+    sinLed_4s                                0x0800ab70   Data         400  ax_ws2812.o(.constdata)
+    OFF_UNIT                                 0x0800ad00   Data          24  ax_ws2812.o(.constdata)
+    DIY_UINT                                 0x0800ad18   Data         192  ax_ws2812.o(.constdata)
+    Region$$Table$$Base                      0x0800ae38   Number         0  anon$$obj.o(Region$$Table)
+    Region$$Table$$Limit                     0x0800ae58   Number         0  anon$$obj.o(Region$$Table)
     led2_handler                             0x20000004   Data           4  main.o(.data)
     usart1_rx_handler                        0x20000008   Data           4  main.o(.data)
     usart1_tx_handler                        0x2000000c   Data           4  main.o(.data)
@@ -2977,44 +2997,44 @@ Image Symbol Table
     ledMode                                  0x200000ae   Data           1  ax_ws2812.o(.data)
     ledHeaderCount                           0x200000af   Data           1  ax_ws2812.o(.data)
     rainbow_percent                          0x200000b0   Data           1  ax_ws2812.o(.data)
-    u8TxData                                 0x200000b1   Data        1344  ax_ws2812.o(.data)
-    DIY_UINT_                                0x200005f1   Data          24  ax_ws2812.o(.data)
-    taskAliveBits                            0x20000610   Data           4  ax_common.o(.data)
-    ihawk_power_sts                          0x20000614   Data           2  ax_common.o(.data)
-    msglen2                                  0x20000616   Data           1  ax_common.o(.data)
-    updateFWFlag                             0x20000617   Data           1  ax_common.o(.data)
-    xorData                                  0x20000618   Data           2  ax_common.o(.data)
-    system_core_clock                        0x2000061c   Data           4  system_at32f415.o(.data)
-    pxCurrentTCB                             0x20000624   Data           4  tasks.o(.data)
-    uxTopUsedPriority                        0x2000065c   Data           4  tasks.o(.data)
-    uart1_data                               0x20000698   Data         388  ax_uart.o(.bss)
-    uart2_data                               0x2000081c   Data         388  ax_uart.o(.bss)
-    fb_ctrl_buf                              0x200009a0   Data          32  ax_uart.o(.bss)
-    ws2812b_ctrl_buf                         0x200009c0   Data          32  ax_uart.o(.bss)
-    ctrl_buff                                0x200009e0   Data          32  ax_uart.o(.bss)
-    ctrl_buff2                               0x20000a00   Data         256  ax_uart.o(.bss)
-    update_buff                              0x20000b00   Data        2048  ax_uart.o(.bss)
-    ctrlData2Can                             0x20001300   Data          20  ax_uart.o(.bss)
-    rx_message_struct_g                      0x20001314   Data          20  ax_can.o(.bss)
-    rx_message_struct_s                      0x20001328   Data          80  ax_can.o(.bss)
-    canAliveCounter                          0x20001378   Data          17  ax_can.o(.bss)
-    distance                                 0x200018cc   Data          48  ax_common.o(.bss)
-    versionSub                               0x200018fc   Data          24  ax_common.o(.bss)
-    uidBuf                                   0x20001914   Data          60  ax_common.o(.bss)
-    uart1SendTypeFlag                        0x20001950   Data          42  ax_common.o(.bss)
-    uart2SendTypeFlag                        0x2000197a   Data          42  ax_common.o(.bss)
-    sendCanStr                               0x200019a4   Data          17  ax_common.o(.bss)
-    uartStsData_str                          0x200019b5   Data          22  ax_common.o(.bss)
-    canResetSensor                           0x200019cc   Data          80  ax_common.o(.bss)
-    canSetLeds                               0x20001a1c   Data          80  ax_common.o(.bss)
-    canSetTrayLeds                           0x20001a6c   Data          20  ax_common.o(.bss)
-    canResetBoard                            0x20001a80   Data          80  ax_common.o(.bss)
-    canSyncFw                                0x20001ad0   Data          80  ax_common.o(.bss)
-    updateFwData                             0x20001b20   Data          16  ax_common.o(.bss)
-    updateFw                                 0x20001b30   Data          32  ax_flash.o(.bss)
-    flash_buf                                0x20001b50   Data        2048  ax_flash.o(.bss)
-    __libspace_start                         0x20007418   Data          96  libspace.o(.bss)
-    __temporary_stack_top$libspace           0x20007478   Data           0  libspace.o(.bss)
+    u8TxData                                 0x200000b1   Data         960  ax_ws2812.o(.data)
+    DIY_UINT_                                0x20000471   Data          24  ax_ws2812.o(.data)
+    taskAliveBits                            0x20000490   Data           4  ax_common.o(.data)
+    ihawk_power_sts                          0x20000494   Data           3  ax_common.o(.data)
+    msglen2                                  0x20000497   Data           1  ax_common.o(.data)
+    updateFWFlag                             0x20000498   Data           1  ax_common.o(.data)
+    xorData                                  0x20000499   Data           2  ax_common.o(.data)
+    system_core_clock                        0x2000049c   Data           4  system_at32f415.o(.data)
+    pxCurrentTCB                             0x200004a4   Data           4  tasks.o(.data)
+    uxTopUsedPriority                        0x200004dc   Data           4  tasks.o(.data)
+    uart1_data                               0x20000518   Data         388  ax_uart.o(.bss)
+    uart2_data                               0x2000069c   Data         388  ax_uart.o(.bss)
+    fb_ctrl_buf                              0x20000820   Data          32  ax_uart.o(.bss)
+    ws2812b_ctrl_buf                         0x20000840   Data          32  ax_uart.o(.bss)
+    ctrl_buff                                0x20000860   Data          32  ax_uart.o(.bss)
+    ctrl_buff2                               0x20000880   Data         256  ax_uart.o(.bss)
+    update_buff                              0x20000980   Data        2048  ax_uart.o(.bss)
+    ctrlData2Can                             0x20001180   Data          20  ax_uart.o(.bss)
+    rx_message_struct_g                      0x20001194   Data          20  ax_can.o(.bss)
+    rx_message_struct_s                      0x200011a8   Data          80  ax_can.o(.bss)
+    canAliveCounter                          0x200011f8   Data          17  ax_can.o(.bss)
+    distance                                 0x200015cc   Data          48  ax_common.o(.bss)
+    versionSub                               0x200015fc   Data          24  ax_common.o(.bss)
+    uidBuf                                   0x20001614   Data          60  ax_common.o(.bss)
+    uart1SendTypeFlag                        0x20001650   Data          42  ax_common.o(.bss)
+    uart2SendTypeFlag                        0x2000167a   Data          42  ax_common.o(.bss)
+    sendCanStr                               0x200016a4   Data          17  ax_common.o(.bss)
+    uartStsData_str                          0x200016b5   Data          22  ax_common.o(.bss)
+    canResetSensor                           0x200016cc   Data          80  ax_common.o(.bss)
+    canSetLeds                               0x2000171c   Data          80  ax_common.o(.bss)
+    canSetTrayLeds                           0x2000176c   Data          20  ax_common.o(.bss)
+    canResetBoard                            0x20001780   Data          80  ax_common.o(.bss)
+    canSyncFw                                0x200017d0   Data          80  ax_common.o(.bss)
+    updateFwData                             0x20001820   Data          16  ax_common.o(.bss)
+    updateFw                                 0x20001830   Data          32  ax_flash.o(.bss)
+    flash_buf                                0x20001850   Data        2048  ax_flash.o(.bss)
+    __libspace_start                         0x20006118   Data          96  libspace.o(.bss)
+    __temporary_stack_top$libspace           0x20006178   Data           0  libspace.o(.bss)
 
 
 
@@ -3024,339 +3044,341 @@ Memory Map of the image
 
   Image Entry point : 0x08004171
 
-  Load Region LR_IROM1 (Base: 0x08004000, Size: 0x000072a8, Max: 0x00018000, ABSOLUTE, COMPRESSED[0x00006c6c])
+  Load Region LR_IROM1 (Base: 0x08004000, Size: 0x00007370, Max: 0x00018000, ABSOLUTE, COMPRESSED[0x00006eb4])
 
-    Execution Region ER_IROM1 (Exec base: 0x08004000, Load base: 0x08004000, Size: 0x00006c10, Max: 0x00018000, ABSOLUTE)
+    Execution Region ER_IROM1 (Exec base: 0x08004000, Load base: 0x08004000, Size: 0x00006e58, Max: 0x00018000, ABSOLUTE)
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
-    0x08004000   0x08004000   0x00000170   Data   RO         4700    RESET               startup_at32f415.o
-    0x08004170   0x08004170   0x00000008   Code   RO         5596  * !!!main             c_w.l(__main.o)
-    0x08004178   0x08004178   0x00000034   Code   RO         5800    !!!scatter          c_w.l(__scatter.o)
-    0x080041ac   0x080041ac   0x0000005a   Code   RO         5798    !!dczerorl2         c_w.l(__dczerorl2.o)
+    0x08004000   0x08004000   0x00000170   Data   RO         4712    RESET               startup_at32f415.o
+    0x08004170   0x08004170   0x00000008   Code   RO         5608  * !!!main             c_w.l(__main.o)
+    0x08004178   0x08004178   0x00000034   Code   RO         5812    !!!scatter          c_w.l(__scatter.o)
+    0x080041ac   0x080041ac   0x0000005a   Code   RO         5810    !!dczerorl2         c_w.l(__dczerorl2.o)
     0x08004206   0x08004206   0x00000002   PAD
-    0x08004208   0x08004208   0x0000001c   Code   RO         5802    !!handler_zi        c_w.l(__scatter_zi.o)
-    0x08004224   0x08004224   0x00000002   Code   RO         5674    .ARM.Collect$$libinit$$00000000  c_w.l(libinit.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5687    .ARM.Collect$$libinit$$00000002  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5689    .ARM.Collect$$libinit$$00000004  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5692    .ARM.Collect$$libinit$$0000000A  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5694    .ARM.Collect$$libinit$$0000000C  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5696    .ARM.Collect$$libinit$$0000000E  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5699    .ARM.Collect$$libinit$$00000011  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5701    .ARM.Collect$$libinit$$00000013  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5703    .ARM.Collect$$libinit$$00000015  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5705    .ARM.Collect$$libinit$$00000017  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5707    .ARM.Collect$$libinit$$00000019  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5709    .ARM.Collect$$libinit$$0000001B  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5711    .ARM.Collect$$libinit$$0000001D  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5713    .ARM.Collect$$libinit$$0000001F  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5715    .ARM.Collect$$libinit$$00000021  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5717    .ARM.Collect$$libinit$$00000023  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5719    .ARM.Collect$$libinit$$00000025  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5723    .ARM.Collect$$libinit$$0000002C  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5725    .ARM.Collect$$libinit$$0000002E  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5727    .ARM.Collect$$libinit$$00000030  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000000   Code   RO         5729    .ARM.Collect$$libinit$$00000032  c_w.l(libinit2.o)
-    0x08004226   0x08004226   0x00000002   Code   RO         5730    .ARM.Collect$$libinit$$00000033  c_w.l(libinit2.o)
-    0x08004228   0x08004228   0x00000002   Code   RO         5754    .ARM.Collect$$libshutdown$$00000000  c_w.l(libshutdown.o)
-    0x0800422a   0x0800422a   0x00000000   Code   RO         5780    .ARM.Collect$$libshutdown$$00000002  c_w.l(libshutdown2.o)
-    0x0800422a   0x0800422a   0x00000000   Code   RO         5782    .ARM.Collect$$libshutdown$$00000004  c_w.l(libshutdown2.o)
-    0x0800422a   0x0800422a   0x00000000   Code   RO         5785    .ARM.Collect$$libshutdown$$00000007  c_w.l(libshutdown2.o)
-    0x0800422a   0x0800422a   0x00000000   Code   RO         5788    .ARM.Collect$$libshutdown$$0000000A  c_w.l(libshutdown2.o)
-    0x0800422a   0x0800422a   0x00000000   Code   RO         5790    .ARM.Collect$$libshutdown$$0000000C  c_w.l(libshutdown2.o)
-    0x0800422a   0x0800422a   0x00000000   Code   RO         5793    .ARM.Collect$$libshutdown$$0000000F  c_w.l(libshutdown2.o)
-    0x0800422a   0x0800422a   0x00000002   Code   RO         5794    .ARM.Collect$$libshutdown$$00000010  c_w.l(libshutdown2.o)
-    0x0800422c   0x0800422c   0x00000000   Code   RO         5628    .ARM.Collect$$rtentry$$00000000  c_w.l(__rtentry.o)
-    0x0800422c   0x0800422c   0x00000000   Code   RO         5645    .ARM.Collect$$rtentry$$00000002  c_w.l(__rtentry2.o)
-    0x0800422c   0x0800422c   0x00000006   Code   RO         5657    .ARM.Collect$$rtentry$$00000004  c_w.l(__rtentry4.o)
-    0x08004232   0x08004232   0x00000000   Code   RO         5647    .ARM.Collect$$rtentry$$00000009  c_w.l(__rtentry2.o)
-    0x08004232   0x08004232   0x00000004   Code   RO         5648    .ARM.Collect$$rtentry$$0000000A  c_w.l(__rtentry2.o)
-    0x08004236   0x08004236   0x00000000   Code   RO         5650    .ARM.Collect$$rtentry$$0000000C  c_w.l(__rtentry2.o)
-    0x08004236   0x08004236   0x00000008   Code   RO         5651    .ARM.Collect$$rtentry$$0000000D  c_w.l(__rtentry2.o)
-    0x0800423e   0x0800423e   0x00000002   Code   RO         5678    .ARM.Collect$$rtexit$$00000000  c_w.l(rtexit.o)
-    0x08004240   0x08004240   0x00000000   Code   RO         5732    .ARM.Collect$$rtexit$$00000002  c_w.l(rtexit2.o)
-    0x08004240   0x08004240   0x00000004   Code   RO         5733    .ARM.Collect$$rtexit$$00000003  c_w.l(rtexit2.o)
-    0x08004244   0x08004244   0x00000006   Code   RO         5734    .ARM.Collect$$rtexit$$00000004  c_w.l(rtexit2.o)
+    0x08004208   0x08004208   0x0000001c   Code   RO         5814    !!handler_zi        c_w.l(__scatter_zi.o)
+    0x08004224   0x08004224   0x00000002   Code   RO         5686    .ARM.Collect$$libinit$$00000000  c_w.l(libinit.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5699    .ARM.Collect$$libinit$$00000002  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5701    .ARM.Collect$$libinit$$00000004  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5704    .ARM.Collect$$libinit$$0000000A  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5706    .ARM.Collect$$libinit$$0000000C  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5708    .ARM.Collect$$libinit$$0000000E  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5711    .ARM.Collect$$libinit$$00000011  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5713    .ARM.Collect$$libinit$$00000013  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5715    .ARM.Collect$$libinit$$00000015  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5717    .ARM.Collect$$libinit$$00000017  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5719    .ARM.Collect$$libinit$$00000019  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5721    .ARM.Collect$$libinit$$0000001B  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5723    .ARM.Collect$$libinit$$0000001D  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5725    .ARM.Collect$$libinit$$0000001F  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5727    .ARM.Collect$$libinit$$00000021  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5729    .ARM.Collect$$libinit$$00000023  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5731    .ARM.Collect$$libinit$$00000025  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5735    .ARM.Collect$$libinit$$0000002C  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5737    .ARM.Collect$$libinit$$0000002E  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5739    .ARM.Collect$$libinit$$00000030  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000000   Code   RO         5741    .ARM.Collect$$libinit$$00000032  c_w.l(libinit2.o)
+    0x08004226   0x08004226   0x00000002   Code   RO         5742    .ARM.Collect$$libinit$$00000033  c_w.l(libinit2.o)
+    0x08004228   0x08004228   0x00000002   Code   RO         5766    .ARM.Collect$$libshutdown$$00000000  c_w.l(libshutdown.o)
+    0x0800422a   0x0800422a   0x00000000   Code   RO         5792    .ARM.Collect$$libshutdown$$00000002  c_w.l(libshutdown2.o)
+    0x0800422a   0x0800422a   0x00000000   Code   RO         5794    .ARM.Collect$$libshutdown$$00000004  c_w.l(libshutdown2.o)
+    0x0800422a   0x0800422a   0x00000000   Code   RO         5797    .ARM.Collect$$libshutdown$$00000007  c_w.l(libshutdown2.o)
+    0x0800422a   0x0800422a   0x00000000   Code   RO         5800    .ARM.Collect$$libshutdown$$0000000A  c_w.l(libshutdown2.o)
+    0x0800422a   0x0800422a   0x00000000   Code   RO         5802    .ARM.Collect$$libshutdown$$0000000C  c_w.l(libshutdown2.o)
+    0x0800422a   0x0800422a   0x00000000   Code   RO         5805    .ARM.Collect$$libshutdown$$0000000F  c_w.l(libshutdown2.o)
+    0x0800422a   0x0800422a   0x00000002   Code   RO         5806    .ARM.Collect$$libshutdown$$00000010  c_w.l(libshutdown2.o)
+    0x0800422c   0x0800422c   0x00000000   Code   RO         5640    .ARM.Collect$$rtentry$$00000000  c_w.l(__rtentry.o)
+    0x0800422c   0x0800422c   0x00000000   Code   RO         5657    .ARM.Collect$$rtentry$$00000002  c_w.l(__rtentry2.o)
+    0x0800422c   0x0800422c   0x00000006   Code   RO         5669    .ARM.Collect$$rtentry$$00000004  c_w.l(__rtentry4.o)
+    0x08004232   0x08004232   0x00000000   Code   RO         5659    .ARM.Collect$$rtentry$$00000009  c_w.l(__rtentry2.o)
+    0x08004232   0x08004232   0x00000004   Code   RO         5660    .ARM.Collect$$rtentry$$0000000A  c_w.l(__rtentry2.o)
+    0x08004236   0x08004236   0x00000000   Code   RO         5662    .ARM.Collect$$rtentry$$0000000C  c_w.l(__rtentry2.o)
+    0x08004236   0x08004236   0x00000008   Code   RO         5663    .ARM.Collect$$rtentry$$0000000D  c_w.l(__rtentry2.o)
+    0x0800423e   0x0800423e   0x00000002   Code   RO         5690    .ARM.Collect$$rtexit$$00000000  c_w.l(rtexit.o)
+    0x08004240   0x08004240   0x00000000   Code   RO         5744    .ARM.Collect$$rtexit$$00000002  c_w.l(rtexit2.o)
+    0x08004240   0x08004240   0x00000004   Code   RO         5745    .ARM.Collect$$rtexit$$00000003  c_w.l(rtexit2.o)
+    0x08004244   0x08004244   0x00000006   Code   RO         5746    .ARM.Collect$$rtexit$$00000004  c_w.l(rtexit2.o)
     0x0800424a   0x0800424a   0x00000002   PAD
-    0x0800424c   0x0800424c   0x00000096   Code   RO         5501    .emb_text           port.o
+    0x0800424c   0x0800424c   0x00000096   Code   RO         5513    .emb_text           port.o
     0x080042e2   0x080042e2   0x00000002   PAD
-    0x080042e4   0x080042e4   0x00000040   Code   RO         4701    .text               startup_at32f415.o
-    0x08004324   0x08004324   0x00000002   Code   RO         5580    .text               c_w.l(use_no_semi_2.o)
-    0x08004326   0x08004326   0x000000ee   Code   RO         5582    .text               c_w.l(lludivv7m.o)
-    0x08004414   0x08004414   0x0000003e   Code   RO         5584    .text               c_w.l(strlen.o)
-    0x08004452   0x08004452   0x0000008a   Code   RO         5586    .text               c_w.l(rt_memcpy_v6.o)
-    0x080044dc   0x080044dc   0x00000064   Code   RO         5588    .text               c_w.l(rt_memcpy_w.o)
-    0x08004540   0x08004540   0x0000004e   Code   RO         5592    .text               c_w.l(rt_memclr_w.o)
-    0x0800458e   0x0800458e   0x00000006   Code   RO         5594    .text               c_w.l(heapauxi.o)
-    0x08004594   0x08004594   0x00000002   Code   RO         5626    .text               c_w.l(use_no_semi.o)
-    0x08004596   0x08004596   0x0000004a   Code   RO         5661    .text               c_w.l(sys_stackheap_outer.o)
-    0x080045e0   0x080045e0   0x00000012   Code   RO         5663    .text               c_w.l(exit.o)
+    0x080042e4   0x080042e4   0x00000040   Code   RO         4713    .text               startup_at32f415.o
+    0x08004324   0x08004324   0x00000002   Code   RO         5592    .text               c_w.l(use_no_semi_2.o)
+    0x08004326   0x08004326   0x000000ee   Code   RO         5594    .text               c_w.l(lludivv7m.o)
+    0x08004414   0x08004414   0x0000003e   Code   RO         5596    .text               c_w.l(strlen.o)
+    0x08004452   0x08004452   0x0000008a   Code   RO         5598    .text               c_w.l(rt_memcpy_v6.o)
+    0x080044dc   0x080044dc   0x00000064   Code   RO         5600    .text               c_w.l(rt_memcpy_w.o)
+    0x08004540   0x08004540   0x0000004e   Code   RO         5604    .text               c_w.l(rt_memclr_w.o)
+    0x0800458e   0x0800458e   0x00000006   Code   RO         5606    .text               c_w.l(heapauxi.o)
+    0x08004594   0x08004594   0x00000002   Code   RO         5638    .text               c_w.l(use_no_semi.o)
+    0x08004596   0x08004596   0x0000004a   Code   RO         5673    .text               c_w.l(sys_stackheap_outer.o)
+    0x080045e0   0x080045e0   0x00000012   Code   RO         5675    .text               c_w.l(exit.o)
     0x080045f2   0x080045f2   0x00000002   PAD
-    0x080045f4   0x080045f4   0x00000008   Code   RO         5675    .text               c_w.l(libspace.o)
+    0x080045f4   0x080045f4   0x00000008   Code   RO         5687    .text               c_w.l(libspace.o)
     0x080045fc   0x080045fc   0x00000004   Code   RO          129    i.BusFault_Handler  at32f415_int.o
-    0x08004600   0x08004600   0x000000d4   Code   RO          828    i.CAN1_RX0_IRQHandler  ax_can.o
-    0x080046d4   0x080046d4   0x0000002c   Code   RO          829    i.CAN1_SE_IRQHandler  ax_can.o
-    0x08004700   0x08004700   0x000001c4   Code   RO         1062    i.Colourful_Wheel   ax_ws2812.o
+    0x08004600   0x08004600   0x000000d4   Code   RO          840    i.CAN1_RX0_IRQHandler  ax_can.o
+    0x080046d4   0x080046d4   0x0000002c   Code   RO          841    i.CAN1_SE_IRQHandler  ax_can.o
+    0x08004700   0x08004700   0x000001c4   Code   RO         1074    i.Colourful_Wheel   ax_ws2812.o
     0x080048c4   0x080048c4   0x00000002   Code   RO          130    i.DebugMon_Handler  at32f415_int.o
     0x080048c6   0x080048c6   0x00000004   Code   RO          131    i.HardFault_Handler  at32f415_int.o
     0x080048ca   0x080048ca   0x00000002   Code   RO          132    i.I2C1_ERR_IRQHandler  at32f415_int.o
     0x080048cc   0x080048cc   0x00000002   Code   RO          133    i.I2C1_EVT_IRQHandler  at32f415_int.o
     0x080048ce   0x080048ce   0x00000004   Code   RO          134    i.MemManage_Handler  at32f415_int.o
     0x080048d2   0x080048d2   0x00000002   Code   RO          135    i.NMI_Handler       at32f415_int.o
-    0x080048d4   0x080048d4   0x00000034   Code   RO         5502    i.SysTick_Handler   port.o
-    0x08004908   0x08004908   0x0000009c   Code   RO         4664    i.SystemInit        system_at32f415.o
+    0x080048d4   0x080048d4   0x00000034   Code   RO         5514    i.SysTick_Handler   port.o
+    0x08004908   0x08004908   0x0000009c   Code   RO         4676    i.SystemInit        system_at32f415.o
     0x080049a4   0x080049a4   0x00000150   Code   RO          312    i.USART1_IRQHandler  ax_uart.o
     0x08004af4   0x08004af4   0x00000134   Code   RO          313    i.USART2_IRQHandler  ax_uart.o
     0x08004c28   0x08004c28   0x00000004   Code   RO          136    i.UsageFault_Handler  at32f415_int.o
-    0x08004c2c   0x08004c2c   0x00000004   Code   RO         1327    i._sys_exit         at32f415_board.o
+    0x08004c2c   0x08004c2c   0x00000004   Code   RO         1339    i._sys_exit         at32f415_board.o
     0x08004c30   0x08004c30   0x00000024   Code   RO          314    i.andriod_pwr_ctrl  ax_uart.o
-    0x08004c54   0x08004c54   0x00000038   Code   RO          830    i.can_alive_struct_init  ax_can.o
-    0x08004c8c   0x08004c8c   0x000000bc   Code   RO         1658    i.can_base_init     at32f415_can.o
-    0x08004d48   0x08004d48   0x00000092   Code   RO         1660    i.can_baudrate_set  at32f415_can.o
+    0x08004c54   0x08004c54   0x00000038   Code   RO          842    i.can_alive_struct_init  ax_can.o
+    0x08004c8c   0x08004c8c   0x000000bc   Code   RO         1670    i.can_base_init     at32f415_can.o
+    0x08004d48   0x08004d48   0x00000092   Code   RO         1672    i.can_baudrate_set  at32f415_can.o
     0x08004dda   0x08004dda   0x00000002   PAD
-    0x08004ddc   0x08004ddc   0x000000d0   Code   RO          831    i.can_configuration  ax_can.o
-    0x08004eac   0x08004eac   0x00000012   Code   RO         1662    i.can_default_para_init  at32f415_can.o
-    0x08004ebe   0x08004ebe   0x00000164   Code   RO         1667    i.can_filter_init   at32f415_can.o
+    0x08004ddc   0x08004ddc   0x000000d0   Code   RO          843    i.can_configuration  ax_can.o
+    0x08004eac   0x08004eac   0x00000012   Code   RO         1674    i.can_default_para_init  at32f415_can.o
+    0x08004ebe   0x08004ebe   0x00000164   Code   RO         1679    i.can_filter_init   at32f415_can.o
     0x08005022   0x08005022   0x00000002   PAD
-    0x08005024   0x08005024   0x0000007c   Code   RO         1668    i.can_flag_clear    at32f415_can.o
-    0x080050a0   0x080050a0   0x000000f0   Code   RO         1669    i.can_flag_get      at32f415_can.o
-    0x08005190   0x08005190   0x00000074   Code   RO          832    i.can_gpio_config   ax_can.o
-    0x08005204   0x08005204   0x00000012   Code   RO         1670    i.can_interrupt_enable  at32f415_can.o
-    0x08005216   0x08005216   0x000000f0   Code   RO         1671    i.can_message_receive  at32f415_can.o
-    0x08005306   0x08005306   0x0000001a   Code   RO         1675    i.can_receive_fifo_release  at32f415_can.o
-    0x08005320   0x08005320   0x00000260   Code   RO          833    i.can_rx_task_function  ax_can.o
-    0x08005580   0x08005580   0x00000002   Code   RO          834    i.can_transmit_ctrl_data  ax_can.o
+    0x08005024   0x08005024   0x0000007c   Code   RO         1680    i.can_flag_clear    at32f415_can.o
+    0x080050a0   0x080050a0   0x000000f0   Code   RO         1681    i.can_flag_get      at32f415_can.o
+    0x08005190   0x08005190   0x00000074   Code   RO          844    i.can_gpio_config   ax_can.o
+    0x08005204   0x08005204   0x00000012   Code   RO         1682    i.can_interrupt_enable  at32f415_can.o
+    0x08005216   0x08005216   0x000000f0   Code   RO         1683    i.can_message_receive  at32f415_can.o
+    0x08005306   0x08005306   0x0000001a   Code   RO         1687    i.can_receive_fifo_release  at32f415_can.o
+    0x08005320   0x08005320   0x00000260   Code   RO          845    i.can_rx_task_function  ax_can.o
+    0x08005580   0x08005580   0x00000002   Code   RO          846    i.can_transmit_ctrl_data  ax_can.o
     0x08005582   0x08005582   0x00000002   PAD
-    0x08005584   0x08005584   0x00000028   Code   RO          835    i.can_tx_task_function  ax_can.o
-    0x080055ac   0x080055ac   0x00000020   Code   RO          836    i.canbus_open       ax_can.o
-    0x080055cc   0x080055cc   0x00000054   Code   RO          837    i.canbus_sw_config  ax_can.o
+    0x08005584   0x08005584   0x00000028   Code   RO          847    i.can_tx_task_function  ax_can.o
+    0x080055ac   0x080055ac   0x00000020   Code   RO          848    i.canbus_open       ax_can.o
+    0x080055cc   0x080055cc   0x00000054   Code   RO          849    i.canbus_sw_config  ax_can.o
     0x08005620   0x08005620   0x00000020   Code   RO          315    i.car_acc_ctrl      ax_uart.o
-    0x08005640   0x08005640   0x00000038   Code   RO         1226    i.crc16_modbus      ax_common.o
-    0x08005678   0x08005678   0x00000008   Code   RO         1227    i.crc8_rcc          ax_common.o
-    0x08005680   0x08005680   0x00000014   Code   RO         1959    i.crm_ahb_div_set   at32f415_crm.o
-    0x08005694   0x08005694   0x00000014   Code   RO         1960    i.crm_apb1_div_set  at32f415_crm.o
-    0x080056a8   0x080056a8   0x00000014   Code   RO         1961    i.crm_apb2_div_set  at32f415_crm.o
-    0x080056bc   0x080056bc   0x00000060   Code   RO         1967    i.crm_clock_source_enable  at32f415_crm.o
-    0x0800571c   0x0800571c   0x000001ac   Code   RO         1968    i.crm_clocks_freq_get  at32f415_crm.o
-    0x080058c8   0x080058c8   0x000000d4   Code   RO         1971    i.crm_flag_clear    at32f415_crm.o
-    0x0800599c   0x0800599c   0x00000030   Code   RO         1972    i.crm_flag_get      at32f415_crm.o
-    0x080059cc   0x080059cc   0x0000002e   Code   RO         1974    i.crm_hext_stable_wait  at32f415_crm.o
+    0x08005640   0x08005640   0x00000038   Code   RO         1238    i.crc16_modbus      ax_common.o
+    0x08005678   0x08005678   0x00000008   Code   RO         1239    i.crc8_rcc          ax_common.o
+    0x08005680   0x08005680   0x00000014   Code   RO         1971    i.crm_ahb_div_set   at32f415_crm.o
+    0x08005694   0x08005694   0x00000014   Code   RO         1972    i.crm_apb1_div_set  at32f415_crm.o
+    0x080056a8   0x080056a8   0x00000014   Code   RO         1973    i.crm_apb2_div_set  at32f415_crm.o
+    0x080056bc   0x080056bc   0x00000060   Code   RO         1979    i.crm_clock_source_enable  at32f415_crm.o
+    0x0800571c   0x0800571c   0x000001ac   Code   RO         1980    i.crm_clocks_freq_get  at32f415_crm.o
+    0x080058c8   0x080058c8   0x000000d4   Code   RO         1983    i.crm_flag_clear    at32f415_crm.o
+    0x0800599c   0x0800599c   0x00000030   Code   RO         1984    i.crm_flag_get      at32f415_crm.o
+    0x080059cc   0x080059cc   0x0000002e   Code   RO         1986    i.crm_hext_stable_wait  at32f415_crm.o
     0x080059fa   0x080059fa   0x00000002   PAD
-    0x080059fc   0x080059fc   0x00000044   Code   RO         1982    i.crm_periph_clock_enable  at32f415_crm.o
-    0x08005a40   0x08005a40   0x00000108   Code   RO         1985    i.crm_pll_config    at32f415_crm.o
-    0x08005b48   0x08005b48   0x00000064   Code   RO         1987    i.crm_reset         at32f415_crm.o
-    0x08005bac   0x08005bac   0x00000014   Code   RO         1988    i.crm_sysclk_switch  at32f415_crm.o
-    0x08005bc0   0x08005bc0   0x00000010   Code   RO         1989    i.crm_sysclk_switch_status_get  at32f415_crm.o
-    0x08005bd0   0x08005bd0   0x000000c8   Code   RO          319    i.device_ctrl_pins_init  ax_uart.o
-    0x08005c98   0x08005c98   0x0000000c   Code   RO         2715    i.flash_flag_clear  at32f415_flash.o
-    0x08005ca4   0x08005ca4   0x00000038   Code   RO         2717    i.flash_halfword_program  at32f415_flash.o
-    0x08005cdc   0x08005cdc   0x00000014   Code   RO         2720    i.flash_lock        at32f415_flash.o
-    0x08005cf0   0x08005cf0   0x00000034   Code   RO         2721    i.flash_operation_status_get  at32f415_flash.o
-    0x08005d24   0x08005d24   0x00000024   Code   RO         2722    i.flash_operation_wait_for  at32f415_flash.o
-    0x08005d48   0x08005d48   0x00000018   Code   RO         1266    i.flash_read_u8     ax_flash.o
-    0x08005d60   0x08005d60   0x00000040   Code   RO         2723    i.flash_sector_erase  at32f415_flash.o
-    0x08005da0   0x08005da0   0x00000018   Code   RO         2732    i.flash_unlock      at32f415_flash.o
-    0x08005db8   0x08005db8   0x00000068   Code   RO         1063    i.getDiyLED         ax_ws2812.o
-    0x08005e20   0x08005e20   0x00000004   Code   RO         2920    i.gpio_bits_reset   at32f415_gpio.o
-    0x08005e24   0x08005e24   0x00000004   Code   RO         2921    i.gpio_bits_set     at32f415_gpio.o
-    0x08005e28   0x08005e28   0x00000016   Code   RO         2923    i.gpio_default_para_init  at32f415_gpio.o
-    0x08005e3e   0x08005e3e   0x000000a8   Code   RO         2927    i.gpio_init         at32f415_gpio.o
-    0x08005ee6   0x08005ee6   0x00000002   PAD
-    0x08005ee8   0x08005ee8   0x0000004c   Code   RO         2933    i.gpio_pin_remap_config  at32f415_gpio.o
-    0x08005f34   0x08005f34   0x00000090   Code   RO          320    i.ihawk_ctrl        ax_uart.o
-    0x08005fc4   0x08005fc4   0x0000009e   Code   RO          321    i.ihawk_ctrl_tm     ax_uart.o
-    0x08006062   0x08006062   0x00000002   PAD
-    0x08006064   0x08006064   0x00000030   Code   RO          322    i.ihawk_lower_ctrl  ax_uart.o
-    0x08006094   0x08006094   0x00000030   Code   RO          323    i.ihawk_upper_ctrl  ax_uart.o
-    0x080060c4   0x080060c4   0x0000001c   Code   RO         1064    i.initColor         ax_ws2812.o
-    0x080060e0   0x080060e0   0x000000f4   Code   RO          324    i.init_can_msg      ax_uart.o
-    0x080061d4   0x080061d4   0x0000007c   Code   RO          325    i.init_uart_data    ax_uart.o
-    0x08006250   0x08006250   0x00000034   Code   RO          198    i.iwdg_Config       main.o
-    0x08006284   0x08006284   0x00000020   Code   RO          199    i.led2_task_function  main.o
-    0x080062a4   0x080062a4   0x00000088   Code   RO         1065    i.ledUpdate         ax_ws2812.o
-    0x0800632c   0x0800632c   0x000001f4   Code   RO          200    i.main              main.o
-    0x08006520   0x08006520   0x000000c8   Code   RO         3239    i.nvic_irq_enable   at32f415_misc.o
-    0x080065e8   0x080065e8   0x00000028   Code   RO         3241    i.nvic_priority_group_config  at32f415_misc.o
-    0x08006610   0x08006610   0x0000002c   Code   RO         3242    i.nvic_system_reset  at32f415_misc.o
-    0x0800663c   0x0800663c   0x00000014   Code   RO         3243    i.nvic_vector_table_set  at32f415_misc.o
-    0x08006650   0x08006650   0x0000004c   Code   RO          326    i.open_device_pwr   ax_uart.o
-    0x0800669c   0x0800669c   0x00000040   Code   RO          327    i.packageUpdateFwMsg  ax_uart.o
-    0x080066dc   0x080066dc   0x00000048   Code   RO          328    i.packageUpdateFwMsg1  ax_uart.o
-    0x08006724   0x08006724   0x00000068   Code   RO          329    i.parse_ctrl_acc_cmd  ax_uart.o
-    0x0800678c   0x0800678c   0x00000028   Code   RO          330    i.parse_ctrl_andriod  ax_uart.o
-    0x080067b4   0x080067b4   0x0000003c   Code   RO          331    i.parse_ctrl_andriod_tm  ax_uart.o
-    0x080067f0   0x080067f0   0x00000094   Code   RO          333    i.parse_ctrl_serv_les_cmd  ax_uart.o
-    0x08006884   0x08006884   0x00000068   Code   RO          335    i.parse_ctrl_usbhub_cmd  ax_uart.o
-    0x080068ec   0x080068ec   0x00000040   Code   RO          336    i.parse_ctrl_ws2812_cmd  ax_uart.o
-    0x0800692c   0x0800692c   0x000000bc   Code   RO          840    i.parse_distance_msg1  ax_can.o
-    0x080069e8   0x080069e8   0x000000b8   Code   RO          338    i.parse_diy2_led_old_cmd  ax_uart.o
-    0x08006aa0   0x08006aa0   0x000000b8   Code   RO          340    i.parse_diy_led_old_cmd  ax_uart.o
-    0x08006b58   0x08006b58   0x00000170   Code   RO          341    i.parse_fw_data_msg  ax_uart.o
-    0x08006cc8   0x08006cc8   0x0000008c   Code   RO          342    i.parse_get_app_flag_msg  ax_uart.o
-    0x08006d54   0x08006d54   0x0000000c   Code   RO          344    i.parse_get_ver_cmd  ax_uart.o
-    0x08006d60   0x08006d60   0x00000030   Code   RO          841    i.parse_heartbeat_fb_msg  ax_can.o
-    0x08006d90   0x08006d90   0x00000098   Code   RO          842    i.parse_reboot_fb_msg  ax_can.o
-    0x08006e28   0x08006e28   0x00000054   Code   RO          347    i.parse_reset_andriod  ax_uart.o
-    0x08006e7c   0x08006e7c   0x00000054   Code   RO          843    i.parse_reset_sensor_fb_msg  ax_can.o
-    0x08006ed0   0x08006ed0   0x00000118   Code   RO          351    i.parse_send_fw_info_msg  ax_uart.o
-    0x08006fe8   0x08006fe8   0x0000011c   Code   RO          352    i.parse_send_start_update_signal  ax_uart.o
-    0x08007104   0x08007104   0x000000e4   Code   RO          844    i.parse_set_tray_ws2812_fb_msg  ax_can.o
-    0x080071e8   0x080071e8   0x00000060   Code   RO          845    i.parse_set_ws2812_fb_msg  ax_can.o
-    0x08007248   0x08007248   0x000000c0   Code   RO          846    i.parse_sync_fw_fb_msg  ax_can.o
-    0x08007308   0x08007308   0x00000194   Code   RO          847    i.parse_uid_fb_msg  ax_can.o
-    0x0800749c   0x0800749c   0x0000007c   Code   RO          354    i.parse_update_abort_msg  ax_uart.o
-    0x08007518   0x08007518   0x000000d0   Code   RO          355    i.parse_update_end_msg  ax_uart.o
-    0x080075e8   0x080075e8   0x000000a8   Code   RO          848    i.parse_version_fb_msg  ax_can.o
-    0x08007690   0x08007690   0x00000098   Code   RO         5135    i.prvAddCurrentTaskToDelayedList  tasks.o
-    0x08007728   0x08007728   0x000000b4   Code   RO         5136    i.prvAddNewTaskToReadyList  tasks.o
-    0x080077dc   0x080077dc   0x00000048   Code   RO         5137    i.prvCheckTasksWaitingTermination  tasks.o
-    0x08007824   0x08007824   0x00000012   Code   RO         5138    i.prvDeleteTCB      tasks.o
-    0x08007836   0x08007836   0x00000002   PAD
-    0x08007838   0x08007838   0x0000007c   Code   RO         5434    i.prvHeapInit       heap_4.o
-    0x080078b4   0x080078b4   0x00000028   Code   RO         5139    i.prvIdleTask       tasks.o
-    0x080078dc   0x080078dc   0x000000ae   Code   RO         5140    i.prvInitialiseNewTask  tasks.o
-    0x0800798a   0x0800798a   0x00000002   PAD
-    0x0800798c   0x0800798c   0x00000068   Code   RO         5141    i.prvInitialiseTaskLists  tasks.o
-    0x080079f4   0x080079f4   0x00000068   Code   RO         5435    i.prvInsertBlockIntoFreeList  heap_4.o
-    0x08007a5c   0x08007a5c   0x00000030   Code   RO         5142    i.prvResetNextTaskUnblockTime  tasks.o
-    0x08007a8c   0x08007a8c   0x00000040   Code   RO         5503    i.prvTaskExitError  port.o
-    0x08007acc   0x08007acc   0x0000016c   Code   RO         5436    i.pvPortMalloc      heap_4.o
-    0x08007c38   0x08007c38   0x00000024   Code   RO         5504    i.pxPortInitialiseStack  port.o
-    0x08007c5c   0x08007c5c   0x00000060   Code   RO         1066    i.rainbowCycle      ax_ws2812.o
-    0x08007cbc   0x08007cbc   0x0000009c   Code   RO         1067    i.rgb_SetColor      ax_ws2812.o
-    0x08007d58   0x08007d58   0x00000080   Code   RO         1068    i.sendLED           ax_ws2812.o
-    0x08007dd8   0x08007dd8   0x000000a0   Code   RO          356    i.send_2_uart2      ax_uart.o
-    0x08007e78   0x08007e78   0x000000cc   Code   RO          357    i.send_andriod_fb   ax_uart.o
-    0x08007f44   0x08007f44   0x000000b4   Code   RO          359    i.send_ctrl_acc_old_fb  ax_uart.o
-    0x08007ff8   0x08007ff8   0x000000c0   Code   RO          363    i.send_ctrl_ihawk_fb  ax_uart.o
-    0x080080b8   0x080080b8   0x000000a4   Code   RO          364    i.send_ctrl_leds_fb  ax_uart.o
-    0x0800815c   0x0800815c   0x000000b4   Code   RO          367    i.send_ctrl_usbhub_fb  ax_uart.o
-    0x08008210   0x08008210   0x000000d8   Code   RO          369    i.send_ihawk_sts_fb  ax_uart.o
-    0x080082e8   0x080082e8   0x000000cc   Code   RO          370    i.send_own2_version  ax_uart.o
-    0x080083b4   0x080083b4   0x000000a8   Code   RO          372    i.send_own_version_old  ax_uart.o
-    0x0800845c   0x0800845c   0x0000009c   Code   RO          373    i.send_reboot2_fb   ax_uart.o
-    0x080084f8   0x080084f8   0x0000007c   Code   RO          849    i.send_reset_board_msg  ax_can.o
-    0x08008574   0x08008574   0x0000007c   Code   RO          850    i.send_reset_sensor_msg  ax_can.o
-    0x080085f0   0x080085f0   0x000000e8   Code   RO          376    i.send_sts_loop     ax_uart.o
-    0x080086d8   0x080086d8   0x0000009c   Code   RO          851    i.send_ws2812b_msg  ax_can.o
-    0x08008774   0x08008774   0x000000d0   Code   RO         1069    i.setBreath_2s      ax_ws2812.o
-    0x08008844   0x08008844   0x000000d0   Code   RO         1070    i.setBreath_4s      ax_ws2812.o
-    0x08008914   0x08008914   0x000002fc   Code   RO         1071    i.setDiy2Show       ax_ws2812.o
-    0x08008c10   0x08008c10   0x00000128   Code   RO         1072    i.setDiyShow        ax_ws2812.o
-    0x08008d38   0x08008d38   0x0000002e   Code   RO         1073    i.setDoubleFlashMode  ax_ws2812.o
-    0x08008d66   0x08008d66   0x00000002   PAD
-    0x08008d68   0x08008d68   0x00000030   Code   RO         1076    i.setDoubleFlash_1Hz_Mode  ax_ws2812.o
-    0x08008d98   0x08008d98   0x00000044   Code   RO         1077    i.setDoubleFlash_2Hz_Mode  ax_ws2812.o
-    0x08008ddc   0x08008ddc   0x00000030   Code   RO         1079    i.setNormalMode     ax_ws2812.o
-    0x08008e0c   0x08008e0c   0x00000044   Code   RO         1080    i.setNormalRedMode  ax_ws2812.o
-    0x08008e50   0x08008e50   0x00000040   Code   RO         1081    i.setOffMode        ax_ws2812.o
-    0x08008e90   0x08008e90   0x00000048   Code   RO         1017    i.spi2_config       ax_spi.o
-    0x08008ed8   0x08008ed8   0x00000040   Code   RO         1018    i.spi2_gpio_cfg     ax_spi.o
-    0x08008f18   0x08008f18   0x00000020   Code   RO         1019    i.spi2_send_byte    ax_spi.o
-    0x08008f38   0x08008f38   0x0000001a   Code   RO         1020    i.spi2_send_bytes   ax_spi.o
-    0x08008f52   0x08008f52   0x00000016   Code   RO         3580    i.spi_default_para_init  at32f415_spi.o
-    0x08008f68   0x08008f68   0x0000000a   Code   RO         3581    i.spi_enable        at32f415_spi.o
-    0x08008f72   0x08008f72   0x00000004   Code   RO         3586    i.spi_i2s_data_transmit  at32f415_spi.o
-    0x08008f76   0x08008f76   0x00000010   Code   RO         3590    i.spi_i2s_flag_get  at32f415_spi.o
-    0x08008f86   0x08008f86   0x00000124   Code   RO         3593    i.spi_init          at32f415_spi.o
-    0x080090aa   0x080090aa   0x00000002   PAD
-    0x080090ac   0x080090ac   0x00000020   Code   RO          379    i.switch_pwr_ctrl   ax_uart.o
-    0x080090cc   0x080090cc   0x00000068   Code   RO            4    i.system_clock_config  at32f415_clock.o
-    0x08009134   0x08009134   0x00000154   Code   RO         4665    i.system_core_clock_update  system_at32f415.o
-    0x08009288   0x08009288   0x00000014   Code   RO          385    i.toggle_led_stat   ax_uart.o
-    0x0800929c   0x0800929c   0x00000130   Code   RO          386    i.usart1_rx_task_function  ax_uart.o
-    0x080093cc   0x080093cc   0x00000024   Code   RO          387    i.usart1_tx_task_function  ax_uart.o
-    0x080093f0   0x080093f0   0x0000021c   Code   RO          388    i.usart2_rx_task_function  ax_uart.o
-    0x0800960c   0x0800960c   0x00000008   Code   RO         4080    i.usart_data_receive  at32f415_usart.o
-    0x08009614   0x08009614   0x00000008   Code   RO         4081    i.usart_data_transmit  at32f415_usart.o
-    0x0800961c   0x0800961c   0x0000000a   Code   RO         4084    i.usart_enable      at32f415_usart.o
-    0x08009626   0x08009626   0x00000012   Code   RO         4085    i.usart_flag_clear  at32f415_usart.o
-    0x08009638   0x08009638   0x00000010   Code   RO         4086    i.usart_flag_get    at32f415_usart.o
-    0x08009648   0x08009648   0x0000006c   Code   RO         4088    i.usart_init        at32f415_usart.o
-    0x080096b4   0x080096b4   0x00000194   Code   RO          390    i.usart_int_configuration  ax_uart.o
-    0x08009848   0x08009848   0x00000036   Code   RO         4089    i.usart_interrupt_enable  at32f415_usart.o
-    0x0800987e   0x0800987e   0x0000000a   Code   RO         4095    i.usart_receiver_enable  at32f415_usart.o
-    0x08009888   0x08009888   0x0000000a   Code   RO         4102    i.usart_transmitter_enable  at32f415_usart.o
-    0x08009892   0x08009892   0x00000002   PAD
-    0x08009894   0x08009894   0x00000020   Code   RO          391    i.usbhub_ctrl       ax_uart.o
-    0x080098b4   0x080098b4   0x00000028   Code   RO         4819    i.uxListRemove      list.o
-    0x080098dc   0x080098dc   0x0000001a   Code   RO         4820    i.vListInitialise   list.o
-    0x080098f6   0x080098f6   0x00000006   Code   RO         4821    i.vListInitialiseItem  list.o
-    0x080098fc   0x080098fc   0x00000034   Code   RO         4822    i.vListInsert       list.o
-    0x08009930   0x08009930   0x00000018   Code   RO         4823    i.vListInsertEnd    list.o
-    0x08009948   0x08009948   0x00000054   Code   RO         5506    i.vPortEnterCritical  port.o
-    0x0800999c   0x0800999c   0x0000003c   Code   RO         5507    i.vPortExitCritical  port.o
-    0x080099d8   0x080099d8   0x000000a4   Code   RO         5437    i.vPortFree         heap_4.o
-    0x08009a7c   0x08009a7c   0x00000028   Code   RO         5508    i.vPortSetupTimerInterrupt  port.o
-    0x08009aa4   0x08009aa4   0x0000005c   Code   RO         5150    i.vTaskDelay        tasks.o
-    0x08009b00   0x08009b00   0x00000090   Code   RO         5162    i.vTaskStartScheduler  tasks.o
-    0x08009b90   0x08009b90   0x00000010   Code   RO         5164    i.vTaskSuspendAll   tasks.o
-    0x08009ba0   0x08009ba0   0x0000008c   Code   RO         5165    i.vTaskSwitchContext  tasks.o
-    0x08009c2c   0x08009c2c   0x00000010   Code   RO         4544    i.wdt_counter_reload  at32f415_wdt.o
-    0x08009c3c   0x08009c3c   0x00000014   Code   RO         4545    i.wdt_divider_set   at32f415_wdt.o
-    0x08009c50   0x08009c50   0x00000010   Code   RO         4546    i.wdt_enable        at32f415_wdt.o
-    0x08009c60   0x08009c60   0x00000018   Code   RO         4548    i.wdt_register_write_enable  at32f415_wdt.o
-    0x08009c78   0x08009c78   0x0000000c   Code   RO         4549    i.wdt_reload_value_set  at32f415_wdt.o
-    0x08009c84   0x08009c84   0x0000007c   Code   RO         1269    i.write2flash       ax_flash.o
-    0x08009d00   0x08009d00   0x00000010   Code   RO         1083    i.ws2812Init        ax_ws2812.o
-    0x08009d10   0x08009d10   0x00000028   Code   RO         1084    i.ws2812_task_function  ax_ws2812.o
-    0x08009d38   0x08009d38   0x00000028   Code   RO          201    i.wtdg_task_function  main.o
-    0x08009d60   0x08009d60   0x000000f8   Code   RO         5510    i.xPortStartScheduler  port.o
-    0x08009e58   0x08009e58   0x00000060   Code   RO         5168    i.xTaskCreate       tasks.o
-    0x08009eb8   0x08009eb8   0x00000148   Code   RO         5177    i.xTaskIncrementTick  tasks.o
-    0x0800a000   0x0800a000   0x00000104   Code   RO         5179    i.xTaskResumeAll    tasks.o
-    0x0800a104   0x0800a104   0x000002b0   Code   RO         5599    x$fpl$ddiv          fz_ws.l(ddiv.o)
-    0x0800a3b4   0x0800a3b4   0x0000005a   Code   RO         5602    x$fpl$dfixu         fz_ws.l(dfixu.o)
-    0x0800a40e   0x0800a40e   0x0000002e   Code   RO         5607    x$fpl$dflt          fz_ws.l(dflt_clz.o)
-    0x0800a43c   0x0800a43c   0x00000026   Code   RO         5606    x$fpl$dfltu         fz_ws.l(dflt_clz.o)
-    0x0800a462   0x0800a462   0x00000002   PAD
-    0x0800a464   0x0800a464   0x00000154   Code   RO         5612    x$fpl$dmul          fz_ws.l(dmul.o)
-    0x0800a5b8   0x0800a5b8   0x0000009c   Code   RO         5635    x$fpl$dnaninf       fz_ws.l(dnaninf.o)
-    0x0800a654   0x0800a654   0x0000000c   Code   RO         5637    x$fpl$dretinf       fz_ws.l(dretinf.o)
-    0x0800a660   0x0800a660   0x0000003e   Code   RO         5614    x$fpl$ffixu         fz_ws.l(ffixu.o)
-    0x0800a69e   0x0800a69e   0x00000002   PAD
-    0x0800a6a0   0x0800a6a0   0x00000026   Code   RO         5618    x$fpl$ffltu         fz_ws.l(fflt_clz.o)
-    0x0800a6c6   0x0800a6c6   0x00000002   PAD
-    0x0800a6c8   0x0800a6c8   0x00000102   Code   RO         5624    x$fpl$fmul          fz_ws.l(fmul.o)
-    0x0800a7ca   0x0800a7ca   0x0000008c   Code   RO         5639    x$fpl$fnaninf       fz_ws.l(fnaninf.o)
-    0x0800a856   0x0800a856   0x0000000a   Code   RO         5641    x$fpl$fretinf       fz_ws.l(fretinf.o)
-    0x0800a860   0x0800a860   0x00000000   Code   RO         5643    x$fpl$usenofp       fz_ws.l(usenofp.o)
-    0x0800a860   0x0800a860   0x00000330   Data   RO         1086    .constdata          ax_ws2812.o
-    0x0800ab90   0x0800ab90   0x00000028   Data   RO         1993    .constdata          at32f415_crm.o
-    0x0800abb8   0x0800abb8   0x00000010   Data   RO         4666    .constdata          system_at32f415.o
-    0x0800abc8   0x0800abc8   0x00000025   Data   RO          393    .conststring        ax_uart.o
-    0x0800abed   0x0800abed   0x00000003   PAD
-    0x0800abf0   0x0800abf0   0x00000020   Data   RO         5796    Region$$Table       anon$$obj.o
+    0x080059fc   0x080059fc   0x00000044   Code   RO         1994    i.crm_periph_clock_enable  at32f415_crm.o
+    0x08005a40   0x08005a40   0x00000108   Code   RO         1997    i.crm_pll_config    at32f415_crm.o
+    0x08005b48   0x08005b48   0x00000064   Code   RO         1999    i.crm_reset         at32f415_crm.o
+    0x08005bac   0x08005bac   0x00000014   Code   RO         2000    i.crm_sysclk_switch  at32f415_crm.o
+    0x08005bc0   0x08005bc0   0x00000010   Code   RO         2001    i.crm_sysclk_switch_status_get  at32f415_crm.o
+    0x08005bd0   0x08005bd0   0x0000010c   Code   RO          319    i.device_ctrl_pins_init  ax_uart.o
+    0x08005cdc   0x08005cdc   0x0000000c   Code   RO         2727    i.flash_flag_clear  at32f415_flash.o
+    0x08005ce8   0x08005ce8   0x00000038   Code   RO         2729    i.flash_halfword_program  at32f415_flash.o
+    0x08005d20   0x08005d20   0x00000014   Code   RO         2732    i.flash_lock        at32f415_flash.o
+    0x08005d34   0x08005d34   0x00000034   Code   RO         2733    i.flash_operation_status_get  at32f415_flash.o
+    0x08005d68   0x08005d68   0x00000024   Code   RO         2734    i.flash_operation_wait_for  at32f415_flash.o
+    0x08005d8c   0x08005d8c   0x00000018   Code   RO         1278    i.flash_read_u8     ax_flash.o
+    0x08005da4   0x08005da4   0x00000040   Code   RO         2735    i.flash_sector_erase  at32f415_flash.o
+    0x08005de4   0x08005de4   0x00000018   Code   RO         2744    i.flash_unlock      at32f415_flash.o
+    0x08005dfc   0x08005dfc   0x00000068   Code   RO         1075    i.getDiyLED         ax_ws2812.o
+    0x08005e64   0x08005e64   0x00000004   Code   RO         2932    i.gpio_bits_reset   at32f415_gpio.o
+    0x08005e68   0x08005e68   0x00000004   Code   RO         2933    i.gpio_bits_set     at32f415_gpio.o
+    0x08005e6c   0x08005e6c   0x00000016   Code   RO         2935    i.gpio_default_para_init  at32f415_gpio.o
+    0x08005e82   0x08005e82   0x000000a8   Code   RO         2939    i.gpio_init         at32f415_gpio.o
+    0x08005f2a   0x08005f2a   0x00000002   PAD
+    0x08005f2c   0x08005f2c   0x0000004c   Code   RO         2945    i.gpio_pin_remap_config  at32f415_gpio.o
+    0x08005f78   0x08005f78   0x000000f8   Code   RO          320    i.ihawk_ctrl        ax_uart.o
+    0x08006070   0x08006070   0x0000010e   Code   RO          321    i.ihawk_ctrl_tm     ax_uart.o
+    0x0800617e   0x0800617e   0x00000002   PAD
+    0x08006180   0x08006180   0x00000030   Code   RO          322    i.ihawk_lower_ctrl  ax_uart.o
+    0x080061b0   0x080061b0   0x00000030   Code   RO          323    i.ihawk_upper_ctrl  ax_uart.o
+    0x080061e0   0x080061e0   0x0000001c   Code   RO         1076    i.initColor         ax_ws2812.o
+    0x080061fc   0x080061fc   0x000000f4   Code   RO          324    i.init_can_msg      ax_uart.o
+    0x080062f0   0x080062f0   0x0000007c   Code   RO          325    i.init_uart_data    ax_uart.o
+    0x0800636c   0x0800636c   0x00000034   Code   RO          198    i.iwdg_Config       main.o
+    0x080063a0   0x080063a0   0x00000020   Code   RO          199    i.led2_task_function  main.o
+    0x080063c0   0x080063c0   0x00000088   Code   RO         1077    i.ledUpdate         ax_ws2812.o
+    0x08006448   0x08006448   0x000001f4   Code   RO          200    i.main              main.o
+    0x0800663c   0x0800663c   0x000000c8   Code   RO         3251    i.nvic_irq_enable   at32f415_misc.o
+    0x08006704   0x08006704   0x00000028   Code   RO         3253    i.nvic_priority_group_config  at32f415_misc.o
+    0x0800672c   0x0800672c   0x0000002c   Code   RO         3254    i.nvic_system_reset  at32f415_misc.o
+    0x08006758   0x08006758   0x00000014   Code   RO         3255    i.nvic_vector_table_set  at32f415_misc.o
+    0x0800676c   0x0800676c   0x00000054   Code   RO          326    i.open_device_pwr   ax_uart.o
+    0x080067c0   0x080067c0   0x00000040   Code   RO          327    i.packageUpdateFwMsg  ax_uart.o
+    0x08006800   0x08006800   0x00000048   Code   RO          328    i.packageUpdateFwMsg1  ax_uart.o
+    0x08006848   0x08006848   0x00000068   Code   RO          329    i.parse_ctrl_acc_cmd  ax_uart.o
+    0x080068b0   0x080068b0   0x00000028   Code   RO          330    i.parse_ctrl_andriod  ax_uart.o
+    0x080068d8   0x080068d8   0x0000003c   Code   RO          331    i.parse_ctrl_andriod_tm  ax_uart.o
+    0x08006914   0x08006914   0x00000094   Code   RO          333    i.parse_ctrl_serv_les_cmd  ax_uart.o
+    0x080069a8   0x080069a8   0x00000068   Code   RO          335    i.parse_ctrl_usbhub_cmd  ax_uart.o
+    0x08006a10   0x08006a10   0x00000040   Code   RO          336    i.parse_ctrl_ws2812_cmd  ax_uart.o
+    0x08006a50   0x08006a50   0x000000bc   Code   RO          852    i.parse_distance_msg1  ax_can.o
+    0x08006b0c   0x08006b0c   0x000000b8   Code   RO          338    i.parse_diy2_led_old_cmd  ax_uart.o
+    0x08006bc4   0x08006bc4   0x000000b8   Code   RO          340    i.parse_diy_led_old_cmd  ax_uart.o
+    0x08006c7c   0x08006c7c   0x00000170   Code   RO          341    i.parse_fw_data_msg  ax_uart.o
+    0x08006dec   0x08006dec   0x0000008c   Code   RO          342    i.parse_get_app_flag_msg  ax_uart.o
+    0x08006e78   0x08006e78   0x0000000c   Code   RO          344    i.parse_get_ver_cmd  ax_uart.o
+    0x08006e84   0x08006e84   0x00000030   Code   RO          853    i.parse_heartbeat_fb_msg  ax_can.o
+    0x08006eb4   0x08006eb4   0x00000098   Code   RO          854    i.parse_reboot_fb_msg  ax_can.o
+    0x08006f4c   0x08006f4c   0x00000054   Code   RO          347    i.parse_reset_andriod  ax_uart.o
+    0x08006fa0   0x08006fa0   0x00000054   Code   RO          855    i.parse_reset_sensor_fb_msg  ax_can.o
+    0x08006ff4   0x08006ff4   0x00000118   Code   RO          351    i.parse_send_fw_info_msg  ax_uart.o
+    0x0800710c   0x0800710c   0x0000011c   Code   RO          352    i.parse_send_start_update_signal  ax_uart.o
+    0x08007228   0x08007228   0x000000e4   Code   RO          856    i.parse_set_tray_ws2812_fb_msg  ax_can.o
+    0x0800730c   0x0800730c   0x00000060   Code   RO          857    i.parse_set_ws2812_fb_msg  ax_can.o
+    0x0800736c   0x0800736c   0x000000c0   Code   RO          858    i.parse_sync_fw_fb_msg  ax_can.o
+    0x0800742c   0x0800742c   0x00000194   Code   RO          859    i.parse_uid_fb_msg  ax_can.o
+    0x080075c0   0x080075c0   0x0000007c   Code   RO          354    i.parse_update_abort_msg  ax_uart.o
+    0x0800763c   0x0800763c   0x000000d0   Code   RO          355    i.parse_update_end_msg  ax_uart.o
+    0x0800770c   0x0800770c   0x000000a8   Code   RO          860    i.parse_version_fb_msg  ax_can.o
+    0x080077b4   0x080077b4   0x00000098   Code   RO         5147    i.prvAddCurrentTaskToDelayedList  tasks.o
+    0x0800784c   0x0800784c   0x000000b4   Code   RO         5148    i.prvAddNewTaskToReadyList  tasks.o
+    0x08007900   0x08007900   0x00000048   Code   RO         5149    i.prvCheckTasksWaitingTermination  tasks.o
+    0x08007948   0x08007948   0x00000012   Code   RO         5150    i.prvDeleteTCB      tasks.o
+    0x0800795a   0x0800795a   0x00000002   PAD
+    0x0800795c   0x0800795c   0x0000007c   Code   RO         5446    i.prvHeapInit       heap_4.o
+    0x080079d8   0x080079d8   0x00000028   Code   RO         5151    i.prvIdleTask       tasks.o
+    0x08007a00   0x08007a00   0x000000ae   Code   RO         5152    i.prvInitialiseNewTask  tasks.o
+    0x08007aae   0x08007aae   0x00000002   PAD
+    0x08007ab0   0x08007ab0   0x00000068   Code   RO         5153    i.prvInitialiseTaskLists  tasks.o
+    0x08007b18   0x08007b18   0x00000068   Code   RO         5447    i.prvInsertBlockIntoFreeList  heap_4.o
+    0x08007b80   0x08007b80   0x00000030   Code   RO         5154    i.prvResetNextTaskUnblockTime  tasks.o
+    0x08007bb0   0x08007bb0   0x00000040   Code   RO         5515    i.prvTaskExitError  port.o
+    0x08007bf0   0x08007bf0   0x0000016c   Code   RO         5448    i.pvPortMalloc      heap_4.o
+    0x08007d5c   0x08007d5c   0x00000024   Code   RO         5516    i.pxPortInitialiseStack  port.o
+    0x08007d80   0x08007d80   0x00000060   Code   RO         1078    i.rainbowCycle      ax_ws2812.o
+    0x08007de0   0x08007de0   0x0000009c   Code   RO         1079    i.rgb_SetColor      ax_ws2812.o
+    0x08007e7c   0x08007e7c   0x00000080   Code   RO         1080    i.sendLED           ax_ws2812.o
+    0x08007efc   0x08007efc   0x000000a0   Code   RO          356    i.send_2_uart2      ax_uart.o
+    0x08007f9c   0x08007f9c   0x000000cc   Code   RO          357    i.send_andriod_fb   ax_uart.o
+    0x08008068   0x08008068   0x000000b4   Code   RO          359    i.send_ctrl_acc_old_fb  ax_uart.o
+    0x0800811c   0x0800811c   0x000000c0   Code   RO          363    i.send_ctrl_ihawk_fb  ax_uart.o
+    0x080081dc   0x080081dc   0x000000a4   Code   RO          364    i.send_ctrl_leds_fb  ax_uart.o
+    0x08008280   0x08008280   0x000000b4   Code   RO          367    i.send_ctrl_usbhub_fb  ax_uart.o
+    0x08008334   0x08008334   0x000000d8   Code   RO          369    i.send_ihawk_sts_fb  ax_uart.o
+    0x0800840c   0x0800840c   0x000000cc   Code   RO          370    i.send_own2_version  ax_uart.o
+    0x080084d8   0x080084d8   0x000000ac   Code   RO          372    i.send_own_version_old  ax_uart.o
+    0x08008584   0x08008584   0x0000009c   Code   RO          373    i.send_reboot2_fb   ax_uart.o
+    0x08008620   0x08008620   0x0000007c   Code   RO          861    i.send_reset_board_msg  ax_can.o
+    0x0800869c   0x0800869c   0x0000007c   Code   RO          862    i.send_reset_sensor_msg  ax_can.o
+    0x08008718   0x08008718   0x000000e8   Code   RO          376    i.send_sts_loop     ax_uart.o
+    0x08008800   0x08008800   0x000000e0   Code   RO          378    i.send_usb_sts_fb   ax_uart.o
+    0x080088e0   0x080088e0   0x0000009c   Code   RO          863    i.send_ws2812b_msg  ax_can.o
+    0x0800897c   0x0800897c   0x000000d0   Code   RO         1081    i.setBreath_2s      ax_ws2812.o
+    0x08008a4c   0x08008a4c   0x000000d0   Code   RO         1082    i.setBreath_4s      ax_ws2812.o
+    0x08008b1c   0x08008b1c   0x000002fc   Code   RO         1083    i.setDiy2Show       ax_ws2812.o
+    0x08008e18   0x08008e18   0x00000128   Code   RO         1084    i.setDiyShow        ax_ws2812.o
+    0x08008f40   0x08008f40   0x0000002e   Code   RO         1085    i.setDoubleFlashMode  ax_ws2812.o
+    0x08008f6e   0x08008f6e   0x00000002   PAD
+    0x08008f70   0x08008f70   0x00000030   Code   RO         1088    i.setDoubleFlash_1Hz_Mode  ax_ws2812.o
+    0x08008fa0   0x08008fa0   0x00000044   Code   RO         1089    i.setDoubleFlash_2Hz_Mode  ax_ws2812.o
+    0x08008fe4   0x08008fe4   0x00000030   Code   RO         1091    i.setNormalMode     ax_ws2812.o
+    0x08009014   0x08009014   0x00000044   Code   RO         1092    i.setNormalRedMode  ax_ws2812.o
+    0x08009058   0x08009058   0x00000040   Code   RO         1093    i.setOffMode        ax_ws2812.o
+    0x08009098   0x08009098   0x00000048   Code   RO         1029    i.spi2_config       ax_spi.o
+    0x080090e0   0x080090e0   0x00000040   Code   RO         1030    i.spi2_gpio_cfg     ax_spi.o
+    0x08009120   0x08009120   0x00000020   Code   RO         1031    i.spi2_send_byte    ax_spi.o
+    0x08009140   0x08009140   0x0000001a   Code   RO         1032    i.spi2_send_bytes   ax_spi.o
+    0x0800915a   0x0800915a   0x00000016   Code   RO         3592    i.spi_default_para_init  at32f415_spi.o
+    0x08009170   0x08009170   0x0000000a   Code   RO         3593    i.spi_enable        at32f415_spi.o
+    0x0800917a   0x0800917a   0x00000004   Code   RO         3598    i.spi_i2s_data_transmit  at32f415_spi.o
+    0x0800917e   0x0800917e   0x00000010   Code   RO         3602    i.spi_i2s_flag_get  at32f415_spi.o
+    0x0800918e   0x0800918e   0x00000124   Code   RO         3605    i.spi_init          at32f415_spi.o
+    0x080092b2   0x080092b2   0x00000002   PAD
+    0x080092b4   0x080092b4   0x00000020   Code   RO          380    i.switch_pwr_ctrl   ax_uart.o
+    0x080092d4   0x080092d4   0x00000068   Code   RO            4    i.system_clock_config  at32f415_clock.o
+    0x0800933c   0x0800933c   0x00000154   Code   RO         4677    i.system_core_clock_update  system_at32f415.o
+    0x08009490   0x08009490   0x00000014   Code   RO          386    i.toggle_led_stat   ax_uart.o
+    0x080094a4   0x080094a4   0x00000130   Code   RO          387    i.usart1_rx_task_function  ax_uart.o
+    0x080095d4   0x080095d4   0x00000024   Code   RO          388    i.usart1_tx_task_function  ax_uart.o
+    0x080095f8   0x080095f8   0x0000022c   Code   RO          389    i.usart2_rx_task_function  ax_uart.o
+    0x08009824   0x08009824   0x00000008   Code   RO         4092    i.usart_data_receive  at32f415_usart.o
+    0x0800982c   0x0800982c   0x00000008   Code   RO         4093    i.usart_data_transmit  at32f415_usart.o
+    0x08009834   0x08009834   0x0000000a   Code   RO         4096    i.usart_enable      at32f415_usart.o
+    0x0800983e   0x0800983e   0x00000012   Code   RO         4097    i.usart_flag_clear  at32f415_usart.o
+    0x08009850   0x08009850   0x00000010   Code   RO         4098    i.usart_flag_get    at32f415_usart.o
+    0x08009860   0x08009860   0x0000006c   Code   RO         4100    i.usart_init        at32f415_usart.o
+    0x080098cc   0x080098cc   0x00000194   Code   RO          391    i.usart_int_configuration  ax_uart.o
+    0x08009a60   0x08009a60   0x00000036   Code   RO         4101    i.usart_interrupt_enable  at32f415_usart.o
+    0x08009a96   0x08009a96   0x0000000a   Code   RO         4107    i.usart_receiver_enable  at32f415_usart.o
+    0x08009aa0   0x08009aa0   0x0000000a   Code   RO         4114    i.usart_transmitter_enable  at32f415_usart.o
+    0x08009aaa   0x08009aaa   0x00000002   PAD
+    0x08009aac   0x08009aac   0x00000030   Code   RO          392    i.usb3_ctrl         ax_uart.o
+    0x08009adc   0x08009adc   0x00000020   Code   RO          393    i.usbhub_ctrl       ax_uart.o
+    0x08009afc   0x08009afc   0x00000028   Code   RO         4831    i.uxListRemove      list.o
+    0x08009b24   0x08009b24   0x0000001a   Code   RO         4832    i.vListInitialise   list.o
+    0x08009b3e   0x08009b3e   0x00000006   Code   RO         4833    i.vListInitialiseItem  list.o
+    0x08009b44   0x08009b44   0x00000034   Code   RO         4834    i.vListInsert       list.o
+    0x08009b78   0x08009b78   0x00000018   Code   RO         4835    i.vListInsertEnd    list.o
+    0x08009b90   0x08009b90   0x00000054   Code   RO         5518    i.vPortEnterCritical  port.o
+    0x08009be4   0x08009be4   0x0000003c   Code   RO         5519    i.vPortExitCritical  port.o
+    0x08009c20   0x08009c20   0x000000a4   Code   RO         5449    i.vPortFree         heap_4.o
+    0x08009cc4   0x08009cc4   0x00000028   Code   RO         5520    i.vPortSetupTimerInterrupt  port.o
+    0x08009cec   0x08009cec   0x0000005c   Code   RO         5162    i.vTaskDelay        tasks.o
+    0x08009d48   0x08009d48   0x00000090   Code   RO         5174    i.vTaskStartScheduler  tasks.o
+    0x08009dd8   0x08009dd8   0x00000010   Code   RO         5176    i.vTaskSuspendAll   tasks.o
+    0x08009de8   0x08009de8   0x0000008c   Code   RO         5177    i.vTaskSwitchContext  tasks.o
+    0x08009e74   0x08009e74   0x00000010   Code   RO         4556    i.wdt_counter_reload  at32f415_wdt.o
+    0x08009e84   0x08009e84   0x00000014   Code   RO         4557    i.wdt_divider_set   at32f415_wdt.o
+    0x08009e98   0x08009e98   0x00000010   Code   RO         4558    i.wdt_enable        at32f415_wdt.o
+    0x08009ea8   0x08009ea8   0x00000018   Code   RO         4560    i.wdt_register_write_enable  at32f415_wdt.o
+    0x08009ec0   0x08009ec0   0x0000000c   Code   RO         4561    i.wdt_reload_value_set  at32f415_wdt.o
+    0x08009ecc   0x08009ecc   0x0000007c   Code   RO         1281    i.write2flash       ax_flash.o
+    0x08009f48   0x08009f48   0x00000010   Code   RO         1095    i.ws2812Init        ax_ws2812.o
+    0x08009f58   0x08009f58   0x00000028   Code   RO         1096    i.ws2812_task_function  ax_ws2812.o
+    0x08009f80   0x08009f80   0x00000028   Code   RO          201    i.wtdg_task_function  main.o
+    0x08009fa8   0x08009fa8   0x000000f8   Code   RO         5522    i.xPortStartScheduler  port.o
+    0x0800a0a0   0x0800a0a0   0x00000060   Code   RO         5180    i.xTaskCreate       tasks.o
+    0x0800a100   0x0800a100   0x00000148   Code   RO         5189    i.xTaskIncrementTick  tasks.o
+    0x0800a248   0x0800a248   0x00000104   Code   RO         5191    i.xTaskResumeAll    tasks.o
+    0x0800a34c   0x0800a34c   0x000002b0   Code   RO         5611    x$fpl$ddiv          fz_ws.l(ddiv.o)
+    0x0800a5fc   0x0800a5fc   0x0000005a   Code   RO         5614    x$fpl$dfixu         fz_ws.l(dfixu.o)
+    0x0800a656   0x0800a656   0x0000002e   Code   RO         5619    x$fpl$dflt          fz_ws.l(dflt_clz.o)
+    0x0800a684   0x0800a684   0x00000026   Code   RO         5618    x$fpl$dfltu         fz_ws.l(dflt_clz.o)
+    0x0800a6aa   0x0800a6aa   0x00000002   PAD
+    0x0800a6ac   0x0800a6ac   0x00000154   Code   RO         5624    x$fpl$dmul          fz_ws.l(dmul.o)
+    0x0800a800   0x0800a800   0x0000009c   Code   RO         5647    x$fpl$dnaninf       fz_ws.l(dnaninf.o)
+    0x0800a89c   0x0800a89c   0x0000000c   Code   RO         5649    x$fpl$dretinf       fz_ws.l(dretinf.o)
+    0x0800a8a8   0x0800a8a8   0x0000003e   Code   RO         5626    x$fpl$ffixu         fz_ws.l(ffixu.o)
+    0x0800a8e6   0x0800a8e6   0x00000002   PAD
+    0x0800a8e8   0x0800a8e8   0x00000026   Code   RO         5630    x$fpl$ffltu         fz_ws.l(fflt_clz.o)
+    0x0800a90e   0x0800a90e   0x00000002   PAD
+    0x0800a910   0x0800a910   0x00000102   Code   RO         5636    x$fpl$fmul          fz_ws.l(fmul.o)
+    0x0800aa12   0x0800aa12   0x0000008c   Code   RO         5651    x$fpl$fnaninf       fz_ws.l(fnaninf.o)
+    0x0800aa9e   0x0800aa9e   0x0000000a   Code   RO         5653    x$fpl$fretinf       fz_ws.l(fretinf.o)
+    0x0800aaa8   0x0800aaa8   0x00000000   Code   RO         5655    x$fpl$usenofp       fz_ws.l(usenofp.o)
+    0x0800aaa8   0x0800aaa8   0x00000330   Data   RO         1098    .constdata          ax_ws2812.o
+    0x0800add8   0x0800add8   0x00000028   Data   RO         2005    .constdata          at32f415_crm.o
+    0x0800ae00   0x0800ae00   0x00000010   Data   RO         4678    .constdata          system_at32f415.o
+    0x0800ae10   0x0800ae10   0x00000025   Data   RO          395    .conststring        ax_uart.o
+    0x0800ae35   0x0800ae35   0x00000003   PAD
+    0x0800ae38   0x0800ae38   0x00000020   Data   RO         5808    Region$$Table       anon$$obj.o
 
 
-    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x0800ac10, Size: 0x00007a78, Max: 0x00008000, ABSOLUTE, COMPRESSED[0x0000005c])
+    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x0800ae58, Size: 0x00006778, Max: 0x00008000, ABSOLUTE, COMPRESSED[0x0000005c])
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
     0x20000000   COMPRESSED   0x00000028   Data   RW          202    .data               main.o
-    0x20000028   COMPRESSED   0x00000012   Data   RW          394    .data               ax_uart.o
+    0x20000028   COMPRESSED   0x00000012   Data   RW          396    .data               ax_uart.o
     0x2000003a   COMPRESSED   0x00000002   PAD
-    0x2000003c   COMPRESSED   0x0000000b   Data   RW          853    .data               ax_can.o
+    0x2000003c   COMPRESSED   0x0000000b   Data   RW          865    .data               ax_can.o
     0x20000047   COMPRESSED   0x00000001   PAD
-    0x20000048   COMPRESSED   0x00000054   Data   RW         1021    .data               ax_spi.o
-    0x2000009c   COMPRESSED   0x00000570   Data   RW         1087    .data               ax_ws2812.o
-    0x2000060c   COMPRESSED   0x0000000e   Data   RW         1229    .data               ax_common.o
-    0x2000061a   COMPRESSED   0x00000002   PAD
-    0x2000061c   COMPRESSED   0x00000004   Data   RW         4667    .data               system_at32f415.o
-    0x20000620   COMPRESSED   0x00000044   Data   RW         5182    .data               tasks.o
-    0x20000664   COMPRESSED   0x00000024   Data   RW         5443    .data               heap_4.o
-    0x20000688   COMPRESSED   0x00000010   Data   RW         5511    .data               port.o
-    0x20000698        -       0x00000c7c   Zero   RW          392    .bss                ax_uart.o
-    0x20001314        -       0x00000075   Zero   RW          852    .bss                ax_can.o
-    0x20001389        -       0x00000540   Zero   RW         1085    .bss                ax_ws2812.o
-    0x200018c9   COMPRESSED   0x00000003   PAD
-    0x200018cc        -       0x00000264   Zero   RW         1228    .bss                ax_common.o
-    0x20001b30        -       0x00000820   Zero   RW         1270    .bss                ax_flash.o
-    0x20002350        -       0x000000c8   Zero   RW         5181    .bss                tasks.o
-    0x20002418        -       0x00005000   Zero   RW         5442    .bss                heap_4.o
-    0x20007418        -       0x00000060   Zero   RW         5676    .bss                c_w.l(libspace.o)
-    0x20007478        -       0x00000200   Zero   RW         4699    HEAP                startup_at32f415.o
-    0x20007678        -       0x00000400   Zero   RW         4698    STACK               startup_at32f415.o
+    0x20000048   COMPRESSED   0x00000054   Data   RW         1033    .data               ax_spi.o
+    0x2000009c   COMPRESSED   0x000003f0   Data   RW         1099    .data               ax_ws2812.o
+    0x2000048c   COMPRESSED   0x0000000f   Data   RW         1241    .data               ax_common.o
+    0x2000049b   COMPRESSED   0x00000001   PAD
+    0x2000049c   COMPRESSED   0x00000004   Data   RW         4679    .data               system_at32f415.o
+    0x200004a0   COMPRESSED   0x00000044   Data   RW         5194    .data               tasks.o
+    0x200004e4   COMPRESSED   0x00000024   Data   RW         5455    .data               heap_4.o
+    0x20000508   COMPRESSED   0x00000010   Data   RW         5523    .data               port.o
+    0x20000518        -       0x00000c7c   Zero   RW          394    .bss                ax_uart.o
+    0x20001194        -       0x00000075   Zero   RW          864    .bss                ax_can.o
+    0x20001209        -       0x000003c0   Zero   RW         1097    .bss                ax_ws2812.o
+    0x200015c9   COMPRESSED   0x00000003   PAD
+    0x200015cc        -       0x00000264   Zero   RW         1240    .bss                ax_common.o
+    0x20001830        -       0x00000820   Zero   RW         1282    .bss                ax_flash.o
+    0x20002050        -       0x000000c8   Zero   RW         5193    .bss                tasks.o
+    0x20002118        -       0x00004000   Zero   RW         5454    .bss                heap_4.o
+    0x20006118        -       0x00000060   Zero   RW         5688    .bss                c_w.l(libspace.o)
+    0x20006178        -       0x00000200   Zero   RW         4711    HEAP                startup_at32f415.o
+    0x20006378        -       0x00000400   Zero   RW         4710    STACK               startup_at32f415.o
 
 
 ==============================================================================
@@ -3377,14 +3399,14 @@ Image component sizes
        344          0          0          0          0       3659   at32f415_spi.o
        242          6          0          0          0       6427   at32f415_usart.o
         88         28          0          0          0       2831   at32f415_wdt.o
-      3366        248          0         11        117      19293   ax_can.o
-        64          0          0         14        612       7225   ax_common.o
+      3366        248          0         11        117      19429   ax_can.o
+        64          0          0         15        612       7361   ax_common.o
        148          0          0          0       2080       3071   ax_flash.o
        194         26          0         84          0       3014   ax_spi.o
-      7702        624         37         18       3196      34658   ax_uart.o
-      2974        198        816       1392       1344      13709   ax_ws2812.o
+      8286        670         37         18       3196      36184   ax_uart.o
+      2974        198        816       1008        960      13709   ax_ws2812.o
          0          0          0          0          0       7852   event_groups.o
-       756         74          0         36      20480       7751   heap_4.o
+       756         74          0         36      16384       7751   heap_4.o
        148          0          0          0          0       3782   list.o
        624        212          0         40          0      17799   main.o
        734         64          0         16          0      11016   port.o
@@ -3393,9 +3415,9 @@ Image component sizes
       1864        270          0         68        200      22107   tasks.o
 
     ----------------------------------------------------------------------
-     23520       2114       1312       1688      29568     287197   Object Totals
+     24104       2160       1312       1304      25088     288995   Object Totals
          0          0         32          0          0          0   (incl. Generated)
-        24          0          3          5          3          0   (incl. Padding)
+        24          0          3          4          3          0   (incl. Padding)
 
     ----------------------------------------------------------------------
 
@@ -3459,15 +3481,15 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     26352       2298       1312       1688      29664     277985   Grand Totals
-     26352       2298       1312         92      29664     277985   ELF Image Totals (compressed)
-     26352       2298       1312         92          0          0   ROM Totals
+     26936       2344       1312       1304      25184     279679   Grand Totals
+     26936       2344       1312         92      25184     279679   ELF Image Totals (compressed)
+     26936       2344       1312         92          0          0   ROM Totals
 
 ==============================================================================
 
-    Total RO  Size (Code + RO Data)                27664 (  27.02kB)
-    Total RW  Size (RW Data + ZI Data)             31352 (  30.62kB)
-    Total ROM Size (Code + RO Data + RW Data)      27756 (  27.11kB)
+    Total RO  Size (Code + RO Data)                28248 (  27.59kB)
+    Total RW  Size (RW Data + ZI Data)             26488 (  25.87kB)
+    Total ROM Size (Code + RO Data + RW Data)      28340 (  27.68kB)
 
 ==============================================================================
 

@@ -28,6 +28,7 @@ void device_ctrl_pins_init(void)
 {
     gpio_init_type gpio_init_struct;
 
+    crm_periph_clock_enable(CRM_IOMUX_PERIPH_CLOCK, TRUE);
     crm_periph_clock_enable(RUN_LED_CLK, TRUE);
     crm_periph_clock_enable(USBHUB_RST_CLK, TRUE);
     crm_periph_clock_enable(SWITCH_PWR_CLK, TRUE);
@@ -36,6 +37,8 @@ void device_ctrl_pins_init(void)
 
     crm_periph_clock_enable(IHAWK_POWER_1_CLK, TRUE);
     crm_periph_clock_enable(IHAWK_POWER_2_CLK, TRUE);
+    crm_periph_clock_enable(USB3_POWER_CLK, TRUE);
+    gpio_pin_remap_config(SWJTAG_MUX_010, TRUE); // 只保留 SWD，释放 PB4
 
     /* set default parameter */
     gpio_default_para_init(&gpio_init_struct);
@@ -65,6 +68,13 @@ void device_ctrl_pins_init(void)
 
     gpio_init_struct.gpio_pins = IHAWK_POWER_2_PIN;
     gpio_init(IHAWK_POWER_2_PORT, &gpio_init_struct);
+
+    gpio_init_struct.gpio_pins = USB3_POWER_PIN;
+    gpio_init(USB3_POWER_PORT, &gpio_init_struct);
+
+    gpio_bits_reset(IHAWK_POWER_1_PORT, IHAWK_POWER_1_PIN);
+    gpio_bits_reset(IHAWK_POWER_2_PORT, IHAWK_POWER_2_PIN);
+    gpio_bits_reset(USB3_POWER_PORT, USB3_POWER_PIN);
 
     //    open_device_pwr();
 }
@@ -176,6 +186,20 @@ void ihawk_upper_ctrl(uint8_t sts)
     }
 }
 
+void usb3_ctrl(uint8_t sts)
+{
+    if (sts == TURN_OFF)
+    {
+        gpio_bits_reset(USB3_POWER_PORT, USB3_POWER_PIN);
+        ihawk_power_sts.usb3_sts = 0;
+    }
+    else
+    {
+        gpio_bits_set(USB3_POWER_PORT, USB3_POWER_PIN);
+        ihawk_power_sts.usb3_sts = 1;
+    }
+}
+
 void ihawk_ctrl(uint8_t index, uint8_t sts)
 {
     if (sts <= 2) // enum CTRL_ACTION Type
@@ -224,6 +248,40 @@ void ihawk_ctrl(uint8_t index, uint8_t sts)
             {
                 ihawk_lower_ctrl(sts);
                 ihawk_upper_ctrl(sts);
+            }
+            break;
+        }
+        case USB3_NEW:
+        {
+            if (sts == RESET_IHAWK)
+            {
+                usb3_ctrl(TURN_OFF);
+                vTaskDelay(200);
+                usb3_ctrl(TURN_ON);
+            }
+            else
+            {
+                usb3_ctrl(sts);
+            }
+            break;
+        }
+        case USB_ALL:
+        {
+            if (sts == RESET_IHAWK)
+            {
+                ihawk_lower_ctrl(TURN_OFF);
+                ihawk_upper_ctrl(TURN_OFF);
+                usb3_ctrl(TURN_OFF);
+                vTaskDelay(200);
+                ihawk_lower_ctrl(TURN_ON);
+                ihawk_upper_ctrl(TURN_ON);
+                usb3_ctrl(TURN_ON);
+            }
+            else
+            {
+                ihawk_lower_ctrl(sts);
+                ihawk_upper_ctrl(sts);
+                usb3_ctrl(sts);
             }
             break;
         }
@@ -284,6 +342,40 @@ void ihawk_ctrl_tm(uint8_t index, uint8_t sts, uint8_t delayTm)
             }
             break;
         }
+        case USB3_NEW:
+        {
+            if (sts == RESET_IHAWK)
+            {
+                usb3_ctrl(TURN_OFF);
+                vTaskDelay(delayTm * 100);
+                usb3_ctrl(TURN_ON);
+            }
+            else
+            {
+                usb3_ctrl(sts);
+            }
+            break;
+        }
+        case USB_ALL:
+        {
+            if (sts == RESET_IHAWK)
+            {
+                ihawk_lower_ctrl(TURN_OFF);
+                ihawk_upper_ctrl(TURN_OFF);
+                usb3_ctrl(TURN_OFF);
+                vTaskDelay(delayTm * 100);
+                ihawk_lower_ctrl(TURN_ON);
+                ihawk_upper_ctrl(TURN_ON);
+                usb3_ctrl(TURN_ON);
+            }
+            else
+            {
+                ihawk_lower_ctrl(sts);
+                ihawk_upper_ctrl(sts);
+                usb3_ctrl(sts);
+            }
+            break;
+        }
         default:
             break;
         }
@@ -303,6 +395,7 @@ void open_device_pwr(void)
     car_acc_ctrl(TURN_ON);
     ihawk_ctrl(LOWER_USB, TURN_ON);
     ihawk_ctrl(UPPER_USB, TURN_ON);
+    ihawk_ctrl(USB3_NEW, TURN_ON);
 }
 
 void toggle_led_stat(void)
@@ -582,6 +675,57 @@ void send_ihawk_sts_fb(uint8_t valid_sts)
     uart2_data.usart_tx_buffer[9] = (uint8_t)((getCrc >> 8) & 0xFF);
     uart2_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 0) & 0xFF);
     uart2_data.usart_tx_buffer_size = 11;
+
+    while (uart2_data.usart_tx_counter < uart2_data.usart_tx_buffer_size)
+    {
+        while (usart_flag_get(USART2, USART_TDBE_FLAG) == RESET)
+            ;
+
+        usart_data_transmit(USART2, uart2_data.usart_tx_buffer[uart2_data.usart_tx_counter++]);
+    }
+
+    uart2_data.usart_tx_counter = 0;
+    sendingUart2 = 0;
+    vTaskDelay(5);
+}
+
+void send_usb_sts_fb(uint8_t valid_sts)
+{
+    uint16_t getCrc;
+
+    while (sendingUart2 == 1)
+    {
+        vTaskDelay(2);
+    }
+    sendingUart2 = 1;
+
+    memset(uart2_data.usart_tx_buffer, 0, sizeof(uart2_data.usart_tx_buffer));
+
+    uart2_data.usart_tx_buffer[0] = UART_MSG_HEADER_1;
+    uart2_data.usart_tx_buffer[1] = UART_MSG_HEADER_2;
+    uart2_data.usart_tx_buffer[2] = 0x07;
+    uart2_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_USB_STS_ID >> 8) & 0xFF); // 0x02;
+    uart2_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_USB_STS_ID >> 0) & 0xFF); // 0x01;
+    uart2_data.usart_tx_buffer[5] = 0x00;
+    if (valid_sts == 1)
+    {
+        uart2_data.usart_tx_buffer[6] = ihawk_power_sts.ihawk_sts_1;
+        uart2_data.usart_tx_buffer[7] = ihawk_power_sts.ihawk_sts_2;
+        uart2_data.usart_tx_buffer[8] = ihawk_power_sts.usb3_sts;
+        uart2_data.usart_tx_buffer[9] = valid_sts;
+    }
+    else
+    {
+        uart2_data.usart_tx_buffer[6] = 0x00;
+        uart2_data.usart_tx_buffer[7] = 0x00;
+        uart2_data.usart_tx_buffer[8] = 0x00;
+        uart2_data.usart_tx_buffer[9] = 0x00;
+    }
+
+    getCrc = crc16_modbus(&uart2_data.usart_tx_buffer[3], uart2_data.usart_tx_buffer[2]);
+    uart2_data.usart_tx_buffer[10] = (uint8_t)((getCrc >> 8) & 0xFF);
+    uart2_data.usart_tx_buffer[11] = (uint8_t)((getCrc >> 0) & 0xFF);
+    uart2_data.usart_tx_buffer_size = 12;
 
     while (uart2_data.usart_tx_counter < uart2_data.usart_tx_buffer_size)
     {
@@ -2639,12 +2783,12 @@ void usart2_rx_task_function(void *pvParameters)
                     }
                     break;
                 }
-#ifdef IHAWK_CTRL // USB电源控制开关量
+#ifdef IHAWK_CTRL // Ӳ�������ݲ�֧��
                 case SET_IHAWK_CMD_ID:
                 {
                     if (ctrl_buff2[5] == TRAY_MASTER)
                     {
-                        if ((ctrl_buff2[6] > 0) && (ctrl_buff2[6] <= 3))
+                        if ((ctrl_buff2[6] > 0) && (ctrl_buff2[6] <= 5))
                         {
                             //   ihawk_ctrl(ctrl_buff2[6], ctrl_buff2[7]);
                             if (ctrl_buff2[7] < 2)
@@ -2682,6 +2826,18 @@ void usart2_rx_task_function(void *pvParameters)
                     else
                     {
                         send_ihawk_sts_fb(0);
+                    }
+                    break;
+                }
+                case GET_USB_STS_ID:
+                {
+                    if (ctrl_buff2[5] == TRAY_MASTER)
+                    {
+                        send_usb_sts_fb(1);
+                    }
+                    else
+                    {
+                        send_usb_sts_fb(0);
                     }
                     break;
                 }

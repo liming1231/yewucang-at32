@@ -41,6 +41,7 @@
 
 #define SET_IHAWK_CMD_ID (0x10B)
 #define GET_IHAWK_STS_ID (0x10C)
+#define GET_USB_STS_ID (0x10D)
 
 #define SYNC_SUB_FW_INFO_ID (0x10D)
 #define SUB_UPDATING_APP_ID (0x10F)
@@ -60,6 +61,7 @@
 
 #define FB_SET_IHAWK_CMD_ID (0x20B)
 #define FB_GET_IHAWK_STS_ID (0x20C)
+#define FB_GET_USB_STS_ID (0x20D)
 
 #define FB_SYNC_SUB_FW_INFO_ID (0x20D)
 #define FB_SUB_UPDATING_APP_ID (0x20F)
@@ -158,6 +160,8 @@ void ihawk_lower_ctrl(uint8_t sts);
  * @return      null
  */
 void ihawk_upper_ctrl(uint8_t sts);
+
+void usb3_ctrl(uint8_t sts);
 
 /**
  * @brief       ihawk电源控制接口

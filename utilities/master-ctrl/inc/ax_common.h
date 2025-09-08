@@ -13,9 +13,9 @@
 // #define DEBUG
 // #define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31323034)
+#define VERSION (0x32303031)
 #else
-#define VERSION (0x23060616)
+#define VERSION (0x25090411)
 #endif
 #define IHAWK_CTRL
 
@@ -34,6 +34,11 @@
 #define CAR_CMPUTER_ACC_CLK CRM_GPIOB_PERIPH_CLOCK
 #define CAR_CMPUTER_ACC_PORT GPIOB
 #define CAR_CMPUTER_ACC_PIN GPIO_PINS_7
+
+// new additions
+#define USB3_POWER_CLK CRM_GPIOB_PERIPH_CLOCK
+#define USB3_POWER_PORT GPIOB
+#define USB3_POWER_PIN GPIO_PINS_4
 
 #define IHAWK_POWER_1_CLK CRM_GPIOB_PERIPH_CLOCK
 #define IHAWK_POWER_1_PORT GPIOB
@@ -115,7 +120,9 @@ enum CTRL_USB_CS
 {
     LOWER_USB = 0x01,
     UPPER_USB = 0x02,
-    DUAL_USB = 0x03
+    DUAL_USB = 0x03,
+    USB3_NEW = 0x04,
+    USB_ALL = 0x05
 };
 
 typedef struct _can_fw_info
@@ -188,6 +195,7 @@ struct _ihawk_power_sts
 {
     uint8_t ihawk_sts_1;
     uint8_t ihawk_sts_2;
+    uint8_t usb3_sts;
 };
 
 #pragma pack(1)
