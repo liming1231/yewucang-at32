@@ -108,7 +108,7 @@ void can_configuration(void)
     can_base_init(CAN1, &can_base_struct);
 
     /* can baudrate, set baudrate = pclk/(baudrate_div *(1 + bts1_size + bts2_size)) */
-    can_baudrate_struct.baudrate_div = 18;
+    can_baudrate_struct.baudrate_div = 13;
     can_baudrate_struct.rsaw_size = CAN_RSAW_1TQ;
     can_baudrate_struct.bts1_size = CAN_BTS1_6TQ;
     can_baudrate_struct.bts2_size = CAN_BTS2_1TQ;

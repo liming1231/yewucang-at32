@@ -13,9 +13,9 @@
 // #define DEBUG
 #define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31323078)
+#define VERSION (0x31323036)
 #else
-#define VERSION (0x31323035)
+#define VERSION (0x31323037)
 #endif
 #define IHAWK_CTRL
 
