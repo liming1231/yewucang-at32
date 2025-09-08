@@ -113,7 +113,7 @@ void can_configuration(void)
     can_base_init(CAN1, &can_base_struct);
 
     /* can baudrate, set baudrate = pclk/(baudrate_div *(1 + bts1_size + bts2_size)) */
-    can_baudrate_struct.baudrate_div = 18;
+    can_baudrate_struct.baudrate_div = 13;
     can_baudrate_struct.rsaw_size = CAN_RSAW_1TQ;
     can_baudrate_struct.bts1_size = CAN_BTS1_6TQ;
     can_baudrate_struct.bts2_size = CAN_BTS2_1TQ;
@@ -737,7 +737,7 @@ void parse_gate_sts(uint8_t index)
         gateSts[1][1] = rx_gate_sts_struct[1].data[1];
         gateSts[1][2] = rx_gate_sts_struct[1].data[2];
         gateSts[1][3] = rx_gate_sts_struct[1].data[3];
-        canAliveCounter.canNowCounter[0] = rx_gate_sts_struct[1].data[6];
+        canAliveCounter.canNowCounter[1] = rx_gate_sts_struct[1].data[6];
         break;
     }
     default:

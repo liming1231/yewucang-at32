@@ -732,8 +732,8 @@ void send_status(void)
     uart1_data.usart_tx_buffer[3] = 0x10;
     uart1_data.usart_tx_buffer[4] = 0x00;
     uart1_data.usart_tx_buffer[5] = 0x00;
-    uart1_data.usart_tx_buffer[6] = 0x00;
-    uart1_data.usart_tx_buffer[7] = 0x00;
+    uart1_data.usart_tx_buffer[6] = canAliveCounter.onLine[0];
+    uart1_data.usart_tx_buffer[7] = canAliveCounter.onLine[1];
     uart1_data.usart_tx_buffer[8] = gateSts[0][0];
     uart1_data.usart_tx_buffer[9] = gateSts[0][1];
     uart1_data.usart_tx_buffer[10] = gateSts[0][2];
@@ -2494,12 +2494,12 @@ void parse_send_fw_info_msg(void)
 
             if ((updateFw.fileSize % 128) == 0)
             {
-                updateFw.fwMsgSumConform = (uint8_t)(updateFw.fileSize / 128);
+                updateFw.fwMsgSumConform = (uint16_t)(updateFw.fileSize / 128);
             }
 
             else
             {
-                updateFw.fwMsgSumConform = (uint8_t)(updateFw.fileSize / 128 + 1);
+                updateFw.fwMsgSumConform = (uint16_t)(updateFw.fileSize / 128 + 1);
             }
 
             if ((updateFw.fileSize > APP_FW_MAX_LEN) || (updateFw.fwMsgSum != updateFw.fwMsgSumConform))
