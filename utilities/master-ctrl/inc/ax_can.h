@@ -18,6 +18,10 @@
 
 #define GET_HEARDBEAT_ID (0x600)
 
+#define CAN_GATE_CTRL_ID (0x500)
+#define CAN_REBOOT_ID (0x501)
+#define CAN_GET_VER_ID (0x502)
+
 #define FB_F1_HEARDBEAT_ID (0x680)
 #define FB_F2_HEARDBEAT_ID (0x690)
 #define FB_F3_HEARDBEAT_ID (0x6A0)

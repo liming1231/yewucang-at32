@@ -18,10 +18,21 @@ can_tx_message_type canResetBoard[4] = {0};
 
 can_tx_message_type canSyncFw[4] = {0};
 
+can_tx_message_type canSetGate = {0};
+
 uint8_t updateFwData[16] = {0};
 volatile uint8_t msglen2 = 0;
 volatile uint8_t updateFWFlag = 0; // OTA状态标识
 volatile uint8_t xorData[2] = {0xFF, 0xFF};
+
+volatile uint8_t ctrlUsbhubBuf[4] = {0};
+volatile uint8_t ctrlLedBuf[10] = {0};
+volatile uint8_t ctrlRebootBuf[4] = {0};
+volatile uint8_t getVersionBuf[4] = {0};
+volatile uint8_t ctrlAccBuf[4] = {0};
+volatile uint8_t ctrlgateBuf23[4] = {0};
+volatile uint8_t ctrlgateBuf24[4] = {0};
+ctrl_cmd_flag ctrlCmdFlag = {0};
 
 uint16_t crc16_modbus(uint8_t *pszBuf, uint8_t unLength)
 {

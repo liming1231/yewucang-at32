@@ -21,6 +21,7 @@
 #define WTDG_STK_SIZE (128)
 #define WS2812B_STK_SIZE (512)
 #define UART2_RX_STK_SIZE (128)
+#define UART1_CMD_STK_SIZE (128)
 
 #define LED2_TASK_PRIO (2)
 #define UART1_RX_TASK_PRIO (2)
@@ -30,6 +31,7 @@
 #define WTDG_TASK_PRIO (6)
 #define WS2812B_TASK_PRIO (5)
 #define UART2_RX_TASK_PRIO (2)
+#define UART1_CMD_TASK_PRIO (3)
 
 /** @addtogroup FreeRTOS_demo
  * @{
@@ -43,7 +45,8 @@ TaskHandle_t can_rx_handler;
 TaskHandle_t ws2812_handler;
 TaskHandle_t wtdg_handler;
 TaskHandle_t usart2_rx_handler;
-// EventGroupHandle_t xCreatedEventGroup;//事件组句柄
+TaskHandle_t usart1_cmd_parse_handler;
+// EventGroupHandle_t xCreatedEventGroup;//�����¼���
 
 /* led2 task */
 void led2_task_function(void *pvParameters);
@@ -92,7 +95,7 @@ int main(void)
     init_uart_data();
     usart_int_configuration();
     /* init usart1 */
-    // uart_print_init( UART_BAUDRATE_115200 );
+    //    uart_print_init( UART_BAUDRATE_115200 );
 
     can_alive_struct_init();
     can_gpio_config();
@@ -114,12 +117,12 @@ int main(void)
                     (UBaseType_t)LED2_TASK_PRIO,
                     (TaskHandle_t *)&led2_handler) != pdPASS)
     {
-        // printf( "LED2 task could not be created as there was insufficient heap memory remaining.\r\n" );
+        //        printf( "LED2 task could not be created as there was insufficient heap memory remaining.\r\n" );
     }
 
     else
     {
-        // printf( "LED2 task was created successfully.\r\n" );
+        //        printf( "LED2 task was created successfully.\r\n" );
     }
 
     /* create uart1 rx task */
@@ -130,12 +133,12 @@ int main(void)
                     (UBaseType_t)UART1_RX_TASK_PRIO,
                     (TaskHandle_t *)&usart1_rx_handler) != pdPASS)
     {
-        // printf( "uart1 rx task could not be created as there was insufficient heap memory remaining.\r\n" );
+        //        printf( "uart1 rx task could not be created as there was insufficient heap memory remaining.\r\n" );
     }
 
     else
     {
-        // printf( "uart1 rx was created successfully.\r\n" );
+        //        printf( "uart1 rx was created successfully.\r\n" );
     }
 
     if (xTaskCreate((TaskFunction_t)usart1_tx_task_function,
@@ -145,12 +148,12 @@ int main(void)
                     (UBaseType_t)UART1_TX_TASK_PRIO,
                     (TaskHandle_t *)&usart1_tx_handler) != pdPASS)
     {
-        // printf( "usart2_function task could not be created as there was insufficient heap memory remaining.\r\n" );
+        //        printf( "usart2_function task could not be created as there was insufficient heap memory remaining.\r\n" );
     }
 
     else
     {
-        // printf( "usart2_function task was created successfully.\r\n" );
+        //        printf( "usart2_function task was created successfully.\r\n" );
     }
 
     if (xTaskCreate((TaskFunction_t)can_tx_task_function,
@@ -160,12 +163,12 @@ int main(void)
                     (UBaseType_t)CAN_TX_TASK_PRIO,
                     (TaskHandle_t *)&can_tx_handler) != pdPASS)
     {
-        // printf( "can tx task could not be created as there was insufficient heap memory remaining.\r\n" );
+        //        printf( "can tx task could not be created as there was insufficient heap memory remaining.\r\n" );
     }
 
     else
     {
-        // printf( "can tx task was created successfully.\r\n" );
+        //        printf( "can tx task was created successfully.\r\n" );
     }
 
     if (xTaskCreate((TaskFunction_t)can_rx_task_function,
@@ -175,12 +178,12 @@ int main(void)
                     (UBaseType_t)CAN_RX_TASK_PRIO,
                     (TaskHandle_t *)&can_rx_handler) != pdPASS)
     {
-        // printf( "can rx task could not be created as there was insufficient heap memory remaining.\r\n" );
+        //       printf( "can rx task could not be created as there was insufficient heap memory remaining.\r\n" );
     }
 
     else
     {
-        // printf( "can rx task was created successfully.\r\n" );
+        //        printf( "can rx task was created successfully.\r\n" );
     }
 
     if (xTaskCreate((TaskFunction_t)ws2812_task_function,
@@ -190,12 +193,12 @@ int main(void)
                     (UBaseType_t)WS2812B_TASK_PRIO,
                     (TaskHandle_t *)&ws2812_handler) != pdPASS)
     {
-        // printf( "ws2812 task could not be created as there was insufficient heap memory remaining.\r\n" );
+        //        printf( "ws2812 task could not be created as there was insufficient heap memory remaining.\r\n" );
     }
 
     else
     {
-        // printf( "ws2812 task was created successfully.\r\n" );
+        //        printf( "ws2812 task was created successfully.\r\n" );
     }
 
     if (xTaskCreate((TaskFunction_t)wtdg_task_function,
@@ -205,12 +208,12 @@ int main(void)
                     (UBaseType_t)WTDG_TASK_PRIO,
                     (TaskHandle_t *)&wtdg_handler) != pdPASS)
     {
-        // printf( "watchdog task could not be created as there was insufficient heap memory remaining.\r\n" );
+        //        printf( "watchdog task could not be created as there was insufficient heap memory remaining.\r\n" );
     }
 
     else
     {
-        // printf( "watchdog task was created successfully.\r\n" );
+        //        printf( "watchdog task was created successfully.\r\n" );
     }
 
     /* create uart2 rx task */
@@ -221,12 +224,27 @@ int main(void)
                     (UBaseType_t)UART2_RX_TASK_PRIO,
                     (TaskHandle_t *)&usart2_rx_handler) != pdPASS)
     {
-        // printf( "uart2 rx task could not be created as there was insufficient heap memory remaining.\r\n" );
+        //        printf( "uart2 rx task could not be created as there was insufficient heap memory remaining.\r\n" );
     }
 
     else
     {
-        // printf( "uart2 rx was created successfully.\r\n" );
+        //        printf( "uart2 rx was created successfully.\r\n" );
+    }
+
+    if (xTaskCreate((TaskFunction_t)usart1_cmd_parse_task_function,
+                    (const char *)"usart1 cmd parse task",
+                    (uint16_t)UART2_RX_STK_SIZE,
+                    (void *)NULL,
+                    (UBaseType_t)UART2_RX_TASK_PRIO,
+                    (TaskHandle_t *)&usart1_cmd_parse_handler) != pdPASS)
+    {
+        //        printf( "uart1 cmd parse task could not be created as there was insufficient heap memory remaining.\r\n" );
+    }
+
+    else
+    {
+        //        printf( "uart1 cmd parse was created successfully.\r\n" );
     }
 
     /* exit critical */
@@ -260,15 +278,15 @@ void wtdg_task_function(void *pvParameters)
     while (1)
     {
         //        wdt_counter_reload();
-        /* 等待任务的事件组信号量 */
-        //		taskAliveBits = xEventGroupWaitBits(xCreatedEventGroup, /* 事件组信号量 */
-        //									 TASK_BIT_ALL,       /* 等待TASK_BIT_ALL信号量 */
-        //									 pdTRUE,             /* 退出前TASK_BIT_ALL信号量必须被清除 */
-        //									 pdTRUE,             /* 等待为pdTRUE则表示等待TASK_BIT_ALL信号量 */
-        //									 xTicksToWait);      /* 等待时间 */
-        if ((taskAliveBits & TASK_BIT_ALL) == TASK_BIT_ALL) // 判断任务是否执行
+        /* �ȴ������������¼���־ */
+        //		taskAliveBits = xEventGroupWaitBits(xCreatedEventGroup, /* �¼���־���� */
+        //									 TASK_BIT_ALL,       /* �ȴ�TASK_BIT_ALL������ */
+        //									 pdTRUE,             /* �˳�ǰTASK_BIT_ALL�������������TASK_BIT_ALL�������òű�ʾ���˳���*/
+        //									 pdTRUE,             /* ����ΪpdTRUE��ʾ�ȴ�TASK_BIT_ALL��������*/
+        //									 xTicksToWait);      /* �ȴ��ӳ�ʱ�� */
+        if ((taskAliveBits & TASK_BIT_ALL) == TASK_BIT_ALL) // �жϸ��������Ƿ�ִ��
         {
-            // xEventGroupClearBits(xCreatedEventGroup, taskAliveBits);
+            //            xEventGroupClearBits(xCreatedEventGroup, taskAliveBits);
             taskAliveBits = 0;
             wdt_counter_reload();
         }

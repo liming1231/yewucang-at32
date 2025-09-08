@@ -183,6 +183,8 @@ void toggle_led_stat(void);
  */
 void usart1_tx_task_function(void *pvParameters);
 
+void usart1_cmd_parse_task_function(void *pvParameters);
+
 /**
  * @brief       uart接收任务
  * @param[null]
