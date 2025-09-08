@@ -2290,7 +2290,7 @@ void usart2_rx_task_function(void *pvParameters)
                 }
                 case GET_VERSION_CMD_ID:
                 {
-                    if (ctrl_buff[5] == TRAY_MASTER)
+                    if (ctrl_buff2[5] == TRAY_MASTER)
                     {
                         send_own2_version(true);
                     }
