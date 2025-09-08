@@ -11,11 +11,11 @@
 // #define VERSION (0x313136)
 
 // #define DEBUG
-// #define CAN_DAUL
+#define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31323131)
+#define VERSION (0x31323231)
 #else
-#define VERSION (0x31323130)
+#define VERSION (0x31323230)
 #endif
 #define IHAWK_CTRL
 
@@ -188,17 +188,26 @@ struct uart_send_flag
     uint8_t version_f2;
     uint8_t version_f3;
     uint8_t version_f4;
-    uint8_t ctrl_diy_leds;
+    uint8_t ctrl_diy_leds_fb;
+    uint8_t ctrl_diy_leds_index;
     uint8_t ctrl_diy_leds_valid;
-    uint8_t ctrl_diy2_leds;
+
+    uint8_t ctrl_diy2_leds_fb;
+    uint8_t ctrl_diy2_leds_index;
     uint8_t ctrl_diy2_leds_valid;
-    uint8_t ctrl_leds;
+
+    uint8_t ctrl_leds_fb;
+    uint8_t ctrl_leds_index;
     uint8_t ctrl_leds_valid;
-    uint8_t ctrl_tray_leds;
+
+    uint8_t ctrl_tray_leds_fb;
+    uint8_t ctrl_tray_leds_index;
     uint8_t ctrl_tray_leds_valid;
+
     uint8_t reset_sensor;
     uint8_t reset_sensor_valid;
-    uint8_t need_reboot;
+    uint8_t need_reboot_fb;
+    uint8_t need_reboot_index;
     uint8_t need_reboot_valid;
     uint8_t reset_usbhub;
     uint8_t reset_usbhub_valid;

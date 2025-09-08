@@ -1179,7 +1179,7 @@ void send_ctrl_tray_leds_fb(uint8_t index)
     uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_SET_TRAY_LEDS_CMD_ID >> 8) & 0xFF); // 0x02;
     uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_SET_TRAY_LEDS_CMD_ID >> 0) & 0xFF); // 0x03;
     uart1_data.usart_tx_buffer[5] = (index == CTRL_OWNER_FLAG) ? 0x00 : index;
-    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_tray_leds;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.ctrl_tray_leds_index;
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
     uart1_data.usart_tx_buffer[7] = (uint8_t)((getCrc >> 8) & 0xFF);
     uart1_data.usart_tx_buffer[8] = (uint8_t)((getCrc >> 0) & 0xFF);
@@ -1478,34 +1478,34 @@ void usart1_tx_task_function(void *pvParameters)
             send_distance();
         }
 
-        if (uart1SendTypeFlag.need_reboot != 0)
+        if (uart1SendTypeFlag.need_reboot_fb != 0)
         {
-            send_reboot_fb(uart1SendTypeFlag.need_reboot);
-            uart1SendTypeFlag.need_reboot = 0;
+            send_reboot_fb(uart1SendTypeFlag.need_reboot_index);
+            uart1SendTypeFlag.need_reboot_fb = 0;
         }
 
-        if (uart1SendTypeFlag.ctrl_diy_leds != 0x00)
+        if (uart1SendTypeFlag.ctrl_diy_leds_fb != 0x00)
         {
-            send_ctrl_diy_leds_fb(uart1SendTypeFlag.ctrl_diy_leds);
-            uart1SendTypeFlag.ctrl_diy_leds = 0;
+            send_ctrl_diy_leds_fb(uart1SendTypeFlag.ctrl_diy_leds_index);
+            uart1SendTypeFlag.ctrl_diy_leds_fb = 0;
         }
 
-        if (uart1SendTypeFlag.ctrl_diy2_leds != 0x00)
+        if (uart1SendTypeFlag.ctrl_diy2_leds_fb != 0x00)
         {
-            send_ctrl_diy2_leds_fb(uart1SendTypeFlag.ctrl_diy2_leds);
-            uart1SendTypeFlag.ctrl_diy2_leds = 0;
+            send_ctrl_diy2_leds_fb(uart1SendTypeFlag.ctrl_diy2_leds_index);
+            uart1SendTypeFlag.ctrl_diy2_leds_fb = 0;
         }
 
-        if (uart1SendTypeFlag.ctrl_leds != 0)
+        if (uart1SendTypeFlag.ctrl_leds_fb != 0)
         {
-            send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_leds);
-            uart1SendTypeFlag.ctrl_leds = 0;
+            send_ctrl_leds_fb(uart1SendTypeFlag.ctrl_leds_index);
+            uart1SendTypeFlag.ctrl_leds_fb = 0;
         }
 
-        if (uart1SendTypeFlag.ctrl_tray_leds != 0)
+        if (uart1SendTypeFlag.ctrl_tray_leds_fb != 0)
         {
-            send_ctrl_tray_leds_fb(uart1SendTypeFlag.ctrl_tray_leds);
-            uart1SendTypeFlag.ctrl_tray_leds = 0;
+            send_ctrl_tray_leds_fb(uart1SendTypeFlag.ctrl_tray_leds_index);
+            uart1SendTypeFlag.ctrl_tray_leds_fb = 0;
         }
 
         if (uart1SendTypeFlag.reset_sensor != 0)
@@ -1648,12 +1648,14 @@ void parse_reboot_cmd(uint8_t index)
     if (index > TRAY_SUM)
     {
         uart1SendTypeFlag.need_reboot_valid = 0;
-        uart1SendTypeFlag.need_reboot = index == 0x00 ? CTRL_OWNER_FLAG : index;
+        uart1SendTypeFlag.need_reboot_index = index;
+        uart1SendTypeFlag.need_reboot_fb = 1;
     }
     else if (index == TRAY_MASTER)
     {
         uart1SendTypeFlag.need_reboot_valid = 1;
-        uart1SendTypeFlag.need_reboot = CTRL_OWNER_FLAG;
+        uart1SendTypeFlag.need_reboot_index = 0x00;
+        uart1SendTypeFlag.need_reboot_fb = 1;
     }
 
     else if (index == TRAY_F1)
@@ -1730,7 +1732,8 @@ void parse_diy_led_cmd(void)
     {
         diyShowDataSts = 0;
         uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_diy_leds_index = 0x00;
+        uart1SendTypeFlag.ctrl_diy_leds_fb = 0x01; // ctrl_buff[5];
     }
     else
     {
@@ -1738,13 +1741,15 @@ void parse_diy_led_cmd(void)
         {
             diyShowDataSts = 0;
             uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
-            uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
+            uart1SendTypeFlag.ctrl_diy_leds_index = 0x00;
+            uart1SendTypeFlag.ctrl_diy_leds_fb = 0x01; // ctrl_buff[5];
         }
         else
         {
             diyShowDataSts = 1;
             uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
-            uart1SendTypeFlag.ctrl_diy_leds = 0x0f;
+            uart1SendTypeFlag.ctrl_diy_leds_index = 0x00;
+            uart1SendTypeFlag.ctrl_diy_leds_fb = 0x01;
         }
         if (diyShowDataSts == 1)
         {
@@ -1767,8 +1772,9 @@ void parse_diy2_led_cmd(void)
     if (ctrl_buff[2] != 0x0C)
     {
         diyShowDataSts = 0;
-        uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_diy2_leds_valid = 0;
+        uart1SendTypeFlag.ctrl_diy2_leds_index = 0x00;
+        uart1SendTypeFlag.ctrl_diy2_leds_fb = 0x01; // ctrl_buff[5];
     }
     else
     {
@@ -1776,13 +1782,15 @@ void parse_diy2_led_cmd(void)
         {
             diyShowDataSts = 0;
             uart1SendTypeFlag.ctrl_diy2_leds_valid = 0;
-            uart1SendTypeFlag.ctrl_diy2_leds = 0x0f; // ctrl_buff[5];
+            uart1SendTypeFlag.ctrl_diy2_leds_index = 0x00;
+            uart1SendTypeFlag.ctrl_diy2_leds_fb = 0x01; // ctrl_buff[5];
         }
         else
         {
             diyShowDataSts = 1;
             uart1SendTypeFlag.ctrl_diy2_leds_valid = 1;
-            uart1SendTypeFlag.ctrl_diy2_leds = 0x0f;
+            uart1SendTypeFlag.ctrl_diy2_leds_index = 0x00;
+            uart1SendTypeFlag.ctrl_diy2_leds_fb = 0x01;
         }
         if (diyShowDataSts == 1)
         {
@@ -1805,12 +1813,14 @@ void parse_ctrl_leds_cmd(void)
     if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > MAX_BRIGHTNESS) || (ctrl_buff[8] > MAX_BRIGHTNESS) || (ctrl_buff[9] > MAX_BRIGHTNESS))
     {
         uart1SendTypeFlag.ctrl_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_leds = ctrl_buff[5] == 0x00 ? 0x0f : ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_leds_index = ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_leds_fb = 0x01;
     }
     else if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] > 0x64))
     {
         uart1SendTypeFlag.ctrl_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_leds = ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_leds_index = ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_leds_fb = 0x01;
     }
     else if (ctrl_buff[5] == TRAY_MASTER)
     {
@@ -1827,7 +1837,8 @@ void parse_ctrl_leds_cmd(void)
         ledMode = ctrl_buff[6];
 
         uart1SendTypeFlag.ctrl_leds_valid = 1;
-        uart1SendTypeFlag.ctrl_leds = 0x0f;
+        uart1SendTypeFlag.ctrl_leds_index = ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_leds_fb = 0x01;
     }
 
     else if (ctrl_buff[5] == TRAY_F1)
@@ -1864,18 +1875,21 @@ void parse_ctrl_tray_leds_cmd(void)
     if ((ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > MAX_BRIGHTNESS) || (ctrl_buff[8] > MAX_BRIGHTNESS) || (ctrl_buff[9] > MAX_BRIGHTNESS))
     {
         uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5] == 0x00 ? 0x0f : ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_tray_leds_index = ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_tray_leds_fb = 0x01;
     }
     else if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] > 0x64))
     {
         uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_tray_leds_index = ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_tray_leds_fb = 0x01;
     }
 
     else if (ctrl_buff[5] == TRAY_MASTER)
     {
         uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
-        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_tray_leds_index = ctrl_buff[5];
+        uart1SendTypeFlag.ctrl_tray_leds_fb = 0x01;
     }
     else
     {

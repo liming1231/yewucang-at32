@@ -199,7 +199,8 @@ void parse_reboot_fb_msg()
         {
             uart1SendTypeFlag.need_reboot_valid = 0;
         }
-        uart1SendTypeFlag.need_reboot = 1;
+        uart1SendTypeFlag.need_reboot_index = 1;
+        uart1SendTypeFlag.need_reboot_fb = 1;
         break;
     }
     case FB_F2_SET_REBOOT_ID:
@@ -212,7 +213,8 @@ void parse_reboot_fb_msg()
         {
             uart1SendTypeFlag.need_reboot_valid = 0;
         }
-        uart1SendTypeFlag.need_reboot = 2;
+        uart1SendTypeFlag.need_reboot_index = 2;
+        uart1SendTypeFlag.need_reboot_fb = 1;
         break;
     }
     case FB_F3_SET_REBOOT_ID:
@@ -225,7 +227,8 @@ void parse_reboot_fb_msg()
         {
             uart1SendTypeFlag.need_reboot_valid = 0;
         }
-        uart1SendTypeFlag.need_reboot = 3;
+        uart1SendTypeFlag.need_reboot_index = 3;
+        uart1SendTypeFlag.need_reboot_fb = 1;
         break;
     }
     case FB_F4_SET_REBOOT_ID:
@@ -238,7 +241,8 @@ void parse_reboot_fb_msg()
         {
             uart1SendTypeFlag.need_reboot_valid = 0;
         }
-        uart1SendTypeFlag.need_reboot = 4;
+        uart1SendTypeFlag.need_reboot_index = 4;
+        uart1SendTypeFlag.need_reboot_fb = 1;
         break;
     }
 
@@ -441,28 +445,32 @@ void parse_set_ws2812_fb_msg()
     case FB_SET_F1_WS2812B_ID:
     {
         uart1SendTypeFlag.ctrl_leds_valid = rx_message_struct_g.data[6];
-        uart1SendTypeFlag.ctrl_leds = 1;
+        uart1SendTypeFlag.ctrl_leds_index = 1;
+        uart1SendTypeFlag.ctrl_leds_fb = 1;
         break;
     }
 
     case FB_SET_F2_WS2812B_ID:
     {
         uart1SendTypeFlag.ctrl_leds_valid = rx_message_struct_g.data[6];
-        uart1SendTypeFlag.ctrl_leds = 2;
+        uart1SendTypeFlag.ctrl_leds_index = 2;
+        uart1SendTypeFlag.ctrl_leds_fb = 1;
         break;
     }
 
     case FB_SET_F3_WS2812B_ID:
     {
         uart1SendTypeFlag.ctrl_leds_valid = rx_message_struct_g.data[6];
-        uart1SendTypeFlag.ctrl_leds = 3;
+        uart1SendTypeFlag.ctrl_leds_index = 3;
+        uart1SendTypeFlag.ctrl_leds_fb = 1;
         break;
     }
 
     case FB_SET_F4_WS2812B_ID:
     {
         uart1SendTypeFlag.ctrl_leds_valid = rx_message_struct_g.data[6];
-        uart1SendTypeFlag.ctrl_leds = 4;
+        uart1SendTypeFlag.ctrl_leds_index = 4;
+        uart1SendTypeFlag.ctrl_leds_fb = 1;
         break;
     }
 
@@ -517,7 +525,8 @@ void parse_set_tray_ws2812_fb_msg(void)
         {
             uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
         }
-        uart1SendTypeFlag.ctrl_tray_leds = fb_tray_ws2812b_sts;
+        uart1SendTypeFlag.ctrl_tray_leds_index = fb_tray_ws2812b_sts;
+        uart1SendTypeFlag.ctrl_tray_leds_fb = 0x01;
         fb_tray_ws2812b_sts = 0;
         tray_ws2812b_cmd_valid = 0;
     }
