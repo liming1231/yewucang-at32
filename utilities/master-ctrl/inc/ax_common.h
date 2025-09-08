@@ -13,7 +13,7 @@
 // #define DEBUG
 #define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31323034)
+#define VERSION (0x31323078)
 #else
 #define VERSION (0x31323035)
 #endif
