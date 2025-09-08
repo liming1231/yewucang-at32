@@ -11,11 +11,11 @@
 // #define VERSION (0x313136)
 
 // #define DEBUG
-// #define CAN_DAUL
+#define CAN_DAUL
 #ifdef CAN_DAUL
-#define VERSION (0x31313630)
+#define VERSION (0x31313632)
 #else
-#define VERSION (0x31313631)
+#define VERSION (0x31313633)
 #endif
 #define IHAWK_CTRL
 
@@ -132,6 +132,7 @@ typedef struct _can_fw_info
 struct uart_send_flag
 {
     uint8_t version_own;
+    uint8_t version_own_valid;
     uint8_t version_f1;
     uint8_t version_f2;
     uint8_t version_f3;
@@ -158,6 +159,7 @@ struct uart_send_flag
     uint8_t reset_acc_valid;
     can_fw_info fw_info;
     uint8_t uid_own;
+    uint8_t uid_own_valid;
     uint8_t uid_f1;
     uint8_t uid_f2;
     uint8_t uid_f3;

@@ -687,7 +687,7 @@ void send_own_version()
     uart1_data.usart_tx_buffer[3] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 8) & 0xFF); // 0x02;
     uart1_data.usart_tx_buffer[4] = (uint8_t)((FB_GET_VERSION_CMD_ID >> 0) & 0xFF); // 0x02;
     uart1_data.usart_tx_buffer[5] = 0x00;
-    uart2_data.usart_tx_buffer[6] = VALID;
+    uart1_data.usart_tx_buffer[6] = uart1SendTypeFlag.version_own_valid;
     uart1_data.usart_tx_buffer[7] = (uint8_t)((VERSION >> 24) & 0xFF);
     uart1_data.usart_tx_buffer[8] = 0x2E;
     uart1_data.usart_tx_buffer[9] = (uint8_t)((VERSION >> 16) & 0xFF);
@@ -1046,7 +1046,7 @@ void send_uid(uint8_t index)
     uart1_data.usart_tx_buffer[15] = uidBuf[index][2];
     uart1_data.usart_tx_buffer[16] = uidBuf[index][1];
     uart1_data.usart_tx_buffer[17] = uidBuf[index][0];
-    uart1_data.usart_tx_buffer[18] = VALID;
+    uart1_data.usart_tx_buffer[18] = uart1SendTypeFlag.uid_own_valid;
     getCrc = crc16_modbus(&uart1_data.usart_tx_buffer[3], uart1_data.usart_tx_buffer[2]);
     uart1_data.usart_tx_buffer[19] = (uint8_t)((getCrc >> 8) & 0xFF);
     uart1_data.usart_tx_buffer[20] = (uint8_t)((getCrc >> 0) & 0xFF);
@@ -1313,6 +1313,451 @@ void target_sync_fw_can_data(uint8_t index, uint8_t data1, uint8_t data2, uint8_
     canSyncFw[index].data[7] = data8;
 }
 
+void target_ver_uid_can_data(void)
+{
+    ctrlData2Can.data[0] = 0x01;
+    ctrlData2Can.data[1] = 0x00;
+    ctrlData2Can.data[2] = 0x00;
+    ctrlData2Can.data[3] = 0x00;
+    ctrlData2Can.data[4] = 0x00;
+    ctrlData2Can.data[5] = 0x00;
+    ctrlData2Can.data[6] = 0x00;
+}
+
+void parse_reboot_cmd(uint8_t index)
+{
+    if (index > TRAY_SUM)
+    {
+        uart1SendTypeFlag.need_reboot_valid = 0;
+        uart1SendTypeFlag.need_reboot = index == 0x00 ? CTRL_OWNER_FLAG : index;
+    }
+    else if (index == TRAY_MASTER)
+    {
+        uart1SendTypeFlag.need_reboot_valid = 1;
+        uart1SendTypeFlag.need_reboot = CTRL_OWNER_FLAG;
+    }
+
+    else if (index == TRAY_F1)
+    {
+        canResetBoard[0].standard_id = SET_F1_REBOOT_ID;
+        target_reset_can_data(0);
+        sendCanStr.resetBoard[0] = 1;
+    }
+
+    else if (index == TRAY_F2)
+    {
+        canResetBoard[1].standard_id = SET_F2_REBOOT_ID;
+        target_reset_can_data(1);
+        sendCanStr.resetBoard[1] = 1;
+    }
+
+    else if (index == TRAY_F3)
+    {
+        canResetBoard[2].standard_id = SET_F3_REBOOT_ID;
+        target_reset_can_data(2);
+        sendCanStr.resetBoard[2] = 1;
+    }
+    else if (index == TRAY_F4)
+    {
+        canResetBoard[3].standard_id = SET_F4_REBOOT_ID;
+        target_reset_can_data(3);
+        sendCanStr.resetBoard[3] = 1;
+    }
+}
+
+void parse_get_ver_cmd(uint8_t index)
+{
+    if (index > TRAY_SUM)
+    {
+        // ����Ӧ��
+        uart1SendTypeFlag.version_own_valid = 0;
+        uart1SendTypeFlag.version_own = 1;
+    }
+
+    else if (index == TRAY_MASTER)
+    {
+        uart1SendTypeFlag.version_own_valid = 1;
+        uart1SendTypeFlag.version_own = 1;
+    }
+    else
+    {
+        if (index == TRAY_F1)
+        {
+            ctrlData2Can.standard_id = GET_F1_VERSION_ID;
+        }
+
+        else if (index == TRAY_F2)
+        {
+            ctrlData2Can.standard_id = GET_F2_VERSION_ID;
+        }
+
+        else if (index == TRAY_F3)
+        {
+            ctrlData2Can.standard_id = GET_F3_VERSION_ID;
+        }
+        else if (index == TRAY_F4)
+        {
+            ctrlData2Can.standard_id = GET_F4_VERSION_ID;
+        }
+
+        target_ver_uid_can_data();
+        can_transmit_ctrl_data(&ctrlData2Can);
+    }
+}
+
+void parse_diy_led_cmd(void)
+{
+    if (ctrl_buff[2] != 0x0C)
+    {
+        diyShowDataSts = 0;
+        uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
+        uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
+    }
+    else
+    {
+        if ((ctrl_buff[5] != 0x00) || (ctrl_buff[14] > LED_COLOR_TYPE_MAX))
+        {
+            diyShowDataSts = 0;
+            uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
+            uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
+        }
+        else
+        {
+            diyShowDataSts = 1;
+            uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
+            uart1SendTypeFlag.ctrl_diy_leds = 0x0f;
+        }
+        if (diyShowDataSts == 1)
+        {
+            diyArr[0][0] = ctrl_buff[6];
+            diyArr[0][1] = ctrl_buff[7];
+            diyArr[1][0] = ctrl_buff[8];
+            diyArr[1][1] = ctrl_buff[9];
+            diyArr[2][0] = ctrl_buff[10];
+            diyArr[2][1] = ctrl_buff[11];
+            diyArr[3][0] = ctrl_buff[12];
+            diyArr[3][1] = ctrl_buff[13];
+            diyColor = ctrl_buff[14];
+            ledMode = DIY_SHOW;
+        }
+    }
+}
+
+void parse_diy2_led_cmd(void)
+{
+    if (ctrl_buff[2] != 0x0C)
+    {
+        diyShowDataSts = 0;
+        uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
+        uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
+    }
+    else
+    {
+        if ((ctrl_buff[5] != 0x00) || (ctrl_buff[14] > LED_COLOR_TYPE_MAX))
+        {
+            diyShowDataSts = 0;
+            uart1SendTypeFlag.ctrl_diy2_leds_valid = 0;
+            uart1SendTypeFlag.ctrl_diy2_leds = 0x0f; // ctrl_buff[5];
+        }
+        else
+        {
+            diyShowDataSts = 1;
+            uart1SendTypeFlag.ctrl_diy2_leds_valid = 1;
+            uart1SendTypeFlag.ctrl_diy2_leds = 0x0f;
+        }
+        if (diyShowDataSts == 1)
+        {
+            diyArr[0][0] = ctrl_buff[6];
+            diyArr[0][1] = ctrl_buff[7];
+            diyArr[1][0] = ctrl_buff[8];
+            diyArr[1][1] = ctrl_buff[9];
+            diyArr[2][0] = ctrl_buff[10];
+            diyArr[2][1] = ctrl_buff[11];
+            diyArr[3][0] = ctrl_buff[12];
+            diyArr[3][1] = ctrl_buff[13];
+            diyColor = ctrl_buff[14];
+            ledMode = DIY2_SHOW;
+        }
+    }
+}
+
+void parse_ctrl_leds_cmd(void)
+{
+    if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > MAX_BRIGHTNESS) || (ctrl_buff[8] > MAX_BRIGHTNESS) || (ctrl_buff[9] > MAX_BRIGHTNESS))
+    {
+        uart1SendTypeFlag.ctrl_leds_valid = 0;
+        uart1SendTypeFlag.ctrl_leds = ctrl_buff[5] == 0x00 ? 0x0f : ctrl_buff[5];
+    }
+    else if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] > 0x64))
+    {
+        uart1SendTypeFlag.ctrl_leds_valid = 0;
+        uart1SendTypeFlag.ctrl_leds = ctrl_buff[5];
+    }
+    else if (ctrl_buff[5] == TRAY_MASTER)
+    {
+        if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] <= 0x64))
+        {
+            rainbow_percent = ctrl_buff[7];
+        }
+        else
+        {
+            color_grb.r = ctrl_buff[7];
+            color_grb.g = ctrl_buff[8];
+            color_grb.b = ctrl_buff[9];
+        }
+        ledMode = ctrl_buff[6];
+
+        uart1SendTypeFlag.ctrl_leds_valid = 1;
+        uart1SendTypeFlag.ctrl_leds = 0x0f;
+    }
+
+    else if (ctrl_buff[5] == TRAY_F1)
+    {
+        canSetLeds[0].standard_id = SET_F1_WS2812B_ID;
+        target_set_ws2812b_can_data(0, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
+        sendCanStr.setWs2812b[0] = 1;
+    }
+
+    else if (ctrl_buff[5] == TRAY_F2)
+    {
+        canSetLeds[1].standard_id = SET_F2_WS2812B_ID;
+        target_set_ws2812b_can_data(1, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
+        sendCanStr.setWs2812b[1] = 1;
+    }
+
+    else if (ctrl_buff[5] == TRAY_F3)
+    {
+        canSetLeds[2].standard_id = SET_F3_WS2812B_ID;
+        target_set_ws2812b_can_data(2, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
+        sendCanStr.setWs2812b[2] = 1;
+    }
+
+    else if (ctrl_buff[5] == TRAY_F4)
+    {
+        canSetLeds[3].standard_id = SET_F4_WS2812B_ID;
+        target_set_ws2812b_can_data(3, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
+        sendCanStr.setWs2812b[3] = 1;
+    }
+}
+
+void parse_ctrl_tray_leds_cmd(void)
+{
+    if ((ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > MAX_BRIGHTNESS) || (ctrl_buff[8] > MAX_BRIGHTNESS) || (ctrl_buff[9] > MAX_BRIGHTNESS))
+    {
+        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
+        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5] == 0x00 ? 0x0f : ctrl_buff[5];
+    }
+    else if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] > 0x64))
+    {
+        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
+        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
+    }
+
+    else if (ctrl_buff[5] == TRAY_MASTER)
+    {
+        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
+        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
+    }
+    else
+    {
+        canSetTrayLeds.standard_id = SET_TRAY_WS2812B_ID;
+
+        canSetTrayLeds.data[0] = ctrl_buff[6];
+        canSetTrayLeds.data[1] = ctrl_buff[7];
+        canSetTrayLeds.data[2] = ctrl_buff[8];
+        canSetTrayLeds.data[3] = ctrl_buff[9];
+        canSetTrayLeds.data[4] = ctrl_buff[5];
+        canSetTrayLeds.data[5] = 0x00;
+        canSetTrayLeds.data[6] = 0x00;
+        sendCanStr.setTrayWs2812b = 1;
+    }
+}
+
+void parse_reset_sensor_cmd(void)
+{
+    if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[5] == TRAY_MASTER))
+    {
+        uart1SendTypeFlag.reset_sensor_valid = 0;
+        uart1SendTypeFlag.reset_sensor = ctrl_buff[5];
+    }
+
+    else if (ctrl_buff[5] == TRAY_F1)
+    {
+        canResetSensor[0].standard_id = RESET_F1_SENSOR_ID;
+        target_reset_sensor_can_data(0);
+        sendCanStr.resetSensor[0] = 1;
+    }
+
+    else if (ctrl_buff[5] == TRAY_F2)
+    {
+        canResetSensor[1].standard_id = RESET_F2_SENSOR_ID;
+        target_reset_sensor_can_data(1);
+        sendCanStr.resetSensor[1] = 1;
+    }
+
+    else if (ctrl_buff[5] == TRAY_F3)
+    {
+        canResetSensor[2].standard_id = RESET_F3_SENSOR_ID;
+        target_reset_sensor_can_data(2);
+        sendCanStr.resetSensor[2] = 1;
+    }
+
+    else if (ctrl_buff[5] == TRAY_F4)
+    {
+        canResetSensor[3].standard_id = RESET_F4_SENSOR_ID;
+        target_reset_sensor_can_data(3);
+        sendCanStr.resetSensor[3] = 1;
+    }
+}
+
+void parse_reset_usbhub_cmd(void)
+{
+    if (ctrl_buff[5] != 0x00)
+    {
+        uart1SendTypeFlag.reset_usbhub_valid = 0;
+        uart1SendTypeFlag.reset_usbhub = 0x01;
+    }
+    else
+    {
+        if (ctrl_buff[6] == 0x00)
+        {
+            usbhub_ctrl(0);
+            uart1SendTypeFlag.reset_usbhub_valid = 1;
+        }
+        else if (ctrl_buff[6] == 0x01)
+        {
+            usbhub_ctrl(1);
+            uart1SendTypeFlag.reset_usbhub_valid = 1;
+        }
+        else
+        {
+            uart1SendTypeFlag.reset_usbhub_valid = 0;
+        }
+        uart1SendTypeFlag.reset_usbhub = 0x01;
+    }
+}
+
+void parse_reset_sw_cmd(void)
+{
+    if (ctrl_buff[5] != 0x00)
+    {
+        uart1SendTypeFlag.reset_switch_valid = 0x00;
+        uart1SendTypeFlag.reset_switch = 0x01;
+    }
+    else
+    {
+        if (ctrl_buff[6] == 0x00)
+        {
+            switch_pwr_ctrl(0);
+            uart1SendTypeFlag.reset_switch_valid = 0x01;
+        }
+        else if (ctrl_buff[6] == 0x01)
+        {
+            switch_pwr_ctrl(1);
+            uart1SendTypeFlag.reset_switch_valid = 0x01;
+        }
+        else
+        {
+            uart1SendTypeFlag.reset_switch_valid = 0x00;
+        }
+        uart1SendTypeFlag.reset_switch = 0x01;
+    }
+}
+
+void parse_reset_andriod(void)
+{
+    if (ctrl_buff[5] != 0x00)
+    {
+        uart1SendTypeFlag.reset_andriod_valid = 0x00;
+        uart1SendTypeFlag.reset_andriod = 0x01;
+    }
+    else
+    {
+        if (ctrl_buff[6] == 0x00)
+        {
+            andriod_pwr_ctrl(0);
+            uart1SendTypeFlag.reset_andriod_valid = 0x01;
+        }
+        else if (ctrl_buff[6] == 0x01)
+        {
+            andriod_pwr_ctrl(1);
+            uart1SendTypeFlag.reset_andriod_valid = 0x01;
+        }
+        else
+        {
+            uart1SendTypeFlag.reset_andriod_valid = 0x00;
+        }
+        uart1SendTypeFlag.reset_andriod = 0x01;
+    }
+}
+
+void parse_reset_acc_cmd(void)
+{
+    if (ctrl_buff[5] != 0x00)
+    {
+        uart1SendTypeFlag.reset_acc_valid = 0x00;
+        uart1SendTypeFlag.reset_acc = 0x01;
+    }
+    else
+    {
+        if (ctrl_buff[6] == 0x00)
+        {
+            car_acc_ctrl(0);
+            uart1SendTypeFlag.reset_acc_valid = 0x01;
+        }
+        else if (ctrl_buff[6] == 0x01)
+        {
+            car_acc_ctrl(1);
+            uart1SendTypeFlag.reset_acc_valid = 0x01;
+        }
+        else
+        {
+            uart1SendTypeFlag.reset_acc_valid = 0x00;
+        }
+        uart1SendTypeFlag.reset_acc = 0x01;
+    }
+}
+
+void parse_get_uid_cmd(void)
+{
+    if (ctrl_buff[5] > TRAY_SUM)
+    {
+        uart1SendTypeFlag.uid_own_valid = 0;
+        uart1SendTypeFlag.uid_own = 1;
+    }
+
+    else if (ctrl_buff[5] == TRAY_MASTER)
+    {
+        uart1SendTypeFlag.uid_own_valid = 1;
+        uart1SendTypeFlag.uid_own = 1;
+    }
+
+    else
+    {
+        if (ctrl_buff[5] == TRAY_F1)
+        {
+            ctrlData2Can.standard_id = GET_F1_UID_ID;
+        }
+
+        else if (ctrl_buff[5] == TRAY_F2)
+        {
+            ctrlData2Can.standard_id = GET_F2_UID_ID;
+        }
+
+        else if (ctrl_buff[5] == TRAY_F3)
+        {
+            ctrlData2Can.standard_id = GET_F3_UID_ID;
+        }
+        else if (ctrl_buff[5] == TRAY_F4)
+        {
+            ctrlData2Can.standard_id = GET_F4_UID_ID;
+        }
+
+        target_ver_uid_can_data();
+        can_transmit_ctrl_data(&ctrlData2Can);
+    }
+}
+
 void usart1_rx_task_function(void *pvParameters)
 {
     uint16_t getCrc;
@@ -1333,459 +1778,69 @@ void usart1_rx_task_function(void *pvParameters)
                 {
                 case REBOOT_CMD_ID:
                 {
-                    if (ctrl_buff[5] > TRAY_SUM)
-                    {
-                        uart1SendTypeFlag.need_reboot_valid = 0;
-                        uart1SendTypeFlag.need_reboot = ctrl_buff[5] == 0x00 ? CTRL_OWNER_FLAG : ctrl_buff[5];
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_MASTER)
-                    {
-                        uart1SendTypeFlag.need_reboot_valid = 1;
-                        uart1SendTypeFlag.need_reboot = CTRL_OWNER_FLAG;
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F1)
-                    {
-                        canResetBoard[0].standard_id = SET_F1_REBOOT_ID;
-                        target_reset_can_data(0);
-                        sendCanStr.resetBoard[0] = 1;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F2)
-                    {
-                        canResetBoard[1].standard_id = SET_F2_REBOOT_ID;
-                        target_reset_can_data(1);
-                        sendCanStr.resetBoard[1] = 1;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F3)
-                    {
-                        canResetBoard[2].standard_id = SET_F3_REBOOT_ID;
-                        target_reset_can_data(2);
-                        sendCanStr.resetBoard[2] = 1;
-                    }
-                    else if (ctrl_buff[5] == TRAY_F4)
-                    {
-                        canResetBoard[3].standard_id = SET_F4_REBOOT_ID;
-                        target_reset_can_data(3);
-                        sendCanStr.resetBoard[3] = 1;
-                    }
-
+                    parse_reboot_cmd(ctrl_buff[5]);
                     break;
                 }
 
                 case GET_VERSION_CMD_ID:
                 {
-                    if (ctrl_buff[5] > TRAY_SUM)
-                    {
-                        // ����Ӧ��
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_MASTER)
-                    {
-                        uart1SendTypeFlag.version_own = 1;
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F1)
-                    {
-                        ctrlData2Can.standard_id = GET_F1_VERSION_ID;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F2)
-                    {
-                        ctrlData2Can.standard_id = GET_F2_VERSION_ID;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F3)
-                    {
-                        ctrlData2Can.standard_id = GET_F3_VERSION_ID;
-                    }
-                    else if (ctrl_buff[5] == TRAY_F4)
-                    {
-                        ctrlData2Can.standard_id = GET_F4_VERSION_ID;
-                    }
-
-                    ctrlData2Can.data[0] = 0x01;
-                    ctrlData2Can.data[1] = 0x00;
-                    ctrlData2Can.data[2] = 0x00;
-                    ctrlData2Can.data[3] = 0x00;
-                    ctrlData2Can.data[4] = 0x00;
-                    ctrlData2Can.data[5] = 0x00;
-                    ctrlData2Can.data[6] = 0x00;
-                    can_transmit_ctrl_data(&ctrlData2Can);
+                    parse_get_ver_cmd(ctrl_buff[5]);
                     break;
                 }
 
                 case SET_DIY_CMD_ID:
                 {
-                    diyShowDataSts = 1;
-                    if ((ctrl_buff[5] != 0x00) || (ctrl_buff[14] > LED_COLOR_TYPE_MAX))
-                    {
-                        diyShowDataSts = 0;
-                        uart1SendTypeFlag.ctrl_diy_leds_valid = 0;
-                        uart1SendTypeFlag.ctrl_diy_leds = 0x0f; // ctrl_buff[5];
-                    }
-                    else
-                    {
-                        diyShowDataSts = 1;
-                        uart1SendTypeFlag.ctrl_diy_leds_valid = 1;
-                        uart1SendTypeFlag.ctrl_diy_leds = 0x0f;
-                    }
-                    if (diyShowDataSts == 1)
-                    {
-                        diyArr[0][0] = ctrl_buff[6];
-                        diyArr[0][1] = ctrl_buff[7];
-                        diyArr[1][0] = ctrl_buff[8];
-                        diyArr[1][1] = ctrl_buff[9];
-                        diyArr[2][0] = ctrl_buff[10];
-                        diyArr[2][1] = ctrl_buff[11];
-                        diyArr[3][0] = ctrl_buff[12];
-                        diyArr[3][1] = ctrl_buff[13];
-                        diyColor = ctrl_buff[14];
-                        ledMode = DIY_SHOW;
-                    }
+                    parse_diy_led_cmd();
                     break;
                 }
 
                 case SET_DIY2_CMD_ID:
                 {
-                    diyShowDataSts = 1;
-                    if ((ctrl_buff[5] != 0x00) || (ctrl_buff[14] > LED_COLOR_TYPE_MAX))
-                    {
-                        diyShowDataSts = 0;
-                        uart1SendTypeFlag.ctrl_diy2_leds_valid = 0;
-                        uart1SendTypeFlag.ctrl_diy2_leds = 0x0f; // ctrl_buff[5];
-                    }
-                    else
-                    {
-                        diyShowDataSts = 1;
-                        uart1SendTypeFlag.ctrl_diy2_leds_valid = 1;
-                        uart1SendTypeFlag.ctrl_diy2_leds = 0x0f;
-                    }
-                    if (diyShowDataSts == 1)
-                    {
-                        diyArr[0][0] = ctrl_buff[6];
-                        diyArr[0][1] = ctrl_buff[7];
-                        diyArr[1][0] = ctrl_buff[8];
-                        diyArr[1][1] = ctrl_buff[9];
-                        diyArr[2][0] = ctrl_buff[10];
-                        diyArr[2][1] = ctrl_buff[11];
-                        diyArr[3][0] = ctrl_buff[12];
-                        diyArr[3][1] = ctrl_buff[13];
-                        diyColor = ctrl_buff[14];
-                        ledMode = DIY2_SHOW;
-                    }
+                    parse_diy2_led_cmd();
                     break;
                 }
 
                 case SET_LEDS_CMD_ID:
                 {
-                    if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > MAX_BRIGHTNESS) || (ctrl_buff[8] > MAX_BRIGHTNESS) || (ctrl_buff[9] > MAX_BRIGHTNESS))
-                    {
-                        uart1SendTypeFlag.ctrl_leds_valid = 0;
-                        uart1SendTypeFlag.ctrl_leds = ctrl_buff[5] == 0x00 ? 0x0f : ctrl_buff[5];
-                        break;
-                    }
-                    else if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] > 0x64))
-                    {
-                        uart1SendTypeFlag.ctrl_leds_valid = 0;
-                        uart1SendTypeFlag.ctrl_leds = ctrl_buff[5];
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_MASTER)
-                    {
-                        if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] <= 0x64))
-                        {
-                            rainbow_percent = ctrl_buff[7];
-                        }
-                        else
-                        {
-                            color_grb.r = ctrl_buff[7];
-                            color_grb.g = ctrl_buff[8];
-                            color_grb.b = ctrl_buff[9];
-                        }
-                        ledMode = ctrl_buff[6];
-
-                        uart1SendTypeFlag.ctrl_leds_valid = 1;
-                        uart1SendTypeFlag.ctrl_leds = 0x0f;
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F1)
-                    {
-                        canSetLeds[0].standard_id = SET_F1_WS2812B_ID;
-                        target_set_ws2812b_can_data(0, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
-                        sendCanStr.setWs2812b[0] = 1;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F2)
-                    {
-                        canSetLeds[1].standard_id = SET_F2_WS2812B_ID;
-                        target_set_ws2812b_can_data(1, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
-                        sendCanStr.setWs2812b[1] = 1;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F3)
-                    {
-                        canSetLeds[2].standard_id = SET_F3_WS2812B_ID;
-                        target_set_ws2812b_can_data(2, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
-                        sendCanStr.setWs2812b[2] = 1;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F4)
-                    {
-                        canSetLeds[3].standard_id = SET_F4_WS2812B_ID;
-                        target_set_ws2812b_can_data(3, ctrl_buff[6], ctrl_buff[7], ctrl_buff[8], ctrl_buff[9]);
-                        sendCanStr.setWs2812b[3] = 1;
-                    }
-
+                    parse_ctrl_leds_cmd();
                     break;
                 }
 #if 1
                 case SET_TRAY_LEDS_CMD_ID:
                 {
-                    if ((ctrl_buff[6] > LED_MODE_MAX) || (ctrl_buff[7] > MAX_BRIGHTNESS) || (ctrl_buff[8] > MAX_BRIGHTNESS) || (ctrl_buff[9] > MAX_BRIGHTNESS))
-                    {
-                        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
-                        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5] == 0x00 ? 0x0f : ctrl_buff[5];
-                        break;
-                    }
-                    else if ((ctrl_buff[6] == RAINBOW) && (ctrl_buff[7] > 0x64))
-                    {
-                        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
-                        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_MASTER)
-                    {
-                        //                        ledMode = ctrl_buff[6];
-                        //                        color_grb.r = ctrl_buff[7];
-                        //                        color_grb.g = ctrl_buff[8];
-                        //                        color_grb.b = ctrl_buff[9];
-                        //                        uart1SendTypeFlag.ctrl_tray_leds_valid = 1;
-                        //                        uart1SendTypeFlag.ctrl_tray_leds = 0x0f;
-                        uart1SendTypeFlag.ctrl_tray_leds_valid = 0;
-                        uart1SendTypeFlag.ctrl_tray_leds = ctrl_buff[5];
-                        break;
-                    }
-                    else
-                    {
-                        canSetTrayLeds.standard_id = SET_TRAY_WS2812B_ID;
-
-                        canSetTrayLeds.data[0] = ctrl_buff[6];
-                        canSetTrayLeds.data[1] = ctrl_buff[7];
-                        canSetTrayLeds.data[2] = ctrl_buff[8];
-                        canSetTrayLeds.data[3] = ctrl_buff[9];
-                        canSetTrayLeds.data[4] = ctrl_buff[5];
-                        canSetTrayLeds.data[5] = 0x00;
-                        canSetTrayLeds.data[6] = 0x00;
-                        sendCanStr.setTrayWs2812b = 1;
-                    }
-
+                    parse_ctrl_tray_leds_cmd();
                     break;
                 }
 #endif
                 case RESET_SENSOR_CMD_ID:
                 {
-                    if ((ctrl_buff[5] > TRAY_SUM) || (ctrl_buff[5] == TRAY_MASTER))
-                    {
-                        uart1SendTypeFlag.reset_sensor_valid = 0;
-                        uart1SendTypeFlag.reset_sensor = ctrl_buff[5];
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F1)
-                    {
-                        canResetSensor[0].standard_id = RESET_F1_SENSOR_ID;
-                        target_reset_sensor_can_data(0);
-                        sendCanStr.resetSensor[0] = 1;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F2)
-                    {
-                        canResetSensor[1].standard_id = RESET_F2_SENSOR_ID;
-                        target_reset_sensor_can_data(1);
-                        sendCanStr.resetSensor[1] = 1;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F3)
-                    {
-                        canResetSensor[2].standard_id = RESET_F3_SENSOR_ID;
-                        target_reset_sensor_can_data(2);
-                        sendCanStr.resetSensor[2] = 1;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F4)
-                    {
-                        canResetSensor[3].standard_id = RESET_F4_SENSOR_ID;
-                        target_reset_sensor_can_data(3);
-                        sendCanStr.resetSensor[3] = 1;
-                    }
-
+                    parse_reset_sensor_cmd();
                     break;
                 }
 
                 case RESET_USBHUB_CMD_ID:
                 {
-                    if (ctrl_buff[5] != 0x00)
-                    {
-                        uart1SendTypeFlag.reset_usbhub_valid = 0;
-                        uart1SendTypeFlag.reset_usbhub = 0x01;
-                        break;
-                    }
-                    else
-                    {
-                        if (ctrl_buff[6] == 0x00)
-                        {
-                            usbhub_ctrl(0);
-                            uart1SendTypeFlag.reset_usbhub_valid = 1;
-                        }
-                        else if (ctrl_buff[6] == 0x01)
-                        {
-                            usbhub_ctrl(1);
-                            uart1SendTypeFlag.reset_usbhub_valid = 1;
-                        }
-                        else
-                        {
-                            uart1SendTypeFlag.reset_usbhub_valid = 0;
-                        }
-                        uart1SendTypeFlag.reset_usbhub = 0x01;
-                    }
-
+                    parse_reset_usbhub_cmd();
                     break;
                 }
                 case RESET_SWITCH_CMD_ID:
                 {
-                    if (ctrl_buff[5] != 0x00)
-                    {
-                        uart1SendTypeFlag.reset_switch_valid = 0x00;
-                        uart1SendTypeFlag.reset_switch = 0x01;
-                        break;
-                    }
-                    else
-                    {
-                        if (ctrl_buff[6] == 0x00)
-                        {
-                            switch_pwr_ctrl(0);
-                            uart1SendTypeFlag.reset_switch_valid = 0x01;
-                        }
-                        else if (ctrl_buff[6] == 0x01)
-                        {
-                            switch_pwr_ctrl(1);
-                            uart1SendTypeFlag.reset_switch_valid = 0x01;
-                        }
-                        else
-                        {
-                            uart1SendTypeFlag.reset_switch_valid = 0x00;
-                        }
-                        uart1SendTypeFlag.reset_switch = 0x01;
-                    }
-
+                    parse_reset_sw_cmd();
                     break;
                 }
                 case RESET_ANDRIOD_CMD_ID:
                 {
-                    if (ctrl_buff[5] != 0x00)
-                    {
-                        uart1SendTypeFlag.reset_andriod_valid = 0x00;
-                        uart1SendTypeFlag.reset_andriod = 0x01;
-                        break;
-                    }
-                    else
-                    {
-                        if (ctrl_buff[6] == 0x00)
-                        {
-                            andriod_pwr_ctrl(0);
-                            uart1SendTypeFlag.reset_andriod_valid = 0x01;
-                        }
-                        else if (ctrl_buff[6] == 0x01)
-                        {
-                            andriod_pwr_ctrl(1);
-                            uart1SendTypeFlag.reset_andriod_valid = 0x01;
-                        }
-                        else
-                        {
-                            uart1SendTypeFlag.reset_andriod_valid = 0x00;
-                        }
-                        uart1SendTypeFlag.reset_andriod = 0x01;
-                    }
+                    parse_reset_andriod();
                     break;
                 }
                 case RESET_ACC_CMD_ID:
                 {
-                    if (ctrl_buff[5] != 0x00)
-                    {
-                        uart1SendTypeFlag.reset_acc_valid = 0x00;
-                        uart1SendTypeFlag.reset_acc = 0x01;
-                        break;
-                    }
-                    else
-                    {
-                        if (ctrl_buff[6] == 0x00)
-                        {
-                            car_acc_ctrl(0);
-                            uart1SendTypeFlag.reset_acc_valid = 0x01;
-                        }
-                        else if (ctrl_buff[6] == 0x01)
-                        {
-                            car_acc_ctrl(1);
-                            uart1SendTypeFlag.reset_acc_valid = 0x01;
-                        }
-                        else
-                        {
-                            uart1SendTypeFlag.reset_acc_valid = 0x00;
-                        }
-                        uart1SendTypeFlag.reset_acc = 0x01;
-                    }
+                    parse_reset_acc_cmd();
                     break;
                 }
                 case GET_UID_CMD_ID:
                 {
-                    if (ctrl_buff[5] > TRAY_SUM)
-                    {
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_MASTER)
-                    {
-                        uart1SendTypeFlag.uid_own = 1;
-                        break;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F1)
-                    {
-                        ctrlData2Can.standard_id = GET_F1_UID_ID;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F2)
-                    {
-                        ctrlData2Can.standard_id = GET_F2_UID_ID;
-                    }
-
-                    else if (ctrl_buff[5] == TRAY_F3)
-                    {
-                        ctrlData2Can.standard_id = GET_F3_UID_ID;
-                    }
-                    else if (ctrl_buff[5] == TRAY_F4)
-                    {
-                        ctrlData2Can.standard_id = GET_F4_UID_ID;
-                    }
-
-                    ctrlData2Can.data[0] = 0x01;
-                    ctrlData2Can.data[1] = 0x00;
-                    ctrlData2Can.data[2] = 0x00;
-                    ctrlData2Can.data[3] = 0x00;
-                    ctrlData2Can.data[4] = 0x00;
-                    ctrlData2Can.data[5] = 0x00;
-                    ctrlData2Can.data[6] = 0x00;
-                    can_transmit_ctrl_data(&ctrlData2Can);
+                    parse_get_uid_cmd();
                     break;
                 }
 
@@ -2325,211 +2380,16 @@ void usart2_rx_task_function(void *pvParameters)
                     parse_update_abort_msg();
                     break;
                 }
-                case SYNC_SUB_FW_INFO_ID: // get appaddr/sync fw info/update end/update abort
-                {
-                    parse_sync_sub_fw_msg();
-                    break;
-                }
-                case SUB_UPDATING_APP_ID: // updating
-                {
+                    //                    case SYNC_SUB_FW_INFO_ID:  // get appaddr/sync fw info/update end/update abort
+                    //                    {
+                    //                        parse_sync_sub_fw_msg();
+                    //                        break;
+                    //                    }
+                    //                    case SUB_UPDATING_APP_ID:  // updating
+                    //                    {
 
-                    break;
-                }
-
-#if 0
-                    case REBOOT_CMD_ID:
-                    {
-                        if( ctrl_buff2[5] == TRAY_MASTER )
-                        {
-                            uart2SendTypeFlag.need_reboot_valid = 1;
-                            uart2SendTypeFlag.need_reboot = CTRL_OWNER_FLAG;
-                            break;
-                        }
-                        else
-                        {
-                            uart2SendTypeFlag.need_reboot_valid = 0;
-                            uart2SendTypeFlag.need_reboot = ctrl_buff[5]==0x00?CTRL_OWNER_FLAG:ctrl_buff[5];
-                            break;
-                        }
-                        break;
-                    }
-                    case GET_VERSION_CMD_ID:
-                    {
-                        if( ctrl_buff2[5] == TRAY_MASTER )
-                        {
-                            uart2SendTypeFlag.version_own = 1;
-                            break;
-                        }
-                        else
-                        {
-                            // ����Ӧ��
-                            break;
-                        }
-                        break;
-                    }
-
-                    case SET_LEDS_CMD_ID:
-                    {
-                        if(( ctrl_buff2[5] != 0 ) || (ctrl_buff2[6] > LED_MODE_MAX) || (ctrl_buff2[7] > MAX_BRIGHTNESS) || (ctrl_buff2[8] > MAX_BRIGHTNESS) || (ctrl_buff2[9] > MAX_BRIGHTNESS))
-                        {
-                            uart2SendTypeFlag.ctrl_leds_valid = 0;
-                            uart2SendTypeFlag.ctrl_leds = ctrl_buff2[5]==0x00?0x0f:ctrl_buff[5];
-                            break;
-                        }
-                        else if((ctrl_buff2[6] == RAINBOW) && (ctrl_buff2[7] > 0x64))
-                        {
-                            uart2SendTypeFlag.ctrl_leds_valid = 0;
-                            uart2SendTypeFlag.ctrl_leds = ctrl_buff[5];
-                            break;
-                        }
-
-                        else if( ctrl_buff2[5] == TRAY_MASTER )
-                        {
-                            if((ctrl_buff2[6] == RAINBOW) && (ctrl_buff2[7] <= 0x64))
-                            {
-                                ledMode = ctrl_buff2[6];
-                                rainbow_percent = ctrl_buff[7];
-                            }
-                            ledMode = ctrl_buff[6];
-                            color_grb.r = ctrl_buff[7];
-                            color_grb.g = ctrl_buff[8];
-                            color_grb.b = ctrl_buff[9];
-                            uart2SendTypeFlag.ctrl_leds_valid = 1;
-                            uart2SendTypeFlag.ctrl_leds = 0x0f;
-                            break;
-                        }
-                        break;
-                    }
-
-                    case RESET_USBHUB_CMD_ID:
-                    {
-                        if( ctrl_buff2[5] != 0x00 )
-                        {
-                            uart2SendTypeFlag.reset_usbhub_valid = 0;
-                            uart2SendTypeFlag.reset_usbhub = 0x01;
-                            break;
-                        }
-                        else
-                        {
-                            if( ctrl_buff2[6] == 0x00 )
-                            {
-                                usbhub_ctrl(0);
-                                uart2SendTypeFlag.reset_usbhub_valid = 1;
-                            }
-                            else if( ctrl_buff2[6] == 0x01 )
-                            {
-                                usbhub_ctrl(1);
-                                uart2SendTypeFlag.reset_usbhub_valid = 1;
-                            }
-                            else
-                            {
-                                uart2SendTypeFlag.reset_usbhub_valid = 0;
-                            }
-                            uart2SendTypeFlag.reset_usbhub = 0x01;
-                        }
-
-                        break;
-                    }
-                    case RESET_SWITCH_CMD_ID:
-                    {
-                        if( ctrl_buff2[5] != 0x00 )
-                        {
-                            uart2SendTypeFlag.reset_switch_valid = 0x00;
-                            uart2SendTypeFlag.reset_switch = 0x01;
-                            break;
-                        }
-                        else
-                        {
-                            if( ctrl_buff2[6] == 0x00 )
-                            {
-                                switch_pwr_ctrl(0);
-                                uart2SendTypeFlag.reset_switch_valid = 0x01;
-                            }
-                            else if( ctrl_buff2[6] == 0x01 )
-                            {
-                                switch_pwr_ctrl(1);
-                                uart2SendTypeFlag.reset_switch_valid = 0x01;
-                            }
-                            else
-                            {
-                                uart2SendTypeFlag.reset_switch_valid = 0x00;
-                            }
-                            uart2SendTypeFlag.reset_switch = 0x01;
-                        }
-
-                        break;
-                    }
-                    case RESET_ANDRIOD_CMD_ID:
-                    {
-                        if( ctrl_buff2[5] != 0x00 )
-                        {
-                            uart2SendTypeFlag.reset_andriod_valid = 0x00;
-                            uart2SendTypeFlag.reset_andriod = 0x01;
-                            break;
-                        }
-                        else
-                        {
-                            if( ctrl_buff2[6] == 0x00 )
-                            {
-                                andriod_pwr_ctrl(0);
-                                uart2SendTypeFlag.reset_andriod_valid = 0x01;
-                            }
-                            else if( ctrl_buff2[6] == 0x01 )
-                            {
-                                andriod_pwr_ctrl(1);
-                                uart2SendTypeFlag.reset_andriod_valid = 0x01;
-                            }
-                            else
-                            {
-                                uart2SendTypeFlag.reset_andriod_valid = 0x00;
-                            }
-                            uart2SendTypeFlag.reset_andriod = 0x01;
-                        }
-                        break;
-                    }
-                    case RESET_ACC_CMD_ID:
-                    {
-                        if( ctrl_buff2[5] != 0x00 )
-                        {
-                            uart2SendTypeFlag.reset_acc_valid = 0x00;
-                            uart2SendTypeFlag.reset_acc = 0x01;
-                            break;
-                        }
-                        else
-                        {
-                            if( ctrl_buff2[6] == 0x00 )
-                            {
-                                car_acc_ctrl(0);
-                                uart2SendTypeFlag.reset_acc_valid = 0x01;
-                            }
-                            else if( ctrl_buff2[6] == 0x01 )
-                            {
-                                car_acc_ctrl(1);
-                                uart2SendTypeFlag.reset_acc_valid = 0x01;
-                            }
-                            else
-                            {
-                                uart2SendTypeFlag.reset_acc_valid = 0x00;
-                            }
-                            uart2SendTypeFlag.reset_acc = 0x01;
-                        }
-                        break;
-                    }
-                    case GET_UID_CMD_ID:
-                    {
-                        if( ctrl_buff2[5] > TRAY_SUM )
-                        {
-                            break;
-                        }
-
-                        else if( ctrl_buff2[5] == TRAY_MASTER )
-                        {
-                            uart2SendTypeFlag.uid_own = 1;
-                            break;
-                        }
-                        break;
-                    }
-#endif
+                    //                        break;
+                    //                    }
 
                 default:
                 {

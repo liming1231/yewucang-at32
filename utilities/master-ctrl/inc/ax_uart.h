@@ -71,7 +71,7 @@
 #define TRAY_F2 (0x02)
 #define TRAY_F3 (0x03)
 #define TRAY_F4 (0x04)
-#define TRAY_SUM (0x05)
+#define TRAY_SUM (0x04)
 
 #define VERSION_INDEX_F1 (0x00)
 #define VERSION_INDEX_F2 (0x01)
